@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,12 +18,20 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
+import com.example.myfinance.Adapters.ShowFinancesAdapter;
+import com.example.myfinance.Models.ShowFinances;
 import com.example.myfinance.R;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainFragment extends Fragment {
 
     private TextView sum;
     private ImageButton changeSum;
+    private ListView mainCheck;
+    private List<ShowFinances> CheckList;
+    private ShowFinancesAdapter adapter;
 
     public MainFragment() {
     }
@@ -34,16 +43,22 @@ public class MainFragment extends Fragment {
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+        public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+            super.onViewCreated(view, savedInstanceState);
+            sum = view.findViewById(R.id.sum);
+            changeSum = view.findViewById(R.id.changeSum);
 
-        sum = view.findViewById(R.id.sum);
-        changeSum = view.findViewById(R.id.changeSum);
+            CheckList = new ArrayList<>();
+            CheckList.add(new ShowFinances(0, 200, "Huyna"));
+            CheckList.add(new ShowFinances(1, 451, "Oraz"));
+            mainCheck = view.findViewById(R.id.mainCheck);
+            adapter = new ShowFinancesAdapter(requireActivity(), CheckList);
+            mainCheck.setAdapter(adapter);
 
-        changeSum.setOnClickListener(View -> {
-            showAlertDialogForAddingSum();
-        });
-    }
+            changeSum.setOnClickListener(View -> {
+                showAlertDialogForAddingSum();
+            });
+        }
 
     private void showAlertDialogForAddingSum() {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());

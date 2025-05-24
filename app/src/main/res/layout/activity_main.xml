@@ -11,7 +11,7 @@
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorPrimaryVariant"
+        android:background="?attr/colorPrimary"
         android:theme="@style/Theme.Library.AppBarOverlay"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -49,10 +49,48 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:orientation="horizontal"
+        android:layout_marginBottom="52sp"
         app:layout_constraintTop_toBottomOf="@+id/appBarLayout"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
     </RelativeLayout>
+
+    <LinearLayout
+        style="?android:attr/buttonBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <Button
+            android:id="@+id/btnAnaliz"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="100sp"
+            android:layout_height="55sp"
+            android:layout_marginEnd="5sp"
+            android:layout_weight="1"
+            android:text="Анализ" />
+
+        <Button
+            android:id="@+id/btnMain"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="100sp"
+            android:layout_height="55sp"
+            android:layout_marginStart="5sp"
+            android:layout_marginEnd="5sp"
+            android:layout_weight="1"
+            android:text="Главное" />
+
+
+        <Button
+            android:id="@+id/idProfile"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="100sp"
+            android:layout_height="55sp"
+            android:layout_marginEnd="5sp"
+            android:layout_weight="1"
+            android:text="Профиль" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
