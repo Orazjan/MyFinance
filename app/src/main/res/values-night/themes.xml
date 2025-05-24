@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.MyFinance" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/purple_200</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorOnPrimary">@color/black</item>
+        <item name="colorSecondary">@color/teal_200</item>
+        <item name="colorSecondaryVariant">@color/teal_200</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:windowBackground">@color/background_color</item>
+        <item name="android:textColorPrimary">@color/text_color</item>
+        <item name="android:textColorSecondary">@color/secondary_text_color</item>
+        <item name="android:colorButtonNormal">@color/primary_button_background</item>
+        <item name="buttonTint">@color/primary_button_text</item>
+        <item name="android:navigationBarColor">@color/appbar_background</item>
+        <item name="toolbarStyle">@style/ToolbarStyle.Dark</item>
+        <item name="cardBackgroundColor">@color/card_background</item>
+        <item name="android:divider">@color/divider_color</item>
+        <item name="android:listDivider">@color/divider_color</item>
+
+        <item name="colorSurface">@color/card_background</item>
+        <item name="colorOnSurface">@color/text_color</item>
+        <item name="android:textColorLink">@color/purple_200</item>
+    </style>
+
+    <style name="ToolbarStyle.Dark" parent="Widget.MaterialComponents.Toolbar">
+        <item name="titleTextColor">@color/appbar_text</item>
+        <item name="android:background">@color/appbar_background</item>
+    </style>
+
+</resources>
