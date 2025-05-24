@@ -1,11 +1,13 @@
 package com.example.myfinance.Fragments;
 
 import android.content.DialogInterface;
-import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -43,7 +45,6 @@ public class MainFragment extends Fragment {
         });
     }
 
-
     private void showAlertDialogForAddingSum() {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
@@ -54,19 +55,7 @@ public class MainFragment extends Fragment {
         builder.setView(view);
         builder.setTitle("Изменить сумму");
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-            if (editTextSum.getText().isEmpty()) {
-                builder.setPositiveButton("Изменить", null);
-            }
-        }
-
-        builder.setPositiveButton("Изменить", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                sum.setText(editTextSum.getText().toString());
-                dialogInterface.dismiss();
-            }
-        });
+        builder.setPositiveButton("Изменить", null);
         builder.setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
@@ -74,6 +63,37 @@ public class MainFragment extends Fragment {
             }
         });
         AlertDialog dialog = builder.create();
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialogInterface) {
+                Button positiveBtn = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+                positiveBtn.setEnabled(false);
+                positiveBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                        String sumText = editTextSum.getText().toString().trim();
+                        sum.setText(sumText);
+                        dialogInterface.dismiss();
+                    }
+                });
+                editTextSum.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                        positiveBtn.setEnabled(!charSequence.toString().trim().isEmpty());
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable editable) {
+                    }
+                });
+            }
+        });
         dialog.setCanceledOnTouchOutside(false);
         dialog.show();
     }
