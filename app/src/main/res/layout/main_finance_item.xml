@@ -11,8 +11,13 @@
         android:id="@+id/id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="10sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="10sp"
-        android:layout_weight="1" />
+        android:text="@string/liniya" />
 
     <TextView
         android:id="@+id/summa"
@@ -20,6 +25,12 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="10sp"
         android:layout_weight="1" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10sp"
+        android:text="@string/liniya" />
 
     <TextView
         android:id="@+id/name"

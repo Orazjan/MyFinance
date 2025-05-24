@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">MyFinance</string>
+    <string name="liniya">|</string>
 </resources>

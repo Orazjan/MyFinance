@@ -39,7 +39,7 @@
                 android:layout_gravity="end"
                 android:layout_marginEnd="5sp"
                 android:indeterminateTint="@color/black"
-                android:visibility="visible" />
+                android:visibility="gone" />
 
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
@@ -57,40 +57,56 @@
     </RelativeLayout>
 
     <LinearLayout
-        style="?android:attr/buttonBarStyle"
+        android:id="@+id/bottom_nav_buttons_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:elevation="8dp"
+        android:paddingStart="5sp"
+        android:paddingEnd="5sp"
+        android:paddingBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <Button
             android:id="@+id/btnAnaliz"
-            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="100sp"
             android:layout_height="55sp"
-            android:layout_marginEnd="5sp"
             android:layout_weight="1"
-            android:text="Анализ" />
+            android:background="@drawable/button_background_selector"
+            android:gravity="center"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp"
+            android:state_selected="false"
+            android:text="Анализ"
+            android:textColor="@drawable/button_text_color_selector" />
 
         <Button
             android:id="@+id/btnMain"
-            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="100sp"
             android:layout_height="55sp"
             android:layout_marginStart="5sp"
             android:layout_marginEnd="5sp"
             android:layout_weight="1"
-            android:text="Главное" />
-
+            android:background="@drawable/button_background_selector"
+            android:gravity="center"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:state_selected="false"
+            android:text="Главное"
+            android:textColor="@drawable/button_text_color_selector" />
 
         <Button
-            android:id="@+id/idProfile"
-            style="?android:attr/buttonBarButtonStyle"
+            android:id="@+id/btnProfile"
             android:layout_width="100sp"
             android:layout_height="55sp"
             android:layout_marginEnd="5sp"
             android:layout_weight="1"
-            android:text="Профиль" />
+            android:background="@drawable/button_background_selector"
+            android:gravity="center"
+            android:state_selected="false"
+            android:text="Профиль"
+            android:textColor="@drawable/button_text_color_selector" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

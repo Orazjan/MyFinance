@@ -43,22 +43,22 @@ public class MainFragment extends Fragment {
     }
 
     @Override
-        public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-            super.onViewCreated(view, savedInstanceState);
-            sum = view.findViewById(R.id.sum);
-            changeSum = view.findViewById(R.id.changeSum);
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        sum = view.findViewById(R.id.sum);
+        changeSum = view.findViewById(R.id.changeSum);
 
-            CheckList = new ArrayList<>();
-            CheckList.add(new ShowFinances(0, 200, "Huyna"));
-            CheckList.add(new ShowFinances(1, 451, "Oraz"));
-            mainCheck = view.findViewById(R.id.mainCheck);
-            adapter = new ShowFinancesAdapter(requireActivity(), CheckList);
-            mainCheck.setAdapter(adapter);
+        CheckList = new ArrayList<>();
+        CheckList.add(new ShowFinances(0, 200, "Huyna"));
+        CheckList.add(new ShowFinances(1, 451, "Oraz"));
+        mainCheck = view.findViewById(R.id.mainCheck);
+        adapter = new ShowFinancesAdapter(requireActivity(), CheckList);
+        mainCheck.setAdapter(adapter);
 
-            changeSum.setOnClickListener(View -> {
-                showAlertDialogForAddingSum();
-            });
-        }
+        changeSum.setOnClickListener(View -> {
+            showAlertDialogForAddingSum();
+        });
+    }
 
     private void showAlertDialogForAddingSum() {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
