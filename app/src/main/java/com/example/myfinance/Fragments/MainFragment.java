@@ -17,10 +17,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.example.myfinance.Adapters.ShowFinancesAdapter;
 import com.example.myfinance.Models.ShowFinances;
 import com.example.myfinance.R;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +32,7 @@ public class MainFragment extends Fragment {
 
     private TextView sum;
     private ImageButton changeSum;
+    private FloatingActionButton btnAddNewCheck;
     private ListView mainCheck;
     private List<ShowFinances> CheckList;
     private ShowFinancesAdapter adapter;
@@ -47,7 +51,7 @@ public class MainFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         sum = view.findViewById(R.id.sum);
         changeSum = view.findViewById(R.id.changeSum);
-
+        btnAddNewCheck = view.findViewById(R.id.btnAddNewCheck);
         CheckList = new ArrayList<>();
         CheckList.add(new ShowFinances(0, 200, "Huyna"));
         CheckList.add(new ShowFinances(1, 451, "Oraz"));
@@ -57,6 +61,15 @@ public class MainFragment extends Fragment {
 
         changeSum.setOnClickListener(View -> {
             showAlertDialogForAddingSum();
+        });
+
+        btnAddNewCheck.setOnClickListener(View -> {
+            FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.fragment_container, new AddingNewFinance());
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
+
         });
     }
 
