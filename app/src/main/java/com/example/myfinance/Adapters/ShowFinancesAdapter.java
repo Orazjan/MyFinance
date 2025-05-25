@@ -1,6 +1,5 @@
 package com.example.myfinance.Adapters;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,17 +10,39 @@ import android.widget.TextView;
 import com.example.myfinance.Models.ShowFinances;
 import com.example.myfinance.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ShowFinancesAdapter extends BaseAdapter {
-    private Context context;
+
     private List<ShowFinances> finances;
     private LayoutInflater inflater;
 
-    public ShowFinancesAdapter(Context context, List<ShowFinances> finances) {
-        this.context = context;
-        this.finances = finances;
+    public ShowFinancesAdapter(Context context, List<ShowFinances> initialFinances) {
+        this.finances = new ArrayList<>(initialFinances);
         this.inflater = LayoutInflater.from(context);
+    }
+
+    public void addItem(ShowFinances newItem) {
+        finances.add(0, newItem);
+        notifyDataSetChanged();
+    }
+
+    public void addAllItems(List<ShowFinances> newItems) {
+        finances.clear();
+        finances.addAll(newItems);
+        notifyDataSetChanged();
+    }
+
+    public void clearItems() {
+        finances.clear();
+        notifyDataSetChanged();
+    }
+
+    public void setItems(List<ShowFinances> newFinances) {
+        this.finances.clear();
+        this.finances.addAll(newFinances);
+        notifyDataSetChanged();
     }
 
     @Override
@@ -30,53 +51,43 @@ public class ShowFinancesAdapter extends BaseAdapter {
     }
 
     @Override
-    public Object getItem(int i) {
-        return finances.get(i);
+    public Object getItem(int position) {
+        return finances.get(position);
     }
 
     @Override
-    public long getItemId(int i) {
-        return finances.size();
+    public long getItemId(int position) {
+        return position;
     }
 
-    @SuppressLint("DefaultLocale")
     @Override
-    public View getView(int position, View view, ViewGroup viewGroup) {
+    public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
-        if (view == null) {
-            view = inflater.inflate(R.layout.main_finance_item, viewGroup, false);
+        if (convertView == null) {
+            convertView = inflater.inflate(R.layout.main_finance_item, parent, false);
             holder = new ViewHolder();
-            holder.id = view.findViewById(R.id.id);
-            holder.sum = view.findViewById(R.id.summa);
-            holder.name = view.findViewById(R.id.name);
-            view.setTag(holder);
+
+            holder.textViewId = convertView.findViewById(R.id.id);
+            holder.textViewSum = convertView.findViewById(R.id.summa);
+            holder.textViewName = convertView.findViewById(R.id.name);
+
+            convertView.setTag(holder);
         } else {
-            holder = (ViewHolder) view.getTag();
+            holder = (ViewHolder) convertView.getTag();
         }
 
-        ShowFinances currentItem = (ShowFinances) getItem(position);
-        if (currentItem != null) {
-            holder.id.setText(String.valueOf(currentItem.getId()));
-            holder.sum.setText(String.format("%.2f", currentItem.getSum()));
-            holder.name.setText(currentItem.getName());
-        }
+        ShowFinances item = (ShowFinances) getItem(position);
 
-        return view;
+        holder.textViewId.setText(String.valueOf(item.getId()));
+        holder.textViewSum.setText(String.valueOf(item.getSum()));
+        holder.textViewName.setText(item.getName());
+
+        return convertView;
     }
 
-    private static class ViewHolder {
-        TextView id;
-        TextView sum;
-        TextView name;
-    }
-
-    public void addItem(ShowFinances item) {
-        finances.add(item);
-        notifyDataSetChanged();
-    }
-
-    public void removeItem(int position) {
-        finances.remove(position);
-        notifyDataSetChanged();
+    static class ViewHolder {
+        TextView textViewId;
+        TextView textViewSum;
+        TextView textViewName;
     }
 }

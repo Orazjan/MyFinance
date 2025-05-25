@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,13 +20,17 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.myfinance.Adapters.ShowFinancesAdapter;
 import com.example.myfinance.Models.ShowFinances;
+import com.example.myfinance.Models.ShowFinancesViewModel;
 import com.example.myfinance.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MainFragment extends Fragment {
@@ -36,8 +41,18 @@ public class MainFragment extends Fragment {
     private ListView mainCheck;
     private List<ShowFinances> CheckList;
     private ShowFinancesAdapter adapter;
+    private ShowFinancesViewModel SFM;
 
     public MainFragment() {
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        SFM = new ViewModelProvider(requireActivity()).get(ShowFinancesViewModel.class);
+        CheckList = new ArrayList<>();
+
+        adapter = new ShowFinancesAdapter(requireActivity(), CheckList);
     }
 
     @Nullable
@@ -52,12 +67,22 @@ public class MainFragment extends Fragment {
         sum = view.findViewById(R.id.sum);
         changeSum = view.findViewById(R.id.changeSum);
         btnAddNewCheck = view.findViewById(R.id.btnAddNewCheck);
-        CheckList = new ArrayList<>();
-        CheckList.add(new ShowFinances(0, 200, "Huyna"));
-        CheckList.add(new ShowFinances(1, 451, "Oraz"));
         mainCheck = view.findViewById(R.id.mainCheck);
-        adapter = new ShowFinancesAdapter(requireActivity(), CheckList);
         mainCheck.setAdapter(adapter);
+
+        SFM.getFinancesList().observe(getViewLifecycleOwner(), new Observer<List<ShowFinances>>() {
+            @Override
+            public void onChanged(List<ShowFinances> showFinances) {
+                if (showFinances != null) {
+                    adapter.clearItems();
+                    Collections.reverse(showFinances);
+                    adapter.addAllItems(showFinances);
+                    updateTotalSum(showFinances);
+
+                    Toast.makeText(getContext(), "Список обновлен из ViewModel! Элементов: " + showFinances.size(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
         changeSum.setOnClickListener(View -> {
             showAlertDialogForAddingSum();
@@ -71,6 +96,14 @@ public class MainFragment extends Fragment {
             fragmentTransaction.commit();
 
         });
+    }
+
+    private void updateTotalSum(List<ShowFinances> finances) {
+        double total = 0;
+        for (ShowFinances item : finances) {
+            total += item.getSum();
+        }
+        sum.setText(String.valueOf(total));
     }
 
     private void showAlertDialogForAddingSum() {

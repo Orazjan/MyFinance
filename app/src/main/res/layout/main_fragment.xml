@@ -31,7 +31,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="500"
-                android:textColor="@color/black"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="35sp"
                 android:textStyle="italic|bold" />
 
@@ -43,14 +43,31 @@
                 android:background="@drawable/pen" />
         </LinearLayout>
 
-        <ListView
-            android:id="@+id/mainCheck"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="5sp"
+                android:layout_marginBottom="5sp"
+                android:text="История"
+                android:textColor="?attr/colorPrimary"
+                android:textSize="25sp"
+                android:textStyle="italic" />
+
+            <ListView
+                android:id="@+id/mainCheck"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:dividerHeight="6sp"
             android:scrollbarStyle="insideInset" />
+        </LinearLayout>
     </LinearLayout>
-
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btnAddNewCheck"
         android:layout_width="wrap_content"
