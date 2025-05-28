@@ -19,11 +19,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.myfinance.Adapters.ShowFinancesAdapter;
+import com.example.myfinance.MainActivity;
 import com.example.myfinance.Models.SharedViewModel;
 import com.example.myfinance.Models.ShowFinances;
 import com.example.myfinance.R;
@@ -34,10 +33,10 @@ import java.util.List;
 
 public class MainFragment extends Fragment {
 
-    private TextView sumTextView; // Изменено с 'sum' для ясности
-    private ImageButton changeSumButton; // Изменено с 'changeSum' для ясности
+    private TextView sumTextView;
+    private ImageButton changeSumButton;
     private FloatingActionButton btnAddNewCheck;
-    private ListView mainCheck; // Используем это имя для ListView
+    private ListView mainCheck;
     private List<ShowFinances> financeList;
     private ShowFinancesAdapter financeAdapter;
     private SharedViewModel sharedViewModel;
@@ -46,7 +45,6 @@ public class MainFragment extends Fragment {
     private Double pendingSum;
 
     public MainFragment() {
-        // Required empty public constructor
     }
 
     @Nullable
@@ -59,59 +57,55 @@ public class MainFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Инициализация элементов UI
-        sumTextView = view.findViewById(R.id.sum); // Инициализация TextView
-        changeSumButton = view.findViewById(R.id.changeSum); // Инициализация ImageButton
-        btnAddNewCheck = view.findViewById(R.id.btnAddNewCheck); // Инициализация FloatingActionButton
-        mainCheck = view.findViewById(R.id.mainCheck); // Инициализация ListView с правильным именем
+        sumTextView = view.findViewById(R.id.sum);
+        changeSumButton = view.findViewById(R.id.changeSum);
+        btnAddNewCheck = view.findViewById(R.id.btnAddNewCheck);
+        mainCheck = view.findViewById(R.id.mainCheck);
 
-        // Инициализация списка финансовых записей и адаптера только один раз
         if (financeList == null) {
             financeList = new ArrayList<>();
         }
         if (financeAdapter == null) {
             financeAdapter = new ShowFinancesAdapter(requireContext(), financeList);
-            mainCheck.setAdapter(financeAdapter); // Устанавливаем адаптер здесь, один раз
+            mainCheck.setAdapter(financeAdapter);
         }
 
-        // Получаем экземпляр SharedViewModel
         sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
-        // Наблюдаем за изменениями категории и суммы.
-        // Оба наблюдателя вызывают addFinanceEntryIfReady(), который проверит,
-        // доступны ли оба значения.
         sharedViewModel.getSelectedCategory().observe(getViewLifecycleOwner(), s -> {
             pendingCategory = s;
             Log.d("MainFragment", "Category received: " + s);
-            addFinanceEntryIfReady(); // <--- Здесь вызывается метод, который ждет оба значения
+            addFinanceEntryIfReady();
         });
 
         sharedViewModel.getSum().observe(getViewLifecycleOwner(), s -> {
             pendingSum = s;
             Log.d("MainFragment", "Sum received: " + s);
-            addFinanceEntryIfReady(); // <--- Здесь вызывается метод, который ждет оба значения
+            addFinanceEntryIfReady();
         });
 
-        // Слушатели для кнопок
-        changeSumButton.setOnClickListener(v -> { // Используем v вместо View для лямбда-выражений
+        changeSumButton.setOnClickListener(v -> {
             showAlertDialogForAddingSum();
         });
 
-        btnAddNewCheck.setOnClickListener(v -> { // Используем v вместо View для лямбда-выражений
-            FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.viewPager, new AddingNewFinance());
-            fragmentTransaction.addToBackStack(null);
-            fragmentTransaction.commit();
+        btnAddNewCheck.setOnClickListener(v -> {
+            if (getActivity() instanceof MainActivity) {
+                MainActivity mainActivity = (MainActivity) getActivity();
+                mainActivity.openSecondaryFragment(new AddingNewFinance(), "AddingNewFinance");
+
+                Log.d("FragmentAction", "btnAddNewCheck clicked, requesting AddingNewFinance fragment.");
+            } else {
+                Log.e("FragmentError", "Родительская Activity не является MainActivity. Невозможно открыть AddingNewFinance.");
+
+                Toast.makeText(getContext(), "Ошибка: Не удалось открыть окно добавления.", Toast.LENGTH_SHORT).show();
+            }
         });
 
-        // Слушатель для нажатия на элемент списка
         mainCheck.setOnItemClickListener((parent, v, position, id) -> { // Используем 'mainCheck'
             ShowFinances clickedItem = (ShowFinances) parent.getItemAtPosition(position);
             Toast.makeText(requireContext(), "Нажата запись: " + clickedItem.getName() + " - " + clickedItem.getSum(), Toast.LENGTH_SHORT).show();
         });
 
-        // Обновляем общую сумму при первом запуске
         updateTotalSum();
     }
 
@@ -123,13 +117,8 @@ public class MainFragment extends Fragment {
                 currentTotal = Double.parseDouble(sumText);
             }
         } catch (NumberFormatException e) {
-            Log.e("MainFragment", "Ошибка парсинга начальной суммы: " + e.getMessage());
             currentTotal = 0.0;
         }
-
-        // Логика для подсчета общей суммы (предполагая, что это общие расходы)
-        // Если sumTextView - это баланс, то логика должна быть другой:
-        // currentTotal = <начальный_баланс> - totalExpenses;
         double totalExpenses = 0.0;
         for (ShowFinances item : financeList) {
             totalExpenses += item.getSum();
@@ -151,14 +140,14 @@ public class MainFragment extends Fragment {
         builder.setNegativeButton("Отмена", (dialogInterface, i) -> dialogInterface.dismiss()); // Лямбда-выражение
 
         AlertDialog dialog = builder.create();
-        dialog.setOnShowListener(dialogInterface -> { // Лямбда-выражение
+        dialog.setOnShowListener(dialogInterface -> {
             Button positiveBtn = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
             positiveBtn.setEnabled(false);
-            positiveBtn.setOnClickListener(v -> { // Лямбда-выражение
+            positiveBtn.setOnClickListener(v -> {
                 String sumText = editTextSum.getText().toString().trim();
-                sumTextView.setText(sumText); // Используем sumTextView
+                sumTextView.setText(sumText);
                 dialogInterface.dismiss();
-                updateTotalSum(); // Пересчитываем и отображаем баланс
+                updateTotalSum();
             });
             editTextSum.addTextChangedListener(new TextWatcher() {
                 @Override
@@ -182,22 +171,17 @@ public class MainFragment extends Fragment {
     private void addFinanceEntryIfReady() {
         if (pendingCategory != null && !pendingCategory.isEmpty() && pendingSum != null) {
             ShowFinances newEntry = new ShowFinances(0, pendingSum, pendingCategory);
-            financeList.add(newEntry); // Добавление элемента
-            financeAdapter.notifyDataSetChanged(); // Уведомление адаптера
-            updateTotalSum(); // Обновление UI с общей суммой
+            financeList.add(newEntry);
+            financeAdapter.notifyDataSetChanged();
+            updateTotalSum();
 
             Log.d("MainFragment", "Financial entry added: " + pendingCategory + " - " + pendingSum);
             Toast.makeText(requireContext(), "Entry added: " + pendingCategory + " - " + pendingSum, Toast.LENGTH_SHORT).show();
 
-            // ОЧЕНЬ ВАЖНО: Сбросить временные переменные после использования
             pendingCategory = null;
             pendingSum = null;
 
-            // Если вы хотите, чтобы SharedViewModel "забывал" данные после использования,
-            // добавьте в него метод типа clearCategoryAndSum() и вызовите его здесь:
-            // sharedViewModel.clearCategoryAndSum();
         } else {
-            // Логирование для отладки, почему запись не добавляется
             Log.d("MainFragment", "Cannot add entry: " +
                     "pendingCategory=" + pendingCategory +
                     ", pendingSum=" + pendingSum);

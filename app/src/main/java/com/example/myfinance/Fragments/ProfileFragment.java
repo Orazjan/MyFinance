@@ -41,30 +41,32 @@ public class ProfileFragment extends Fragment {
 
         VERSIONOFAPP.setText("VERSION 0.1");
 
-        VERSIONOFAPP.setOnClickListener(v -> {
-            clickCount++;
-
-            if (clickCount == 3) {
-                getParentFragmentManager().beginTransaction().replace(R.id.viewPager, new VersionInfoFragment()).addToBackStack(null).commit();
-
-                clickCount = 0;
-            } else {
-                new android.os.Handler().postDelayed(() -> {
-                    if (clickCount < 3) {
-                        clickCount = 0;
-                    }
-                }, RESET_CLICK_COUNT_DELAY);
-            }
-        });
         if (getActivity() instanceof MainActivity) {
             MainActivity mainActivity = (MainActivity) getActivity();
 
             if (btnProfileChange != null) {
                 btnProfileChange.setOnClickListener(v -> {
-                    // Вызываем публичный метод из MainActivity
                     mainActivity.openSecondaryFragment(new ProfileChangeFragment(), "ProfileChange");
                     Log.d("TAGOPENIN", "onCreateView: Openin Profile");
 
+                });
+            }
+
+            if (VERSIONOFAPP != null) {
+                VERSIONOFAPP.setOnClickListener(v -> {
+                    clickCount++;
+
+                    if (clickCount == 3) {
+                        mainActivity.openSecondaryFragment(new VersionInfoFragment(), "VersionInfo");
+
+                        clickCount = 0;
+                    } else {
+                        new android.os.Handler().postDelayed(() -> {
+                            if (clickCount < 3) {
+                                clickCount = 0;
+                            }
+                        }, RESET_CLICK_COUNT_DELAY);
+                    }
                 });
             }
 
@@ -86,18 +88,6 @@ public class ProfileFragment extends Fragment {
             Log.e("ProfileFragment", "Родительская Activity не является MainActivity!");
 
         }
-//        btnProfileChange.setOnClickListener(v -> {
-//            getParentFragmentManager().beginTransaction().replace(R.id.viewPager, new ProfileChangeFragment()).addToBackStack(null).commit();
-//
-//        });
-//        btnPattern.setOnClickListener(v -> {
-//            getParentFragmentManager().beginTransaction().replace(R.id.viewPager, new PatternFragment()).addToBackStack(null).commit();
-//
-//        });
-//        btnSettings.setOnClickListener(v -> {
-//            getParentFragmentManager().beginTransaction().replace(R.id.viewPager, new SettingsFragment()).addToBackStack(null).commit();
-//
-//        });
         btnSync.setOnClickListener(v -> {
             Toast.makeText(getContext(), "Синхронизация", Toast.LENGTH_SHORT).show();
         });
