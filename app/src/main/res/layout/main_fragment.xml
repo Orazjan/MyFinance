@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#E0F7FA"
-    android:gravity="center"
-    android:orientation="vertical">
+    android:background="#E0F7FA">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -45,9 +43,9 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:orientation="vertical">
-
 
             <TextView
                 android:layout_width="wrap_content"
@@ -62,20 +60,21 @@
 
             <ListView
                 android:id="@+id/mainCheck"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:dividerHeight="6sp"
-            android:scrollbarStyle="insideInset" />
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:dividerHeight="6sp"
+                android:scrollbarStyle="insideInset" />
         </LinearLayout>
+
     </LinearLayout>
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btnAddNewCheck"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
+        android:layout_gravity="bottom|end"
         android:layout_marginEnd="25sp"
         android:layout_marginBottom="40dp"
         android:backgroundTint="@color/primary_button_text"
         android:src="@drawable/pen_night" />
-</RelativeLayout>
+</FrameLayout>

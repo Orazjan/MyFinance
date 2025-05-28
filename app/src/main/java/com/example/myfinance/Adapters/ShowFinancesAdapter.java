@@ -1,6 +1,7 @@
 package com.example.myfinance.Adapters;
 
 import android.content.Context;
+import android.util.Log; // Импорт для логирования
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,34 +16,40 @@ import java.util.List;
 
 public class ShowFinancesAdapter extends BaseAdapter {
 
+    private static final String TAG = "FinancesAdapter"; // Тэг для логов
     private List<ShowFinances> finances;
     private LayoutInflater inflater;
 
     public ShowFinancesAdapter(Context context, List<ShowFinances> initialFinances) {
         this.finances = new ArrayList<>(initialFinances);
         this.inflater = LayoutInflater.from(context);
+        Log.d(TAG, "Adapter initialized with " + initialFinances.size() + " items.");
     }
 
     public void addItem(ShowFinances newItem) {
-        finances.add(0, newItem);
+        finances.add(newItem);
         notifyDataSetChanged();
+        Log.d(TAG, "Item added: " + newItem.getName() + " - " + newItem.getSum() + ". Total items: " + finances.size());
     }
 
     public void addAllItems(List<ShowFinances> newItems) {
         finances.clear();
         finances.addAll(newItems);
         notifyDataSetChanged();
+        Log.d(TAG, "All items added. Total items: " + finances.size());
     }
 
     public void clearItems() {
         finances.clear();
         notifyDataSetChanged();
+        Log.d(TAG, "All items cleared.");
     }
 
     public void setItems(List<ShowFinances> newFinances) {
-        this.finances.clear();
-        this.finances.addAll(newFinances);
-        notifyDataSetChanged();
+        this.finances.clear(); // Очищаем текущий список
+        this.finances.addAll(newFinances); // Добавляем все элементы из нового списка
+        notifyDataSetChanged(); // Уведомляем адаптер об изменении данных
+        Log.d(TAG, "Items set. Total items: " + finances.size());
     }
 
     @Override
@@ -72,15 +79,36 @@ public class ShowFinancesAdapter extends BaseAdapter {
             holder.textViewName = convertView.findViewById(R.id.name);
 
             convertView.setTag(holder);
+            Log.d(TAG, "Created new view for position: " + position);
         } else {
             holder = (ViewHolder) convertView.getTag();
+            Log.d(TAG, "Reusing view for position: " + position);
         }
 
         ShowFinances item = (ShowFinances) getItem(position);
 
-        holder.textViewId.setText(String.valueOf(item.getId()));
-        holder.textViewSum.setText(String.valueOf(item.getSum()));
-        holder.textViewName.setText(item.getName());
+        // Логирование данных перед установкой в TextView
+        Log.d(TAG, "Item at position " + position + ": ID=" + item.getId() + ", Sum=" + item.getSum() + ", Name=" + item.getName());
+
+        // Установка текста. Добавлена проверка на null, чтобы избежать NullPointerException
+        if (holder.textViewId != null) {
+            holder.textViewId.setText(String.valueOf(item.getId()));
+        } else {
+            Log.e(TAG, "textViewId is null for position " + position);
+        }
+
+        if (holder.textViewSum != null) {
+            holder.textViewSum.setText(String.valueOf(item.getSum()));
+        } else {
+            Log.e(TAG, "textViewSum is null for position " + position);
+        }
+
+        if (holder.textViewName != null) {
+            holder.textViewName.setText(item.getName() != null ? item.getName() : "N/A"); // Обработка null для имени
+        } else {
+            Log.e(TAG, "textViewName is null for position " + position);
+        }
+
 
         return convertView;
     }

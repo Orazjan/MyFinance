@@ -1,13 +1,18 @@
 package com.example.myfinance.Fragments;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -15,23 +20,24 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.myfinance.Models.ShowFinances;
-import com.example.myfinance.Models.ShowFinancesViewModel;
+import com.example.myfinance.Models.SharedViewModel;
 import com.example.myfinance.R;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AddingNewFinance extends Fragment {
     private Spinner standart_variant;
     private Button currentSelectedButton, btnAdd;
-    private List<String> standarts;
+    private Map<String, Double> standarts;
     private TextInputEditText sumEditText, reasonEditText;
     private TextInputLayout sumInputLayout, reasonInputLayout;
     private String selectedCategory;
-    private ShowFinancesViewModel SFM;
+    ArrayAdapter<String> adapter;
+    SharedViewModel sharedViewModel;
 
     @Nullable
     @Override
@@ -48,36 +54,55 @@ public class AddingNewFinance extends Fragment {
         reasonEditText = view.findViewById(R.id.reasonEditText);
         sumInputLayout = view.findViewById(R.id.sumInputLayout);
         reasonInputLayout = view.findViewById(R.id.reasonInputLayout);
-        SFM = new ViewModelProvider(requireActivity()).get(ShowFinancesViewModel.class);
 
-
-        standarts = new ArrayList<>();
-        standarts.add("Оплата за транспорт");
-        standarts.add("Оплата оператора");
-        standarts.add("Оплата за кофе");
-        standarts.add("Оплата за еду");
-        standarts.add("Оплата за продукты");
-        standarts.add("Другое");
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, standarts);
-
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        standart_variant.setAdapter(adapter);
+        loadObjectAndDisplay();
 
         standart_variant.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 selectedCategory = adapterView.getItemAtPosition(i).toString();
-                if (!selectedCategory.isEmpty()) {
-                    selectButton(btnAdd);
-                    sumEditText.setText("20");
-                    reasonEditText.setText(selectedCategory);
+                switch (selectedCategory) {
+                    case "Оплата за транспорт":
+                        selectButton(btnAdd);
+                        sumEditText.setText("20");
+                        reasonEditText.setText(selectedCategory);
+                        break;
+                    case "Оплата оператора":
+                        selectButton(btnAdd);
+                        sumEditText.setText("200");
+                        reasonEditText.setText(selectedCategory);
+                        break;
+                    case "Оплата за кофе":
+                        selectButton(btnAdd);
+                        sumEditText.setText("");
+                        reasonEditText.setText(selectedCategory);
+                        focusAndOpenKeyboard(sumEditText);
+                        break;
+                    case "Оплата за еду":
+                        selectButton(btnAdd);
+                        sumEditText.setText("");
+                        reasonEditText.setText(selectedCategory);
+                        focusAndOpenKeyboard(sumEditText);
+                        break;
+                    case "Другое":
+                        selectButton(btnAdd);
+                        sumEditText.setText("");
+                        reasonEditText.setText("");
+                        focusAndOpenKeyboard(sumEditText);
+                        break;
+                    default:
+                        selectButton(btnAdd);
+                        sumEditText.setText("");
+                        reasonEditText.setText(selectedCategory);
+                        focusAndOpenKeyboard(sumEditText);
+                        break;
                 }
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
-                selectedCategory = null;
+                sumEditText.setText("");
+                reasonEditText.setText("Категория не выбрана");
             }
         });
 
@@ -88,6 +113,8 @@ public class AddingNewFinance extends Fragment {
     }
 
     private void sendData() {
+        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+
         String sumStr = sumEditText.getText().toString().trim();
         String reason = reasonEditText.getText().toString().trim();
 
@@ -111,20 +138,9 @@ public class AddingNewFinance extends Fragment {
         }
 
         try {
-            int sum = Integer.parseInt(sumStr);
-            List<ShowFinances> currentFinances = SFM.getFinancesList().getValue();
-            int newId;
-
-            if (currentFinances != null && !currentFinances.isEmpty()) {
-                newId = currentFinances.size();
-            } else {
-                newId = 0;
-            }
-
-            ShowFinances newFinance = new ShowFinances(newId, sum, reason); // Используем сгенерированный уникальный ID
-
-            SFM.addFinance(newFinance);
-
+            double sum = Double.parseDouble(sumStr);
+            sharedViewModel.setSelectedCategory(selectedCategory);
+            sharedViewModel.setSum(sum);
             Toast.makeText(getContext(), "Успешно!", Toast.LENGTH_SHORT).show();
 
             sumEditText.setText("");
@@ -143,5 +159,45 @@ public class AddingNewFinance extends Fragment {
         }
         buttonToSelect.setSelected(true);
         currentSelectedButton = buttonToSelect;
+    }
+
+    private void focusAndOpenKeyboard(TextView textView) {
+        textView.requestFocus();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null) {
+                    imm.showSoftInput(sumEditText, InputMethodManager.SHOW_IMPLICIT);
+                }
+            }
+        }, 100);
+    }
+
+    private void loadObjectAndDisplay() {
+        SharedPreferences sharedPreferences = requireContext().getSharedPreferences("PATTERNS", Context.MODE_PRIVATE);
+        // Получаем сохраненную категорию и сумму. Если их нет, используем значения по умолчанию.
+        String categoryName = sharedPreferences.getString("reason", ""); // Ключ "reason" - это имя категории
+        double sum = sharedPreferences.getFloat("sum", 0); // Ключ "sum" - это сумма
+
+        // Инициализируем Map для стандартных категорий
+        standarts = new HashMap<>();
+        standarts.put("Другое", null); // "Другое" обычно без фиксированной суммы
+        standarts.put("Оплата за транспорт", 20.0);
+        standarts.put("Оплата оператора", 200.0);
+        standarts.put("Оплата за кофе", 0.0); // Возможно, 0.0 или null, если нужно вводить
+
+        // Добавляем загруженную категорию и сумму, если они не пустые.
+        // Это может быть категория, добавленная пользователем.
+        if (!categoryName.isEmpty()) {
+            standarts.put(categoryName, sum);
+        }
+        // Создаем адаптер для Spinner, используя ключи (названия категорий) из Map
+        adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, new ArrayList<>(standarts.keySet()));
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        standart_variant.setAdapter(adapter);
+
+        // Уведомляем адаптер об изменении данных (не обязательно, если данные статичны или загружены до установки)
+        adapter.notifyDataSetChanged();
     }
 }

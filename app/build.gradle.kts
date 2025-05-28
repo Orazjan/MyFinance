@@ -32,6 +32,10 @@ android {
 }
 
 dependencies {
+    implementation (libs.material.v1xx)
+    implementation (libs.viewpager2)
+    implementation(libs.room.runtime)
+    annotationProcessor(libs.room.compiler)
     implementation (libs.lifecycle.viewmodel)
     implementation (libs.lifecycle.livedata)
     implementation(libs.appcompat)
