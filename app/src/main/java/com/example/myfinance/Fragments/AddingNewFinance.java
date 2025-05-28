@@ -176,28 +176,23 @@ public class AddingNewFinance extends Fragment {
 
     private void loadObjectAndDisplay() {
         SharedPreferences sharedPreferences = requireContext().getSharedPreferences("PATTERNS", Context.MODE_PRIVATE);
-        // Получаем сохраненную категорию и сумму. Если их нет, используем значения по умолчанию.
         String categoryName = sharedPreferences.getString("reason", ""); // Ключ "reason" - это имя категории
         double sum = sharedPreferences.getFloat("sum", 0); // Ключ "sum" - это сумма
 
-        // Инициализируем Map для стандартных категорий
+
         standarts = new HashMap<>();
-        standarts.put("Другое", null); // "Другое" обычно без фиксированной суммы
+        standarts.put("Другое", null);
         standarts.put("Оплата за транспорт", 20.0);
         standarts.put("Оплата оператора", 200.0);
-        standarts.put("Оплата за кофе", 0.0); // Возможно, 0.0 или null, если нужно вводить
+        standarts.put("Оплата за кофе", 0.0);
 
-        // Добавляем загруженную категорию и сумму, если они не пустые.
-        // Это может быть категория, добавленная пользователем.
         if (!categoryName.isEmpty()) {
             standarts.put(categoryName, sum);
         }
-        // Создаем адаптер для Spinner, используя ключи (названия категорий) из Map
         adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, new ArrayList<>(standarts.keySet()));
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         standart_variant.setAdapter(adapter);
 
-        // Уведомляем адаптер об изменении данных (не обязательно, если данные статичны или загружены до установки)
         adapter.notifyDataSetChanged();
     }
 }

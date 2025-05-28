@@ -1,7 +1,5 @@
 package com.example.myfinance.Models;
 
-import androidx.annotation.NonNull;
-
 public class ShowFinances {
     private int id;
     private double sum;
@@ -28,9 +26,12 @@ public class ShowFinances {
         return sum;
     }
 
-    @NonNull
     @Override
     public String toString() {
-        return id + " " + sum + " " + name;
+        return "ShowFinances{" +
+                "id=" + id +
+                ", sum=" + sum +
+                ", name='" + name + '\'' +
+                '}';
     }
 }

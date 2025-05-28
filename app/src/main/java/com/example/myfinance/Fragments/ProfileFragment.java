@@ -39,7 +39,7 @@ public class ProfileFragment extends Fragment {
         btnEsc = view.findViewById(R.id.btnEsc);
         VERSIONOFAPP = view.findViewById(R.id.VERSIONOFAPP);
 
-        VERSIONOFAPP.setText("VERSION 0.1");
+        VERSIONOFAPP.setText("VERSION 0.3");
 
         if (getActivity() instanceof MainActivity) {
             MainActivity mainActivity = (MainActivity) getActivity();
@@ -47,7 +47,6 @@ public class ProfileFragment extends Fragment {
             if (btnProfileChange != null) {
                 btnProfileChange.setOnClickListener(v -> {
                     mainActivity.openSecondaryFragment(new ProfileChangeFragment(), "ProfileChange");
-                    Log.d("TAGOPENIN", "onCreateView: Openin Profile");
 
                 });
             }
@@ -73,15 +72,12 @@ public class ProfileFragment extends Fragment {
             if (btnSettings != null) {
                 btnSettings.setOnClickListener(v -> {
                     mainActivity.openSecondaryFragment(new SettingsFragment(), "Settings");
-                    Log.d("TAGOPENIN", "onCreateView: Openin Settings");
-
                 });
             }
 
             if (btnPattern != null) {
                 btnPattern.setOnClickListener(v -> {
                     mainActivity.openSecondaryFragment(new PatternFragment(), "Pattern");
-                    Log.d("TAGOPENIN", "onCreateView: Openin Pattern");
                 });
             }
         } else {

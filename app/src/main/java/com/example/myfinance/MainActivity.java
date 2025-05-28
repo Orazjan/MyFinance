@@ -5,7 +5,6 @@ import static android.view.View.VISIBLE;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -31,11 +30,11 @@ public class MainActivity extends AppCompatActivity {
 
     private ViewPager2 viewPager;
     private TabLayout tabLayout;
-    private Button btnAnaliz, btnMain, btnProfile;
     private ProgressBar progressBar;
     private FrameLayout fragmentContainer;
 
     private boolean doubleBackToExitPressedOnce = false;
+    private static final int ANALIZ_FRAGMENT_POSITION = 0;
     private static final int MAIN_FRAGMENT_POSITION = 1;
     private static final int PROFILE_FRAGMENT_POSITION = 2;
 
@@ -51,7 +50,6 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
         StatusBarColorHelper.setStatusBarColorFromPrimaryVariant(this);
-
 
         progressBar = findViewById(R.id.progressBar);
         viewPager = findViewById(R.id.viewPager);
@@ -81,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
             new TabLayoutMediator(tabLayout, viewPager,
                     (tab, position) -> {
                         switch (position) {
-                            case 0:
+                            case ANALIZ_FRAGMENT_POSITION:
                                 tab.setText("Анализ");
                                 break;
                             case MAIN_FRAGMENT_POSITION:
@@ -94,29 +92,55 @@ public class MainActivity extends AppCompatActivity {
                                 tab.setText("Page " + (position + 1));
                         }
                     }).attach();
+
+            tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+                @Override
+                public void onTabSelected(TabLayout.Tab tab) {
+                    FragmentManager fm = getSupportFragmentManager();
+                    if (fm.getBackStackEntryCount() > 0) {
+                        fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                        Log.d("TabSelection", "Closed secondary fragments on tab selection.");
+                    }
+                    Log.d("TabSelection", "Selected tab: " + tab.getText() + ", position: " + tab.getPosition());
+                }
+
+                @Override
+                public void onTabUnselected(TabLayout.Tab tab) {
+                }
+
+                @Override
+                public void onTabReselected(TabLayout.Tab tab) {
+                    FragmentManager fm = getSupportFragmentManager();
+                    if (fm.getBackStackEntryCount() > 0) {
+                        fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                        Log.d("TabReselection", "Closed secondary fragments on tab reselection.");
+                    }
+                }
+            });
         }
-
-        btnAnaliz = findViewById(R.id.btnAnaliz);
-        btnMain = findViewById(R.id.btnMain);
-        btnProfile = findViewById(R.id.btnProfile);
-
-        if (btnAnaliz == null) Log.e("MainActivity", "btnAnaliz is null!");
-        if (btnMain == null) Log.e("MainActivity", "btnMain is null!");
-        if (btnProfile == null) Log.e("MainActivity", "btnProfile is null!");
-
-        setupBottomNavigationButtons();
 
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {
             if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+
                 if (fragmentContainer != null) {
-                    fragmentContainer.setVisibility(View.GONE);
+                    fragmentContainer.setVisibility(View.GONE); // Скрываем контейнер вторичных фрагментов
+                    Log.d("VisibilityDebug", "BackStack empty. fragmentContainer GONE.");
                 }
+
                 if (viewPager != null) {
                     viewPager.setVisibility(VISIBLE);
+                    Log.d("VisibilityDebug", "BackStack empty. ViewPager2 VISIBLE.");
                 }
-                if (tabLayout != null) {
-                    tabLayout.setVisibility(VISIBLE);
+            } else {
+                if (viewPager != null) {
+                    viewPager.setVisibility(View.GONE);
+                    Log.d("VisibilityDebug", "BackStack not empty. ViewPager2 GONE.");
                 }
+                // Контейнер вторичных фрагментов должен быть виден (устанавливается в openSecondaryFragment)
+                // if (fragmentContainer != null) { // Уже VISIBLE в openSecondaryFragment()
+                //     fragmentContainer.setVisibility(VISIBLE);
+                //     Log.d("VisibilityDebug", "BackStack not empty. fragmentContainer VISIBLE.");
+                // }
             }
         });
 
@@ -148,51 +172,10 @@ public class MainActivity extends AppCompatActivity {
 
         viewPager.post(() -> {
             viewPager.setCurrentItem(MAIN_FRAGMENT_POSITION, false);
-            updateBottomNavSelection(MAIN_FRAGMENT_POSITION);
+            if (fragmentContainer != null)
+                fragmentContainer.setVisibility(View.GONE);
+            if (viewPager != null) viewPager.setVisibility(VISIBLE);
         });
-    }
-
-    private void setupBottomNavigationButtons() {
-        if (btnAnaliz != null) {
-            btnAnaliz.setOnClickListener(v -> {
-                fragmentContainer.setVisibility(View.GONE);
-                viewPager.setVisibility(VISIBLE);
-                Log.d("ButtonDebug", "btnAnaliz clicked, setting ViewPager item 0");
-                viewPager.setCurrentItem(0, true);
-            });
-        }
-        if (btnMain != null) {
-            btnMain.setOnClickListener(v -> {
-                Log.d("ButtonDebug", "btnMain clicked, setting ViewPager item MAIN_FRAGMENT_POSITION");
-                fragmentContainer.setVisibility(View.GONE);
-                viewPager.setVisibility(VISIBLE);
-                viewPager.setCurrentItem(MAIN_FRAGMENT_POSITION, true);
-            });
-        }
-        if (btnProfile != null) {
-            btnProfile.setOnClickListener(v -> {
-                fragmentContainer.setVisibility(View.GONE);
-                Log.d("ButtonDebug", "btnProfile clicked, setting ViewPager item PROFILE_FRAGMENT_POSITION");
-                viewPager.setVisibility(VISIBLE);
-                viewPager.setCurrentItem(PROFILE_FRAGMENT_POSITION, true);
-            });
-        }
-
-        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override
-            public void onPageSelected(int position) {
-                super.onPageSelected(position);
-                Log.d("ViewPagerCallback", "Page selected: " + position);
-                updateBottomNavSelection(position);
-            }
-        });
-    }
-
-    private void updateBottomNavSelection(int selectedPosition) {
-        if (btnAnaliz != null) btnAnaliz.setSelected(selectedPosition == 0);
-        if (btnMain != null) btnMain.setSelected(selectedPosition == MAIN_FRAGMENT_POSITION);
-        if (btnProfile != null)
-            btnProfile.setSelected(selectedPosition == PROFILE_FRAGMENT_POSITION);
     }
 
     public void openSecondaryFragment(Fragment fragment, String backStackTag) {
@@ -204,14 +187,10 @@ public class MainActivity extends AppCompatActivity {
 
         if (viewPager != null) {
             viewPager.setVisibility(View.GONE);
-            Log.d("VisibilityDebug", "ViewPager2 hidden.");
+            Log.d("VisibilityDebug", "ViewPager2 hidden for secondary fragment.");
         }
-        if (tabLayout != null) {
-            tabLayout.setVisibility(View.GONE);
-            Log.d("VisibilityDebug", "TabLayout hidden.");
-        }
+
         fragmentContainer.setVisibility(VISIBLE);
-        Log.d("VisibilityDebug", "fragment_container set to VISIBLE.");
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, fragment)
@@ -220,6 +199,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d("FragmentTransaction", "Secondary fragment " + fragment.getClass().getSimpleName() + " committed.");
     }
 
+    //  Прогресс бар оставили для загрузки данных из БД
     public void showProgressBar(boolean check) {
         if (progressBar != null) {
             if (check) {

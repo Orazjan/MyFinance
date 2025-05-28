@@ -50,8 +50,10 @@
         android:layout_height="wrap_content"
         android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/appBarLayout" />
+        app:tabGravity="fill"
+        app:tabMode="fixed" />
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
@@ -59,74 +61,22 @@
         android:layout_height="0dp"
         android:paddingEnd="5sp"
         android:paddingStart="5sp"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_nav_buttons_container"
+        app:layout_constraintBottom_toTopOf="@+id/tab_layout"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tab_layout" />
-
-    <LinearLayout
-        android:id="@+id/bottom_nav_buttons_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:elevation="8dp"
-        android:paddingStart="5sp"
-        android:paddingEnd="5sp"
-        android:paddingBottom="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <Button
-            android:id="@+id/btnAnaliz"
-            android:layout_width="100sp"
-            android:layout_height="55sp"
-            android:layout_weight="1"
-            android:background="@drawable/button_background_selector"
-            android:gravity="center"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:padding="0dp"
-            android:state_selected="false"
-            android:text="Анализ"
-            android:textColor="@drawable/button_text_color_selector" />
-
-        <Button
-            android:id="@+id/btnMain"
-            android:layout_width="100sp"
-            android:layout_height="55sp"
-            android:layout_marginStart="5sp"
-            android:layout_marginEnd="5sp"
-            android:layout_weight="1"
-            android:background="@drawable/button_background_selector"
-            android:gravity="center"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:state_selected="false"
-            android:text="Главное"
-            android:textColor="@drawable/button_text_color_selector" />
-
-        <Button
-            android:id="@+id/btnProfile"
-            android:layout_width="100sp"
-            android:layout_height="55sp"
-            android:layout_marginEnd="5sp"
-            android:layout_weight="1"
-            android:background="@drawable/button_background_selector"
-            android:gravity="center"
-            android:state_selected="false"
-            android:text="Профиль"
-            android:textColor="@drawable/button_text_color_selector" />
-    </LinearLayout>
+        app:layout_constraintTop_toBottomOf="@+id/appBarLayout" />
 
     <FrameLayout
         android:id="@+id/fragment_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="56sp"
-        android:layout_marginBottom="65sp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:background="@android:color/white"
         android:clickable="true"
         android:focusable="true"
-        android:visibility="gone" />
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/tab_layout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/appBarLayout" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

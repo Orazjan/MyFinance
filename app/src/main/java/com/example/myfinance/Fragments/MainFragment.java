@@ -29,6 +29,7 @@ import com.example.myfinance.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MainFragment extends Fragment {
@@ -40,9 +41,9 @@ public class MainFragment extends Fragment {
     private List<ShowFinances> financeList;
     private ShowFinancesAdapter financeAdapter;
     private SharedViewModel sharedViewModel;
-
     private String pendingCategory;
     private Double pendingSum;
+    private int id = 0;
 
     public MainFragment() {
     }
@@ -70,19 +71,7 @@ public class MainFragment extends Fragment {
             mainCheck.setAdapter(financeAdapter);
         }
 
-        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
-
-        sharedViewModel.getSelectedCategory().observe(getViewLifecycleOwner(), s -> {
-            pendingCategory = s;
-            Log.d("MainFragment", "Category received: " + s);
-            addFinanceEntryIfReady();
-        });
-
-        sharedViewModel.getSum().observe(getViewLifecycleOwner(), s -> {
-            pendingSum = s;
-            Log.d("MainFragment", "Sum received: " + s);
-            addFinanceEntryIfReady();
-        });
+        getSharedViewModel();
 
         changeSumButton.setOnClickListener(v -> {
             showAlertDialogForAddingSum();
@@ -92,8 +81,6 @@ public class MainFragment extends Fragment {
             if (getActivity() instanceof MainActivity) {
                 MainActivity mainActivity = (MainActivity) getActivity();
                 mainActivity.openSecondaryFragment(new AddingNewFinance(), "AddingNewFinance");
-
-                Log.d("FragmentAction", "btnAddNewCheck clicked, requesting AddingNewFinance fragment.");
             } else {
                 Log.e("FragmentError", "Родительская Activity не является MainActivity. Невозможно открыть AddingNewFinance.");
 
@@ -101,29 +88,32 @@ public class MainFragment extends Fragment {
             }
         });
 
-        mainCheck.setOnItemClickListener((parent, v, position, id) -> { // Используем 'mainCheck'
+        mainCheck.setOnItemClickListener((parent, v, position, id) -> {
             ShowFinances clickedItem = (ShowFinances) parent.getItemAtPosition(position);
-            Toast.makeText(requireContext(), "Нажата запись: " + clickedItem.getName() + " - " + clickedItem.getSum(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Запись добавлена: " + clickedItem.getSum(), Toast.LENGTH_SHORT).show();
         });
-
         updateTotalSum();
     }
 
+    private void getSharedViewModel() {
+        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+
+        sharedViewModel.getSelectedCategory().observe(getViewLifecycleOwner(), s -> {
+            pendingCategory = s;
+        });
+
+        sharedViewModel.getSum().observe(getViewLifecycleOwner(), s -> {
+            pendingSum = s;
+            addFinanceEntryIfReady();
+        });
+    }
+
     private void updateTotalSum() {
-        double currentTotal = 0.0;
-        try {
-            String sumText = sumTextView.getText().toString(); // Используем sumTextView
-            if (!sumText.isEmpty()) {
-                currentTotal = Double.parseDouble(sumText);
-            }
-        } catch (NumberFormatException e) {
-            currentTotal = 0.0;
-        }
-        double totalExpenses = 0.0;
+        double totalExpenses = 5000;
         for (ShowFinances item : financeList) {
-            totalExpenses += item.getSum();
+            totalExpenses -= item.getSum();
         }
-        sumTextView.setText(String.valueOf(totalExpenses)); // Обновляем sumTextView
+        sumTextView.setText(String.valueOf(totalExpenses));
     }
 
     private void showAlertDialogForAddingSum() {
@@ -169,14 +159,14 @@ public class MainFragment extends Fragment {
     }
 
     private void addFinanceEntryIfReady() {
+        id += 1;
         if (pendingCategory != null && !pendingCategory.isEmpty() && pendingSum != null) {
-            ShowFinances newEntry = new ShowFinances(0, pendingSum, pendingCategory);
+            ShowFinances newEntry = new ShowFinances(id, pendingSum, pendingCategory);
             financeList.add(newEntry);
+            Collections.reverse(financeList);
+            financeAdapter.setItems(financeList);
             financeAdapter.notifyDataSetChanged();
             updateTotalSum();
-
-            Log.d("MainFragment", "Financial entry added: " + pendingCategory + " - " + pendingSum);
-            Toast.makeText(requireContext(), "Entry added: " + pendingCategory + " - " + pendingSum, Toast.LENGTH_SHORT).show();
 
             pendingCategory = null;
             pendingSum = null;
