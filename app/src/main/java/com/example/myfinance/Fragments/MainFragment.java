@@ -19,13 +19,21 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.myfinance.Adapters.ShowFinancesAdapter;
 import com.example.myfinance.MainActivity;
-import com.example.myfinance.Models.SharedViewModel;
+import com.example.myfinance.Models.AmountViewModel;
+import com.example.myfinance.Models.FinanceViewModel;
 import com.example.myfinance.Models.ShowFinances;
 import com.example.myfinance.R;
+import com.example.myfinance.data.AmountDatabase;
+import com.example.myfinance.data.AmountRepository;
+import com.example.myfinance.data.FinanceDatabase;
+import com.example.myfinance.data.FinanceRepository;
+import com.example.myfinance.data.Finances;
+import com.example.myfinance.data.TotalAmount;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -40,13 +48,9 @@ public class MainFragment extends Fragment {
     private ListView mainCheck;
     private List<ShowFinances> financeList;
     private ShowFinancesAdapter financeAdapter;
-    private SharedViewModel sharedViewModel;
-    private String pendingCategory;
-    private Double pendingSum;
-    private int id = 0;
+    private double currentBalance = 5000.0;
+    private AmountViewModel amountViewModel;
 
-    public MainFragment() {
-    }
 
     @Nullable
     @Override
@@ -62,6 +66,28 @@ public class MainFragment extends Fragment {
         changeSumButton = view.findViewById(R.id.changeSum);
         btnAddNewCheck = view.findViewById(R.id.btnAddNewCheck);
         mainCheck = view.findViewById(R.id.mainCheck);
+        FinanceDatabase finDb = FinanceDatabase.getDatabase(requireActivity().getApplication());
+        FinanceRepository repo = new FinanceRepository(finDb.daoFinances());
+        AmountDatabase amdb = AmountDatabase.getDatabase(requireActivity().getApplication());
+        AmountRepository amrepo = new AmountRepository(amdb.daoTotalAmount());
+
+        FinanceViewModel.TaskViewModelFactory finViewModelTaskFactory = new FinanceViewModel.TaskViewModelFactory(repo);
+        FinanceViewModel finViewModel = new ViewModelProvider(requireActivity(), finViewModelTaskFactory).get(FinanceViewModel.class);
+
+        AmountViewModel.TaskViewModelFactory amViewModelTaskFactory = new AmountViewModel.TaskViewModelFactory(amrepo);
+        amountViewModel = new ViewModelProvider(requireActivity(), amViewModelTaskFactory).get(AmountViewModel.class);
+
+        amountViewModel.getLastAmount().observe(getViewLifecycleOwner(), new Observer<Double>() {
+            @Override
+            public void onChanged(@Nullable Double lastAmount) {
+                if (lastAmount == null) {
+                    currentBalance = 0.0;
+                } else {
+                    currentBalance = lastAmount;
+                }
+                updateTotalSum();
+            }
+        });
 
         if (financeList == null) {
             financeList = new ArrayList<>();
@@ -71,10 +97,14 @@ public class MainFragment extends Fragment {
             mainCheck.setAdapter(financeAdapter);
         }
 
-        getSharedViewModel();
+        addFinanceEntryIfReady(amountViewModel, finViewModel);
 
         changeSumButton.setOnClickListener(v -> {
-            showAlertDialogForAddingSum();
+            showAlertDialogForAddingSum(currentBalance);
+        });
+
+        sumTextView.setOnClickListener(v -> {
+            showAlertDialogForAddingSum(currentBalance);
         });
 
         btnAddNewCheck.setOnClickListener(v -> {
@@ -83,7 +113,6 @@ public class MainFragment extends Fragment {
                 mainActivity.openSecondaryFragment(new AddingNewFinance(), "AddingNewFinance");
             } else {
                 Log.e("FragmentError", "Родительская Activity не является MainActivity. Невозможно открыть AddingNewFinance.");
-
                 Toast.makeText(getContext(), "Ошибка: Не удалось открыть окно добавления.", Toast.LENGTH_SHORT).show();
             }
         });
@@ -92,52 +121,50 @@ public class MainFragment extends Fragment {
             ShowFinances clickedItem = (ShowFinances) parent.getItemAtPosition(position);
             Toast.makeText(requireContext(), "Запись добавлена: " + clickedItem.getSum(), Toast.LENGTH_SHORT).show();
         });
-        updateTotalSum();
-    }
-
-    private void getSharedViewModel() {
-        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
-
-        sharedViewModel.getSelectedCategory().observe(getViewLifecycleOwner(), s -> {
-            pendingCategory = s;
-        });
-
-        sharedViewModel.getSum().observe(getViewLifecycleOwner(), s -> {
-            pendingSum = s;
-            addFinanceEntryIfReady();
-        });
     }
 
     private void updateTotalSum() {
-        double totalExpenses = 5000;
+        double totalExpenses = currentBalance;
         for (ShowFinances item : financeList) {
             totalExpenses -= item.getSum();
         }
         sumTextView.setText(String.valueOf(totalExpenses));
     }
 
-    private void showAlertDialogForAddingSum() {
+    private void showAlertDialogForAddingSum(double initialSum) {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
 
         View view = inflater.inflate(R.layout.dialog_input_sum, null);
         EditText editTextSum = view.findViewById(R.id.dialog_edit_text);
+        editTextSum.setText(String.valueOf(initialSum));
+        editTextSum.setSelection(editTextSum.getText().length());
 
         builder.setView(view);
         builder.setTitle("Изменить сумму");
 
         builder.setPositiveButton("Изменить", null);
-        builder.setNegativeButton("Отмена", (dialogInterface, i) -> dialogInterface.dismiss()); // Лямбда-выражение
+        builder.setNegativeButton("Отмена", (dialogInterface, i) -> dialogInterface.dismiss());
 
         AlertDialog dialog = builder.create();
         dialog.setOnShowListener(dialogInterface -> {
             Button positiveBtn = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
-            positiveBtn.setEnabled(false);
+            positiveBtn.setEnabled(!editTextSum.getText().toString().trim().isEmpty());
+
             positiveBtn.setOnClickListener(v -> {
                 String sumText = editTextSum.getText().toString().trim();
-                sumTextView.setText(sumText);
-                dialogInterface.dismiss();
-                updateTotalSum();
+                if (!sumText.isEmpty()) {
+                    try {
+                        double newSum = Double.parseDouble(sumText);
+                        currentBalance = newSum;
+                        sumTextView.setText(String.valueOf(currentBalance));
+                        updateTotalSum();
+                        dialogInterface.dismiss();
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(requireContext(), "Введите корректное числовое значение", Toast.LENGTH_SHORT).show();
+                        Log.e("MainFragment", "Ошибка парсинга суммы: " + sumText, e);
+                    }
+                }
             });
             editTextSum.addTextChangedListener(new TextWatcher() {
                 @Override
@@ -153,28 +180,34 @@ public class MainFragment extends Fragment {
                 public void afterTextChanged(Editable editable) {
                 }
             });
+
         });
         dialog.setCanceledOnTouchOutside(false);
         dialog.show();
     }
 
-    private void addFinanceEntryIfReady() {
-        id += 1;
-        if (pendingCategory != null && !pendingCategory.isEmpty() && pendingSum != null) {
-            ShowFinances newEntry = new ShowFinances(id, pendingSum, pendingCategory);
-            financeList.add(newEntry);
-            Collections.reverse(financeList);
-            financeAdapter.setItems(financeList);
-            financeAdapter.notifyDataSetChanged();
-            updateTotalSum();
+    private void addFinanceEntryIfReady(AmountViewModel amountViewModel, FinanceViewModel finViewModel) {
+        //      repo.deleteAll();        На всякий если удалить нужно
 
-            pendingCategory = null;
-            pendingSum = null;
+        finViewModel.getAllFinances().observe(getViewLifecycleOwner(), new Observer<List<Finances>>() {
+            @Override
+            public void onChanged(@Nullable List<Finances> finances) {
+                financeList.clear();
 
-        } else {
-            Log.d("MainFragment", "Cannot add entry: " +
-                    "pendingCategory=" + pendingCategory +
-                    ", pendingSum=" + pendingSum);
-        }
+                if (finances != null) {
+                    for (Finances finance : finances) {
+                        financeList.add(new ShowFinances(finance.getId(), finance.getSumma(), finance.getFinanceResult()));
+                    }
+                }
+                Collections.reverse(financeList);
+
+                financeAdapter.setItems(financeList);
+                financeAdapter.notifyDataSetChanged();
+                updateTotalSum();
+                Log.d("Main Fragment", "Список после обновления: " + financeList.size() + " элементов.");
+            }
+        });
+
+        amountViewModel.update(new TotalAmount(currentBalance));
     }
 }

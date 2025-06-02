@@ -37,6 +37,7 @@
                 android:id="@+id/changeSum"
                 android:layout_width="35sp"
                 android:layout_height="35sp"
+                android:layout_marginStart="5sp"
                 android:layout_marginTop="5sp"
                 android:background="@drawable/pen" />
         </LinearLayout>

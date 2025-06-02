@@ -17,6 +17,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.myfinance.R;
+import com.example.myfinance.data.Categories;
+import com.example.myfinance.data.CategoryDataBase;
+import com.example.myfinance.data.CategoryRepository;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -28,6 +31,7 @@ public class PatternFragment extends Fragment {
     private Button btnAddPattern;
     private double sumInDouble;
     private String reason;
+    private CategoryRepository categoryRepository;
 
     public final String FILENAME = "PATTERNS";
 
@@ -46,6 +50,9 @@ public class PatternFragment extends Fragment {
         sumEditText = view.findViewById(R.id.sumEditText);
         btnAddPattern = view.findViewById(R.id.btnaddPattern);
 
+        CategoryDataBase database = CategoryDataBase.getDatabase(requireActivity().getApplication());
+        categoryRepository = new CategoryRepository(database.daoCategories());
+
         reasonEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -57,15 +64,16 @@ public class PatternFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                if (reasonEditText.getText().toString().trim().isEmpty()) { // Добавил .trim()
-                    reasonInputLayout.setError("Причина не может быть пустой"); // Более информативная ошибка
+                if (reasonEditText.getText().toString().trim().isEmpty()) {
+                    reasonInputLayout.setError("Причина не может быть пустой");
                     reason = "";
                 } else {
                     reasonInputLayout.setError(null);
-                    reason = Objects.requireNonNull(reasonEditText.getText()).toString().trim(); // Добавил .trim()
+                    reason = Objects.requireNonNull(reasonEditText.getText()).toString().trim();
                 }
             }
         });
+
         sumEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -77,9 +85,9 @@ public class PatternFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                String sumText = sumEditText.getText().toString().trim(); // Получаем текст и обрезаем пробелы
+                String sumText = sumEditText.getText().toString().trim();
                 if (sumText.isEmpty()) {
-                    sumInputLayout.setError("Сумма не может быть пустой"); // Более информативная ошибка
+                    sumInputLayout.setError("Сумма не может быть пустой");
                     sumInDouble = 0;
                 } else {
                     try {
@@ -98,6 +106,9 @@ public class PatternFragment extends Fragment {
                 Toast.makeText(requireContext(), "Пожалуйста, введите корректные данные для шаблона.", Toast.LENGTH_SHORT).show();
                 return;
             }
+
+            categoryRepository.insert(new Categories(reason, sumInDouble));
+            requireActivity().getSupportFragmentManager().popBackStack();
             addingToInternalStorage(reason, sumInDouble);
         });
     }
@@ -108,13 +119,11 @@ public class PatternFragment extends Fragment {
         editor.putString("reason", categoryName);
         editor.putFloat("sum", (float) sum);
         editor.apply();
-
+        Toast.makeText(requireContext(), "Шаблон добавлен", Toast.LENGTH_SHORT).show();
         reasonEditText.setText("");
         sumEditText.setText("");
         reasonInputLayout.setError(null);
         sumInputLayout.setError(null);
-
-
     }
 
 }

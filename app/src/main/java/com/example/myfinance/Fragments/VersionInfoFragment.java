@@ -35,9 +35,11 @@ public class VersionInfoFragment extends Fragment {
         mySpinner = view.findViewById(R.id.mySpinner);
 
         categories = new ArrayList<>();
-        categories.add("V 0.1");
-        categories.add("V 0.2");
+        categories.add("V 0.5");
+        categories.add("V 0.4");
         categories.add("V 0.3");
+        categories.add("V 0.2");
+        categories.add("V 0.1");
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, categories);
 
@@ -60,11 +62,16 @@ public class VersionInfoFragment extends Fragment {
                         InfoText.setText(selectedItem + ". Добавлено: Фикс багов. Фрагменты исправлены и работают между собой." +
                                 "'Экран Расчёта и вывода финансовых расходов исправлен");
                         break;
+                    case "V 0.4":
+                        InfoText.setText(selectedItem + ". Исправлено: Фикс багов. При нажатии на сумму открывается диалог по изменеию её\n" +
+                                "\nДобавлено: Добавлено локальная БД room\n" +
+                                "Загрузка данных произовдиться из ROOM. Общая сумма загружается и выводится на экран из ROOM\n" +
+                                "\nИзменено: удалено Передача данных из SharedViewModel");
+                        break;
                     default:
-                        InfoText.setText(selectedItem + ". Добавлено: Свайп между страницами");
+                        InfoText.setText(selectedItem + ". Ошибка при загрузке информации");
                         break;
                 }
-
             }
 
             @Override

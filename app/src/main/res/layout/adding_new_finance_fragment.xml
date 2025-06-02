@@ -45,26 +45,6 @@
         app:layout_constraintTop_toBottomOf="@id/linearLayoutSpinner">
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/sumInputLayout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="10sp"
-            android:background="@drawable/border"
-            android:hint="Сумма"
-            app:errorEnabled="true">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/sumEditText"
-                android:layout_width="300sp"
-                android:layout_height="wrap_content"
-                android:background="@drawable/border"
-                android:backgroundTint="@color/white"
-                android:inputType="numberDecimal" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/reasonInputLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -80,6 +60,26 @@
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/white"
                 android:inputType="textCapSentences" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/sumInputLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="15sp"
+            android:background="@drawable/border"
+            android:hint="Сумма"
+            app:errorEnabled="true">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/sumEditText"
+                android:layout_width="300sp"
+                android:layout_height="wrap_content"
+                android:background="@drawable/border"
+                android:backgroundTint="@color/white"
+                android:inputType="numberDecimal" />
 
         </com.google.android.material.textfield.TextInputLayout>
 

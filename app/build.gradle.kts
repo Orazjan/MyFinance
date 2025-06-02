@@ -32,6 +32,11 @@ android {
 }
 
 dependencies {
+    implementation(libs.room.runtime.v261)
+    annotationProcessor(libs.room.compiler.v261)
+    implementation(libs.room.paging)
+    testImplementation(libs.room.testing)
+    implementation(libs.room.ktx)
     implementation (libs.material.v1xx)
     implementation (libs.viewpager2)
     implementation(libs.room.runtime)
