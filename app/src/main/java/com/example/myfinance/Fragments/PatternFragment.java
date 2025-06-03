@@ -1,12 +1,15 @@
 package com.example.myfinance.Fragments;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -101,7 +104,6 @@ public class PatternFragment extends Fragment {
             CategoryAdapter.setOnItemClickListener(item -> {
                 showCategoryActionsDialog(item.getCategoryName(), item.getSum());
                 CategoryAdapter.notifyDataSetChanged();
-                Toast.makeText(requireContext(), "PatternsFragment " + item.getCategoryName() + " " + item.getSum(), Toast.LENGTH_SHORT).show();
             });
         } else {
             Log.e("PatternFragment", "CategoryAdapter is null in onClickAdapter(). This should not happen if called correctly.");
@@ -199,8 +201,6 @@ public class PatternFragment extends Fragment {
                 }
             }
             categoryViewModel.updateCategorySumByName(categoryName, newSum);
-
-            Toast.makeText(requireContext(), "Сумма для '" + categoryName + "' обновлена на: " + newSum, Toast.LENGTH_SHORT).show();
             dialogInterface.dismiss();
         });
 
@@ -212,7 +212,20 @@ public class PatternFragment extends Fragment {
         });
 
         AlertDialog dialog = builder.create();
+        dialog.setOnShowListener(dialogInterface -> {
+            focusAndOpenKeyboard(editTextSum);
+        });
         dialog.setCanceledOnTouchOutside(false);
         dialog.show();
+    }
+
+    private void focusAndOpenKeyboard(TextView textView) {
+        textView.requestFocus();
+        new Handler().postDelayed(() -> {
+            InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.showSoftInput(textView, InputMethodManager.SHOW_IMPLICIT);
+            }
+        }, 100);
     }
 }

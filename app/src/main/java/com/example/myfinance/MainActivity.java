@@ -136,11 +136,6 @@ public class MainActivity extends AppCompatActivity {
                     viewPager.setVisibility(View.GONE);
                     Log.d("VisibilityDebug", "BackStack not empty. ViewPager2 GONE.");
                 }
-                // Контейнер вторичных фрагментов должен быть виден (устанавливается в openSecondaryFragment)
-                // if (fragmentContainer != null) { // Уже VISIBLE в openSecondaryFragment()
-                //     fragmentContainer.setVisibility(VISIBLE);
-                //     Log.d("VisibilityDebug", "BackStack not empty. fragmentContainer VISIBLE.");
-                // }
             }
         });
 
@@ -199,7 +194,6 @@ public class MainActivity extends AppCompatActivity {
         Log.d("FragmentTransaction", "Secondary fragment " + fragment.getClass().getSimpleName() + " committed.");
     }
 
-    //  Прогресс бар оставили для загрузки данных из БД
     public void showProgressBar(boolean check) {
         if (progressBar != null) {
             if (check) {
