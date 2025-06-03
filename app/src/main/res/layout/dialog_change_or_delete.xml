@@ -6,13 +6,13 @@
     android:padding="5sp">
 
     <TextView
-        android:id="@+id/sumForChange"
+        android:id="@+id/categoryNameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="15sp" />
 
     <EditText
-        android:id="@+id/dialog_edit_text"
+        android:id="@+id/sum_edit_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="number" />

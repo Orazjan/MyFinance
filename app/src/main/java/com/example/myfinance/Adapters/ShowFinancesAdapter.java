@@ -46,9 +46,9 @@ public class ShowFinancesAdapter extends BaseAdapter {
     }
 
     public void setItems(List<ShowFinances> newFinances) {
-        this.finances.clear(); // Очищаем текущий список
-        this.finances.addAll(newFinances); // Добавляем все элементы из нового списка
-        notifyDataSetChanged(); // Уведомляем адаптер об изменении данных
+        this.finances.clear();
+        this.finances.addAll(newFinances);
+        notifyDataSetChanged();
         Log.d(TAG, "Items set. Total items: " + finances.size());
     }
 

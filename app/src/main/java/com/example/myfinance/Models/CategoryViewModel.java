@@ -24,6 +24,10 @@ public class CategoryViewModel extends ViewModel {
         return allCategories;
     }
 
+    public void updateCategorySumByName(String name, double newSum) {
+        repository.updateCategorySumByName(name, newSum);
+    }
+
     public void insert(Categories categories) {
         repository.insert(categories);
     }
@@ -39,6 +43,10 @@ public class CategoryViewModel extends ViewModel {
 
     public LiveData<Double> getSumForCategory(String categoryName) {
         return repository.getTotalSumByCategory(categoryName);
+    }
+
+    public LiveData<Categories> getCategoryName(Categories category) {
+        return repository.getCategoryByName(category.getCategoryName());
     }
 
     public static class TaskViewModelFactory implements ViewModelProvider.Factory {

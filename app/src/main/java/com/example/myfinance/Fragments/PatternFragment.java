@@ -3,16 +3,27 @@ package com.example.myfinance.Fragments;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.myfinance.Adapters.CategoryViewAdapter;
+import com.example.myfinance.Models.CategoryViewModel;
+import com.example.myfinance.Prevalent.CategoryItem;
 import com.example.myfinance.R;
 import com.example.myfinance.data.Categories;
 import com.example.myfinance.data.CategoryDataBase;
@@ -20,6 +31,8 @@ import com.example.myfinance.data.CategoryRepository;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class PatternFragment extends Fragment {
@@ -28,7 +41,12 @@ public class PatternFragment extends Fragment {
     private Button btnAddPattern;
     private double sumInDouble;
     private String reason;
+    private RecyclerView RecyclerForCategory;
     private CategoryRepository categoryRepository;
+    private CategoryViewModel.TaskViewModelFactory viewModelFactory;
+    private CategoryDataBase database;
+    private CategoryViewModel categoryViewModel;
+    private CategoryViewAdapter CategoryAdapter;
 
     @Nullable
     @Override
@@ -44,11 +62,50 @@ public class PatternFragment extends Fragment {
         reasonEditText = view.findViewById(R.id.reasonEditText);
         sumEditText = view.findViewById(R.id.sumEditText);
         btnAddPattern = view.findViewById(R.id.btnaddPattern);
+        RecyclerForCategory = view.findViewById(R.id.RecyclerForCategory);
 
-        CategoryDataBase database = CategoryDataBase.getDatabase(requireActivity().getApplication());
+        database = CategoryDataBase.getDatabase(requireActivity().getApplication());
         categoryRepository = new CategoryRepository(database.daoCategories());
-
+        viewModelFactory = new CategoryViewModel.TaskViewModelFactory(categoryRepository);
+        categoryViewModel = new ViewModelProvider(requireActivity(), viewModelFactory).get(CategoryViewModel.class);
+        loadAndDisplay();
         checkFields();
+        onClickAdapter();
+    }
+
+    private void loadAndDisplay() {
+        categoryViewModel.getAllCategories().observe(getViewLifecycleOwner(), new Observer<List<Categories>>() {
+            @Override
+            public void onChanged(List<Categories> categories) {
+                Log.d("PatternFragment", "All categories from DB: " + categories);
+                List<CategoryItem> categoryNames = new ArrayList<>();
+                for (Categories category : categories) {
+                    categoryNames.add(new CategoryItem(category.getCategoryName(), category.getSum()));
+                }
+                if (CategoryAdapter == null) {
+                    RecyclerForCategory.setLayoutManager(new LinearLayoutManager(requireContext()));
+                    CategoryAdapter = new CategoryViewAdapter(categoryNames);
+                    RecyclerForCategory.setAdapter(CategoryAdapter);
+                    onClickAdapter();
+                } else {
+                    CategoryAdapter.clear();
+                    CategoryAdapter.setItems(categoryNames);
+                    CategoryAdapter.notifyDataSetChanged();
+                }
+            }
+        });
+    }
+
+    private void onClickAdapter() {
+        if (CategoryAdapter != null) {
+            CategoryAdapter.setOnItemClickListener(item -> {
+                showCategoryActionsDialog(item.getCategoryName(), item.getSum());
+                CategoryAdapter.notifyDataSetChanged();
+                Toast.makeText(requireContext(), "PatternsFragment " + item.getCategoryName() + " " + item.getSum(), Toast.LENGTH_SHORT).show();
+            });
+        } else {
+            Log.e("PatternFragment", "CategoryAdapter is null in onClickAdapter(). This should not happen if called correctly.");
+        }
     }
 
     private void checkFields() {
@@ -112,4 +169,50 @@ public class PatternFragment extends Fragment {
         });
     }
 
+    private void showCategoryActionsDialog(String categoryName, double currentSum) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
+        LayoutInflater inflater = requireActivity().getLayoutInflater();
+
+        View dialogView = inflater.inflate(R.layout.dialog_change_or_delete, null);
+        TextView instructionTextView = dialogView.findViewById(R.id.categoryNameTextView); // Убедитесь, что ID корректен
+        EditText editTextSum = dialogView.findViewById(R.id.sum_edit_text);
+
+        instructionTextView.setText("Изменить сумму для " + categoryName + ":");
+        editTextSum.setText(String.valueOf(currentSum));
+        editTextSum.setSelection(editTextSum.getText().length());
+
+        builder.setView(dialogView);
+        builder.setTitle("Действия с категорией");
+
+        builder.setPositiveButton("Изменить", (dialogInterface, i) -> {
+            String sumText = editTextSum.getText().toString().trim();
+            double newSum;
+
+            if (sumText.isEmpty()) {
+                newSum = 0.0;
+            } else {
+                try {
+                    newSum = Double.parseDouble(sumText);
+                } catch (NumberFormatException e) {
+                    Toast.makeText(requireContext(), "Введите корректное число для суммы", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
+            categoryViewModel.updateCategorySumByName(categoryName, newSum);
+
+            Toast.makeText(requireContext(), "Сумма для '" + categoryName + "' обновлена на: " + newSum, Toast.LENGTH_SHORT).show();
+            dialogInterface.dismiss();
+        });
+
+
+        builder.setNegativeButton("Удалить", (dialogInterface, i) -> {
+            categoryViewModel.delete(new Categories(categoryName, currentSum));
+            Toast.makeText(requireContext(), "Категория '" + categoryName + "' удалена.", Toast.LENGTH_SHORT).show();
+            dialogInterface.dismiss();
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
+    }
 }

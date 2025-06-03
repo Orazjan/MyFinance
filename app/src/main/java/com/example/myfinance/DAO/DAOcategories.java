@@ -23,28 +23,27 @@ public interface DAOcategories {
     @Delete
     void delete(Categories categories);
 
-    // ИЗМЕНЕНИЕ: Теперь возвращаем LiveData<List<Categories>>
     @Query("SELECT * FROM finance_table")
-    LiveData<List<Categories>> getAllCategories(); // Переименовано для ясности
+    LiveData<List<Categories>> getAllCategories();
 
-    // ИЗМЕНЕНИЕ: Теперь возвращаем LiveData<Categories>
     @Query("SELECT * FROM finance_table WHERE id = :id")
-    LiveData<Categories> getCategoryById(int id); // Переименовано для ясности
+    LiveData<Categories> getCategoryById(int id);
 
     @Query("DELETE FROM finance_table")
     void deleteAll();
 
-    // ИЗМЕНЕНИЕ: Теперь возвращаем LiveData<Categories>
     @Query("SELECT * FROM finance_table WHERE categoryName = :categoryName")
-    LiveData<Categories> getCategoryByName(String categoryName); // Переименовано для ясности
+    LiveData<Categories> getCategoryByName(String categoryName);
 
     @Query("SELECT COUNT(*) FROM finance_table")
     int getCategoryCount();
 
-    // ИЗМЕНЕНИЕ: Теперь возвращаем LiveData<Categories>
     @Query("SELECT * FROM finance_table WHERE sum = :sum")
-    LiveData<Categories> getCategoryBySum(double sum); // Переименовано для ясности
+    LiveData<Categories> getCategoryBySum(double sum);
 
     @Query("SELECT SUM(sum) FROM finance_table WHERE categoryName = :categoryName")
     LiveData<Double> getTotalSumByCategory(String categoryName);
+
+    @Query("UPDATE finance_table SET sum = :newSum WHERE categoryName = :name")
+    void updateCategorySumByName(String name, double newSum);
 }

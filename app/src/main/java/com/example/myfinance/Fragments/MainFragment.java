@@ -150,7 +150,9 @@ public class MainFragment extends Fragment {
         LayoutInflater inflater = requireActivity().getLayoutInflater();
 
         View view = inflater.inflate(R.layout.dialog_input_sum, null);
+        TextView sumChange = view.findViewById(R.id.sumForChange);
         EditText editTextSum = view.findViewById(R.id.dialog_edit_text);
+        sumChange.setText("Введите сумму для изменеия");
         editTextSum.setText(String.valueOf(initialSum));
         editTextSum.setSelection(editTextSum.getText().length());
 

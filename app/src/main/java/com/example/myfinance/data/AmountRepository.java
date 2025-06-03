@@ -14,7 +14,7 @@ public class AmountRepository {
     private LiveData<Double> lastAmount;
 
     private static final int NUMBER_OF_THREADS = 4;
-    public static final ExecutorService databaseWriteExecutor = Executors.newFixedThreadPool(NUMBER_OF_THREADS); // Исправлена опечатка
+    public static final ExecutorService databaseWriteExecutor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
     public AmountRepository(DAOTotalAmount daOtotalAmount) {
         this.DAOtotalAmount = daOtotalAmount;
@@ -29,11 +29,11 @@ public class AmountRepository {
         databaseWriteExecutor.execute(() -> DAOtotalAmount.update(totalAmount));
     }
 
-    public LiveData<Double> getTotalSumOfAmounts() { // Переименовано для ясности
+    public LiveData<Double> getTotalSumOfAmounts() {
         return totalSumOfAmounts;
     }
 
-    public LiveData<Double> getLastAmount() { // Метод для получения LiveData
+    public LiveData<Double> getLastAmount() {
         return lastAmount;
     }
 

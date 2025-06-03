@@ -48,19 +48,24 @@ public class CategoryRepository {
     public LiveData<Categories> getCategoryByName(String categoryName) {
         return daoCategories.getCategoryByName(categoryName);
     }
+//
+//    public void initializeDefaultCategories() {
+//        CategoryDataBase.databaseWriteExecutor.execute(() -> {
+//            int count = daoCategories.getCategoryCount();
+//            if (count == 0) {
+//                daoCategories.insert(new Categories("Оплата за транспорт", 0.0));
+//                daoCategories.insert(new Categories("Оплата оператора", 50.0));
+//                daoCategories.insert(new Categories("Оплата за еду", 0.0));
+//                daoCategories.insert(new Categories("Другое", 0.0));
+//            }
+//        });
+//    }
 
-    public void initializeDefaultCategories() {
+    public void updateCategorySumByName(String name, double newSum) {
         CategoryDataBase.databaseWriteExecutor.execute(() -> {
-            int count = daoCategories.getCategoryCount();
-            if (count == 0) {
-                daoCategories.insert(new Categories("Оплата за транспорт", 0.0));
-                daoCategories.insert(new Categories("Оплата оператора", 50.0));
-                daoCategories.insert(new Categories("Оплата за еду", 0.0));
-                daoCategories.insert(new Categories("Другое", 0.0));
-            }
+            daoCategories.updateCategorySumByName(name, newSum);
         });
     }
-
     public LiveData<Double> getTotalSumByCategory(String categoryName) {
         return daoCategories.getTotalSumByCategory(categoryName); // Просто передаем LiveData из DAO
     }
