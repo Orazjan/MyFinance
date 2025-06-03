@@ -44,4 +44,7 @@ public interface DAOcategories {
     // ИЗМЕНЕНИЕ: Теперь возвращаем LiveData<Categories>
     @Query("SELECT * FROM finance_table WHERE sum = :sum")
     LiveData<Categories> getCategoryBySum(double sum); // Переименовано для ясности
+
+    @Query("SELECT SUM(sum) FROM finance_table WHERE categoryName = :categoryName")
+    LiveData<Double> getTotalSumByCategory(String categoryName);
 }

@@ -90,7 +90,6 @@ public class MainFragment extends Fragment {
         }
 
         getParentFragmentManager().setFragmentResultListener("ValueSum", getViewLifecycleOwner(), (requestKey, bundle) -> {
-
             if (requestKey.equals("ValueSum")) {
                 double sum = bundle.getDouble("ValueSum");
 
@@ -98,18 +97,15 @@ public class MainFragment extends Fragment {
                 Toast.makeText(requireContext(), "Данные получены: " + sum, Toast.LENGTH_SHORT).show();
             }
         });
-
         getSumFromRoom();
         getFinanceList();
 
         changeSumButton.setOnClickListener(v -> {
             showAlertDialogForAddingSum(currentBalance);
         });
-
         sumTextView.setOnClickListener(v -> {
             showAlertDialogForAddingSum(currentBalance);
         });
-
         btnAddNewCheck.setOnClickListener(v -> {
             if (getActivity() instanceof MainActivity) {
                 MainActivity mainActivity = (MainActivity) getActivity();
@@ -119,7 +115,6 @@ public class MainFragment extends Fragment {
                 Toast.makeText(getContext(), "Ошибка: Не удалось открыть окно добавления.", Toast.LENGTH_SHORT).show();
             }
         });
-
         mainCheck.setOnItemClickListener((parent, v, position, id) -> {
             ShowFinances clickedItem = (ShowFinances) parent.getItemAtPosition(position);
             Toast.makeText(requireContext(), "Запись добавлена: " + clickedItem.getSum(), Toast.LENGTH_SHORT).show();

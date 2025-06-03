@@ -37,6 +37,10 @@ public class CategoryViewModel extends ViewModel {
         repository.delete(categories);
     }
 
+    public LiveData<Double> getSumForCategory(String categoryName) {
+        return repository.getTotalSumByCategory(categoryName);
+    }
+
     public static class TaskViewModelFactory implements ViewModelProvider.Factory {
         private final CategoryRepository repository;
 

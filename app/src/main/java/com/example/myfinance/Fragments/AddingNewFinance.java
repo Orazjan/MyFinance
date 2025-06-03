@@ -21,24 +21,19 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.myfinance.Models.AmountViewModel;
 import com.example.myfinance.Models.CategoryViewModel;
 import com.example.myfinance.R;
-import com.example.myfinance.data.AmountDatabase;
-import com.example.myfinance.data.AmountRepository;
 import com.example.myfinance.data.Categories;
 import com.example.myfinance.data.CategoryDataBase;
 import com.example.myfinance.data.CategoryRepository;
 import com.example.myfinance.data.FinanceDatabase;
 import com.example.myfinance.data.FinanceRepository;
 import com.example.myfinance.data.Finances;
-import com.example.myfinance.data.TotalAmount;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -51,6 +46,9 @@ public class AddingNewFinance extends Fragment {
     private String selectedCategory;
     private CategoryViewModel categoryViewModel;
     private ArrayAdapter<String> categorySpinnerAdapter;
+    private CategoryViewModel.TaskViewModelFactory viewModelFactory;
+    private CategoryRepository repository;
+    private CategoryDataBase database;
 
     @Nullable
     @Override
@@ -68,43 +66,18 @@ public class AddingNewFinance extends Fragment {
         reasonEditText = view.findViewById(R.id.reasonEditText);
         sumInputLayout = view.findViewById(R.id.sumInputLayout);
         reasonInputLayout = view.findViewById(R.id.reasonInputLayout);
-
+        database = CategoryDataBase.getDatabase(requireActivity().getApplication());
+        repository = new CategoryRepository(database.daoCategories());
+//        repository.deleteAll();   На всякий случай (удаляет всё)
+        viewModelFactory = new CategoryViewModel.TaskViewModelFactory(repository);
+        categoryViewModel = new ViewModelProvider(requireActivity(), viewModelFactory).get(CategoryViewModel.class);
         loadAndDisplay();
 
         standart_variant.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 selectedCategory = adapterView.getItemAtPosition(i).toString();
-                switch (selectedCategory) {
-                    case "Оплата за транспорт":
-                        sumEditText.setText("20.0");
-                        reasonEditText.setText(selectedCategory);
-                        break;
-                    case "Оплата оператора":
-                        sumEditText.setText("200.0");
-                        reasonEditText.setText(selectedCategory);
-                        break;
-                    case "Оплата за кофе":
-                        sumEditText.setText("");
-                        reasonEditText.setText(selectedCategory);
-                        focusAndOpenKeyboard(sumEditText);
-                        break;
-                    case "Оплата за еду":
-                        sumEditText.setText("");
-                        reasonEditText.setText(selectedCategory);
-                        focusAndOpenKeyboard(sumEditText);
-                        break;
-                    case "Другое":
-                        sumEditText.setText("");
-                        reasonEditText.setText("");
-                        focusAndOpenKeyboard(sumEditText);
-                        break;
-                    default:
-                        sumEditText.setText("");
-                        reasonEditText.setText(selectedCategory);
-                        focusAndOpenKeyboard(sumEditText);
-                        break;
-                }
+                setToReasonAndSum(selectedCategory);
             }
 
             @Override
@@ -121,12 +94,6 @@ public class AddingNewFinance extends Fragment {
     }
 
     private void loadAndDisplay() {
-        CategoryDataBase database = CategoryDataBase.getDatabase(requireActivity().getApplication());
-        CategoryRepository repository = new CategoryRepository(database.daoCategories());
-//        repository.deleteAll();   На всякий случай (удаляет всё)
-        CategoryViewModel.TaskViewModelFactory viewModelFactory = new CategoryViewModel.TaskViewModelFactory(repository);
-
-        categoryViewModel = new ViewModelProvider(requireActivity(), viewModelFactory).get(CategoryViewModel.class);
 
         categoryViewModel.getAllCategories().observe(getViewLifecycleOwner(), new Observer<List<Categories>>() {
             @Override
@@ -197,19 +164,12 @@ public class AddingNewFinance extends Fragment {
         result.putDouble("ValueSum", sum);
 
         getParentFragmentManager().setFragmentResult("ValueSum", result);
-
         getParentFragmentManager().popBackStack();
     }
 
     private void addingToDb(String reason, double sum) {
         FinanceDatabase database = FinanceDatabase.getDatabase(requireActivity().getApplication());
         FinanceRepository repository = new FinanceRepository(database.daoFinances());
-        AmountDatabase amdb = AmountDatabase.getDatabase(requireActivity().getApplication());
-        AmountRepository amrepo = new AmountRepository(amdb.daoTotalAmount());
-        AmountViewModel.TaskViewModelFactory amViewModelTaskFactory = new AmountViewModel.TaskViewModelFactory(amrepo);
-        AmountViewModel amountViewModel = new ViewModelProvider(requireActivity(), amViewModelTaskFactory).get(AmountViewModel.class);
-
-        amountViewModel.update(new TotalAmount(sum));
 
         repository.insert(new Finances(reason, sum));
         Toast.makeText(requireContext(), "Данные добавлены!", Toast.LENGTH_SHORT).show();
@@ -226,13 +186,29 @@ public class AddingNewFinance extends Fragment {
         }, 100);
     }
 
-    public static String getCurrentTime() {
-        SimpleDateFormat sdf = new SimpleDateFormat("HH.mm.ss", Locale.getDefault());
-        return sdf.format(new Date());
+    private void setToReasonAndSum(String reason) {
+        if (reason != null) {
+            reasonEditText.setText(selectedCategory);
+            categoryViewModel.getSumForCategory(reason).observe(getViewLifecycleOwner(), new Observer<Double>() {
+                @Override
+                public void onChanged(Double sum) {
+                    if (sum != null)
+                        sumEditText.setText(String.valueOf(sum));
+                    else
+                        focusAndOpenKeyboard(sumEditText);
+                }
+            });
+        } else {
+            reasonEditText.setText("");
+            sumEditText.setText("");
+            focusAndOpenKeyboard(reasonEditText);
+        }
     }
 
     public static String getCurrentDate() {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM", Locale.getDefault());
-        return sdf.format(new Date());
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH.mm.ss", Locale.getDefault());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM", Locale.getDefault());
+
+        return dateFormat + " " + timeFormat;
     }
 }

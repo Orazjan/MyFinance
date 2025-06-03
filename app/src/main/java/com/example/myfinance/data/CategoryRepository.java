@@ -61,6 +61,10 @@ public class CategoryRepository {
         });
     }
 
+    public LiveData<Double> getTotalSumByCategory(String categoryName) {
+        return daoCategories.getTotalSumByCategory(categoryName); // Просто передаем LiveData из DAO
+    }
+
     public LiveData<Categories> getCategoryBySum(double sum) {
         return daoCategories.getCategoryBySum(sum);
     }

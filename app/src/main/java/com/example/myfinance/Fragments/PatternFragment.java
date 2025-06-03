@@ -1,8 +1,5 @@
 package com.example.myfinance.Fragments;
 
-import static android.content.Context.MODE_PRIVATE;
-
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -33,8 +30,6 @@ public class PatternFragment extends Fragment {
     private String reason;
     private CategoryRepository categoryRepository;
 
-    public final String FILENAME = "PATTERNS";
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -53,6 +48,10 @@ public class PatternFragment extends Fragment {
         CategoryDataBase database = CategoryDataBase.getDatabase(requireActivity().getApplication());
         categoryRepository = new CategoryRepository(database.daoCategories());
 
+        checkFields();
+    }
+
+    private void checkFields() {
         reasonEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -107,23 +106,10 @@ public class PatternFragment extends Fragment {
                 return;
             }
 
+            Toast.makeText(requireContext(), "Шаблон добавлен!", Toast.LENGTH_SHORT).show();
             categoryRepository.insert(new Categories(reason, sumInDouble));
             requireActivity().getSupportFragmentManager().popBackStack();
-            addingToInternalStorage(reason, sumInDouble);
         });
-    }
-
-    public void addingToInternalStorage(String categoryName, double sum) {
-        SharedPreferences sharedPreferences = requireContext().getSharedPreferences(FILENAME, MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("reason", categoryName);
-        editor.putFloat("sum", (float) sum);
-        editor.apply();
-        Toast.makeText(requireContext(), "Шаблон добавлен", Toast.LENGTH_SHORT).show();
-        reasonEditText.setText("");
-        sumEditText.setText("");
-        reasonInputLayout.setError(null);
-        sumInputLayout.setError(null);
     }
 
 }
