@@ -1,5 +1,6 @@
 package com.example.myfinance.Fragments;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -29,6 +30,7 @@ public class ProfileFragment extends Fragment {
         return inflater.inflate(R.layout.profile_fragment, container, false);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -39,7 +41,7 @@ public class ProfileFragment extends Fragment {
         btnEsc = view.findViewById(R.id.btnEsc);
         VERSIONOFAPP = view.findViewById(R.id.VERSIONOFAPP);
 
-        VERSIONOFAPP.setText("VERSION 0.3");
+        VERSIONOFAPP.setText("VERSION 0.5");
 
         if (getActivity() instanceof MainActivity) {
             MainActivity mainActivity = (MainActivity) getActivity();

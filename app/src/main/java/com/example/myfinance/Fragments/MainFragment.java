@@ -48,9 +48,9 @@ public class MainFragment extends Fragment {
     private ListView mainCheck;
     private List<ShowFinances> financeList;
     private ShowFinancesAdapter financeAdapter;
-    private double currentBalance = 5000.0;
+    private double currentBalance;
     private AmountViewModel amountViewModel;
-
+    private FinanceViewModel finViewModel;
 
     @Nullable
     @Override
@@ -66,28 +66,20 @@ public class MainFragment extends Fragment {
         changeSumButton = view.findViewById(R.id.changeSum);
         btnAddNewCheck = view.findViewById(R.id.btnAddNewCheck);
         mainCheck = view.findViewById(R.id.mainCheck);
+
         FinanceDatabase finDb = FinanceDatabase.getDatabase(requireActivity().getApplication());
-        FinanceRepository repo = new FinanceRepository(finDb.daoFinances());
         AmountDatabase amdb = AmountDatabase.getDatabase(requireActivity().getApplication());
+
+        FinanceRepository repo = new FinanceRepository(finDb.daoFinances());
         AmountRepository amrepo = new AmountRepository(amdb.daoTotalAmount());
 
         FinanceViewModel.TaskViewModelFactory finViewModelTaskFactory = new FinanceViewModel.TaskViewModelFactory(repo);
-        FinanceViewModel finViewModel = new ViewModelProvider(requireActivity(), finViewModelTaskFactory).get(FinanceViewModel.class);
+        finViewModel = new ViewModelProvider(requireActivity(), finViewModelTaskFactory).get(FinanceViewModel.class);
 
         AmountViewModel.TaskViewModelFactory amViewModelTaskFactory = new AmountViewModel.TaskViewModelFactory(amrepo);
         amountViewModel = new ViewModelProvider(requireActivity(), amViewModelTaskFactory).get(AmountViewModel.class);
 
-        amountViewModel.getLastAmount().observe(getViewLifecycleOwner(), new Observer<Double>() {
-            @Override
-            public void onChanged(@Nullable Double lastAmount) {
-                if (lastAmount == null) {
-                    currentBalance = 0.0;
-                } else {
-                    currentBalance = lastAmount;
-                }
-                updateTotalSum();
-            }
-        });
+        Log.d(requireContext().toString(), "startBalance " + sumTextView.getText().toString());
 
         if (financeList == null) {
             financeList = new ArrayList<>();
@@ -97,7 +89,18 @@ public class MainFragment extends Fragment {
             mainCheck.setAdapter(financeAdapter);
         }
 
-        addFinanceEntryIfReady(amountViewModel, finViewModel);
+        getParentFragmentManager().setFragmentResultListener("ValueSum", getViewLifecycleOwner(), (requestKey, bundle) -> {
+
+            if (requestKey.equals("ValueSum")) {
+                double sum = bundle.getDouble("ValueSum");
+
+                updateTotalSum(sum);
+                Toast.makeText(requireContext(), "Данные получены: " + sum, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        getSumFromRoom();
+        getFinanceList();
 
         changeSumButton.setOnClickListener(v -> {
             showAlertDialogForAddingSum(currentBalance);
@@ -123,12 +126,28 @@ public class MainFragment extends Fragment {
         });
     }
 
-    private void updateTotalSum() {
-        double totalExpenses = currentBalance;
-        for (ShowFinances item : financeList) {
-            totalExpenses -= item.getSum();
-        }
-        sumTextView.setText(String.valueOf(totalExpenses));
+    private void setSumTextView(double sum) {
+        sumTextView.setText(String.valueOf(sum));
+        amountViewModel.insert(new TotalAmount(sum));
+    }
+
+    private void getSumFromRoom() {
+        amountViewModel.getLastAmount().observe(getViewLifecycleOwner(), new Observer<Double>() {
+            @Override
+            public void onChanged(@Nullable Double lastAmount) {
+                if (lastAmount == null) {
+                    currentBalance = 0.0;
+                } else {
+                    currentBalance = lastAmount;
+                    setSumTextView(currentBalance);
+                }
+            }
+        });
+    }
+
+    private void updateTotalSum(double totalExpenses) {
+        double Totalsum = currentBalance - totalExpenses;
+        setSumTextView(Totalsum);
     }
 
     private void showAlertDialogForAddingSum(double initialSum) {
@@ -156,9 +175,7 @@ public class MainFragment extends Fragment {
                 if (!sumText.isEmpty()) {
                     try {
                         double newSum = Double.parseDouble(sumText);
-                        currentBalance = newSum;
-                        sumTextView.setText(String.valueOf(currentBalance));
-                        updateTotalSum();
+                        setSumTextView(newSum);
                         dialogInterface.dismiss();
                     } catch (NumberFormatException e) {
                         Toast.makeText(requireContext(), "Введите корректное числовое значение", Toast.LENGTH_SHORT).show();
@@ -186,7 +203,7 @@ public class MainFragment extends Fragment {
         dialog.show();
     }
 
-    private void addFinanceEntryIfReady(AmountViewModel amountViewModel, FinanceViewModel finViewModel) {
+    private void getFinanceList() {
         //      repo.deleteAll();        На всякий если удалить нужно
 
         finViewModel.getAllFinances().observe(getViewLifecycleOwner(), new Observer<List<Finances>>() {
@@ -203,7 +220,6 @@ public class MainFragment extends Fragment {
 
                 financeAdapter.setItems(financeList);
                 financeAdapter.notifyDataSetChanged();
-                updateTotalSum();
                 Log.d("Main Fragment", "Список после обновления: " + financeList.size() + " элементов.");
             }
         });

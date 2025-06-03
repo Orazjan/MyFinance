@@ -21,14 +21,18 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.myfinance.Models.AmountViewModel;
 import com.example.myfinance.Models.CategoryViewModel;
 import com.example.myfinance.R;
+import com.example.myfinance.data.AmountDatabase;
+import com.example.myfinance.data.AmountRepository;
 import com.example.myfinance.data.Categories;
 import com.example.myfinance.data.CategoryDataBase;
 import com.example.myfinance.data.CategoryRepository;
 import com.example.myfinance.data.FinanceDatabase;
 import com.example.myfinance.data.FinanceRepository;
 import com.example.myfinance.data.Finances;
+import com.example.myfinance.data.TotalAmount;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -181,19 +185,34 @@ public class AddingNewFinance extends Fragment {
             reasonEditText.setText("");
             addingToDb(reason, sum);
 
-            getParentFragmentManager().popBackStack();
+            popBackAndPassData(sum);
         } catch (NumberFormatException e) {
             sumInputLayout.setError("Неверный формат суммы");
             Log.e("AddingNewFinance", "NumberFormatException: " + e.getMessage());
         }
     }
 
+    private void popBackAndPassData(double sum) {
+        Bundle result = new Bundle();
+        result.putDouble("ValueSum", sum);
+
+        getParentFragmentManager().setFragmentResult("ValueSum", result);
+
+        getParentFragmentManager().popBackStack();
+    }
+
     private void addingToDb(String reason, double sum) {
         FinanceDatabase database = FinanceDatabase.getDatabase(requireActivity().getApplication());
         FinanceRepository repository = new FinanceRepository(database.daoFinances());
+        AmountDatabase amdb = AmountDatabase.getDatabase(requireActivity().getApplication());
+        AmountRepository amrepo = new AmountRepository(amdb.daoTotalAmount());
+        AmountViewModel.TaskViewModelFactory amViewModelTaskFactory = new AmountViewModel.TaskViewModelFactory(amrepo);
+        AmountViewModel amountViewModel = new ViewModelProvider(requireActivity(), amViewModelTaskFactory).get(AmountViewModel.class);
+
+        amountViewModel.update(new TotalAmount(sum));
 
         repository.insert(new Finances(reason, sum));
-        Toast.makeText(requireContext(), "Данные добавлены в ROOM!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(requireContext(), "Данные добавлены!", Toast.LENGTH_SHORT).show();
         Log.d("Adding to ROOM", "Sum and reason " + reason + " " + sum);
     }
 
