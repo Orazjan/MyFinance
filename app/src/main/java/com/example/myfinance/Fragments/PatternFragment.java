@@ -201,9 +201,8 @@ public class PatternFragment extends Fragment {
                 }
             }
             categoryViewModel.updateCategorySumByName(categoryName, newSum);
-            dialogInterface.dismiss();
+            dialogInterface.dismiss(); // Dismiss the dialog only after successful update
         });
-
 
         builder.setNegativeButton("Удалить", (dialogInterface, i) -> {
             categoryViewModel.delete(new Categories(categoryName, currentSum));

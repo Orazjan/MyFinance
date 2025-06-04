@@ -192,10 +192,16 @@ public class AddingNewFinance extends Fragment {
             categoryViewModel.getSumForCategory(reason).observe(getViewLifecycleOwner(), new Observer<Double>() {
                 @Override
                 public void onChanged(Double sum) {
-                    if (sum != null)
+                    if (sum != null) {
                         sumEditText.setText(String.valueOf(sum));
-                    else
+                        if (sum == 0.0) {
+                            sumEditText.setText("");
+                            focusAndOpenKeyboard(sumEditText);
+                        }
+                    } else {
+                        sumEditText.setText("");
                         focusAndOpenKeyboard(sumEditText);
+                    }
                 }
             });
         } else {
