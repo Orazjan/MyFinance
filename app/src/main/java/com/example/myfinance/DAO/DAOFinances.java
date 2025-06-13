@@ -10,6 +10,7 @@ import androidx.room.Update;
 
 import com.example.myfinance.data.Finances;
 
+import java.util.Date;
 import java.util.List;
 
 @Dao
@@ -37,5 +38,8 @@ public interface DAOFinances {
 
     @Query("SELECT comments FROM Finances")
     LiveData<List<String>> getComments();
+
+    @Query("SELECT date FROM finances WHERE id = :id")
+    LiveData<List<Date>> getDateById(int id);
 
 }

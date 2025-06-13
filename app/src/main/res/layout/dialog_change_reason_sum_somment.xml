@@ -29,4 +29,13 @@
         android:paddingEnd="5sp"
         android:inputType="textCapSentences" />
 
+    <EditText
+        android:id="@+id/date_edit_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:inputType="datetime"
+        android:paddingStart="5sp"
+        android:paddingEnd="5sp" />
+
 </LinearLayout>

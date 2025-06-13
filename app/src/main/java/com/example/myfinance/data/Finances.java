@@ -19,27 +19,18 @@ public class Finances {
     @ColumnInfo(name = "comments")
     private String comments;
 
-//
-//    @ColumnInfo(name = "Date")
-//    private String date;
+    @ColumnInfo(name = "date")
+    private String date;
 
     public Finances() {
     }
 
-    public Finances(String financeResult, double summa, String comments) {
-//        this.date = date;
+    public Finances(String financeResult, double summa, String comments, String date) {
+        this.date = date;
         this.FinanceResult = financeResult;
         this.summa = summa;
         this.comments = comments;
     }
-
-//    public String getDate() {
-//        return date;
-//    }
-//
-//    public void setDate(String date) {
-//        this.date = date;
-//    }
 
     public String getFinanceResult() {
         return FinanceResult;
@@ -73,13 +64,17 @@ public class Finances {
         this.comments = comments;
     }
 
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
     @NonNull
     @Override
     public String toString() {
-        return "Finances{" +
-                ", FinanceResult='" + FinanceResult + '\'' +
-                ", id=" + id +
-                ", summa=" + summa +
-                '}';
+        return "Finances{" + "comments='" + comments + '\'' + ", id=" + id + ", FinanceResult='" + FinanceResult + '\'' + ", summa=" + summa + ", date=" + date + '}';
     }
 }

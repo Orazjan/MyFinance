@@ -7,15 +7,18 @@ public class ShowFinances {
     private double sum;
     private String name;
     private String comments;
+    private String date;
 
     public ShowFinances() {
     }
 
-    public ShowFinances(int id, double sum, String name, String comments) {
+    public ShowFinances(int id, double sum, String name, String comments, String date) {
         this.id = id;
         this.sum = sum;
         this.name = name;
         this.comments = comments;
+        this.date = date;
+
     }
 
     public int getId() {
@@ -36,6 +39,14 @@ public class ShowFinances {
 
     public void setComments(String comments) {
         this.comments = comments;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
     }
 
     @NonNull

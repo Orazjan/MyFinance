@@ -22,6 +22,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.myfinance.Models.CategoryViewModel;
+import com.example.myfinance.Prevalent.DateFormatter;
 import com.example.myfinance.R;
 import com.example.myfinance.data.Categories;
 import com.example.myfinance.data.CategoryDataBase;
@@ -32,10 +33,9 @@ import com.example.myfinance.data.Finances;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 public class AddingNewFinance extends Fragment {
@@ -95,6 +95,9 @@ public class AddingNewFinance extends Fragment {
         });
     }
 
+    /**
+     * Загрузка и отображение всех категорий из базы данных.
+     */
     private void loadAndDisplay() {
         categoryViewModel.getAllCategories().observe(getViewLifecycleOwner(), new Observer<List<Categories>>() {
             @Override
@@ -121,6 +124,9 @@ public class AddingNewFinance extends Fragment {
         });
     }
 
+    /**
+     * Проверка полей ввода и добавление данных в базу данных.
+     */
     private void checkFields() {
         String sumStr = Objects.requireNonNull(sumEditText.getText()).toString().trim();
         String reason = Objects.requireNonNull(reasonEditText.getText()).toString().trim();
@@ -161,6 +167,11 @@ public class AddingNewFinance extends Fragment {
         }
     }
 
+    /**
+     * Возвращает данные в родительский фрагмент.
+     *
+     * @param sum
+     */
     private void popBackAndPassData(double sum) {
         Bundle result = new Bundle();
         result.putDouble("ValueSum", sum);
@@ -169,15 +180,27 @@ public class AddingNewFinance extends Fragment {
         getParentFragmentManager().popBackStack();
     }
 
+    /**
+     * Добавление данных в базу данных.
+     *
+     * @param reason
+     * @param sum
+     * @param comments
+     */
     private void addingToDb(String reason, double sum, String comments) {
         FinanceDatabase database = FinanceDatabase.getDatabase(requireActivity().getApplication());
         FinanceRepository repository = new FinanceRepository(database.daoFinances());
 
-        repository.insert(new Finances(reason, sum, comments));
+        repository.insert(new Finances(reason, sum, comments, getCurrentDate()));
         Toast.makeText(requireContext(), "Данные добавлены!", Toast.LENGTH_SHORT).show();
         Log.d("Adding to ROOM", "Sum and reason " + reason + " " + sum);
     }
 
+    /**
+     * Определение фокуса на поле ввода и открытие клавиатуры.
+     *
+     * @param textView
+     */
     private void focusAndOpenKeyboard(TextView textView) {
         textView.requestFocus();
         new Handler().postDelayed(() -> {
@@ -188,6 +211,11 @@ public class AddingNewFinance extends Fragment {
         }, 100);
     }
 
+    /**
+     * Устанавливает значение суммы и причины в текстовых полях,
+     *
+     * @param reason
+     */
     private void setToReasonAndSum(String reason) {
         if (reason != null) {
             categoryViewModel.getSumForCategory(reason).observe(getViewLifecycleOwner(), new Observer<Double>() {
@@ -213,10 +241,13 @@ public class AddingNewFinance extends Fragment {
         }
     }
 
-    public static String getCurrentDate() {
-        SimpleDateFormat timeFormat = new SimpleDateFormat("HH.mm.ss", Locale.getDefault());
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM", Locale.getDefault());
+    /**
+     * Возвращает текущую дату в формате "dd.MM.yyyy".
+     *
+     * @return
+     */
+    public String getCurrentDate() {
 
-        return dateFormat + " " + timeFormat;
+        return DateFormatter.formatDate(new Date());
     }
 }

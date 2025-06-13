@@ -62,6 +62,10 @@ public class VersionInfoFragment extends Fragment {
     private void setupVersionData() {
         versionDescriptions = new LinkedHashMap<>();
 
+        versionDescriptions.put("V 0.7", "V 0.7\n" +
+                "\nДобавлено: \n-Время добавления записи в список\n" +
+                "\n-Исправлено:\n-Выход из приложение когда несколько раз перезаходишь в шаблоны");
+
         versionDescriptions.put("V 0.6", "V 0.6\n" +
                 "Исправлено: \n-Фикс багов.\n" +
                 "-Страница настройки\n-Работа над темой\n" +

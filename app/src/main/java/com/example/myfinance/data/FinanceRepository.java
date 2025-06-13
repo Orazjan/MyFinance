@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData;
 
 import com.example.myfinance.DAO.DAOFinances;
 
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -51,5 +52,7 @@ public class FinanceRepository {
         return daoFinances.getFinanceCount();
     }
 
-
+    public LiveData<List<Date>> getDateById(int id) {
+        return daoFinances.getDateById(id);
+    }
 }

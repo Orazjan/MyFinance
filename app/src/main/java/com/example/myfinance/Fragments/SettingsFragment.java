@@ -40,9 +40,8 @@ public class SettingsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-
         appSettingsManager = new AddSettingToDataStoreManager(requireContext());
-        requireActivity().getOnBackPressedDispatcher().addCallback(requireActivity(), callback);
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), callback);
 
         initUI(view);
         setupSpinnerData();
@@ -51,11 +50,15 @@ public class SettingsFragment extends Fragment {
         setupSpinnerListeners();
     }
 
+    /**
+     * Обработчик события нажатия кнопки "Назад"
+     */
     OnBackPressedCallback callback = new OnBackPressedCallback(true) {
         @Override
         public void handleOnBackPressed() {
-            applySavedTheme(appSettingsManager.getTheme());
             requireActivity().getSupportFragmentManager().popBackStack();
+
+            this.setEnabled(false);
         }
     };
 
@@ -172,6 +175,8 @@ public class SettingsFragment extends Fragment {
                 }
 
                 appSettingsManager.saveTheme(themeKeyToSave);
+
+                applySavedTheme(themeKeyToSave);
             }
 
             @Override

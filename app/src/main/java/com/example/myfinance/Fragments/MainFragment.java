@@ -27,6 +27,7 @@ import com.example.myfinance.MainActivity;
 import com.example.myfinance.Models.AmountViewModel;
 import com.example.myfinance.Models.FinanceViewModel;
 import com.example.myfinance.Models.ShowFinances;
+import com.example.myfinance.Prevalent.DateFormatter;
 import com.example.myfinance.R;
 import com.example.myfinance.data.AmountDatabase;
 import com.example.myfinance.data.AmountRepository;
@@ -38,6 +39,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -95,7 +97,6 @@ public class MainFragment extends Fragment {
                 double sum = bundle.getDouble("ValueSum");
 
                 updateTotalSum(sum);
-                Toast.makeText(requireContext(), "Данные получены: " + sum, Toast.LENGTH_SHORT).show();
             }
         });
         getSumFromRoom();
@@ -131,6 +132,11 @@ public class MainFragment extends Fragment {
         });
     }
 
+    /**
+     * Отображение диалогового окна для изменения данных.
+     *
+     * @param clickedItem
+     */
     private void showDialogForChangingData(ShowFinances clickedItem) {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
@@ -139,10 +145,12 @@ public class MainFragment extends Fragment {
         TextView categoryChangeEditText = view.findViewById(R.id.category_edit_text);
         EditText sumChangeEditText = view.findViewById(R.id.sum_edit_text);
         EditText commentsChangeEditText = view.findViewById(R.id.comments_edit_text);
+        EditText dateChangeEditText = view.findViewById(R.id.date_edit_text);
 
         categoryChangeEditText.setText(clickedItem.getName());
         sumChangeEditText.setText(String.valueOf(clickedItem.getSum()));
         commentsChangeEditText.setText(clickedItem.getComments());
+        dateChangeEditText.setText(clickedItem.getDate());
         sumChangeEditText.setSelection(sumChangeEditText.getText().length());
 
         builder.setView(view);
@@ -152,6 +160,7 @@ public class MainFragment extends Fragment {
             String newCategory = categoryChangeEditText.getText().toString().trim();
             String sumText = sumChangeEditText.getText().toString().trim();
             String newComments = commentsChangeEditText.getText().toString().trim();
+            String date = getCurrentDate();
 
             if (sumText.isEmpty()) {
                 Toast.makeText(requireContext(), "Введите сумму", Toast.LENGTH_SHORT).show();
@@ -176,7 +185,7 @@ public class MainFragment extends Fragment {
             double newBalance = currentBalance - sumDifference;
             setSumTextView(newBalance);
 
-            Finances updatedFinance = new Finances(newCategory, newSum, newComments);
+            Finances updatedFinance = new Finances(newCategory, newSum, newComments, date);
             updatedFinance.setId(clickedItem.getId());
             finViewModel.update(updatedFinance);
 
@@ -186,7 +195,7 @@ public class MainFragment extends Fragment {
         });
 
         builder.setNegativeButton("Удалить", (dialogInterface, i) -> {
-            Finances financeToDelete = new Finances(clickedItem.getName(), clickedItem.getSum(), clickedItem.getComments());
+            Finances financeToDelete = new Finances(clickedItem.getName(), clickedItem.getSum(), clickedItem.getComments(), clickedItem.getDate());
             financeToDelete.setId(clickedItem.getId());
 
             finViewModel.delete(financeToDelete);
@@ -204,12 +213,20 @@ public class MainFragment extends Fragment {
         dialog.show();
     }
 
+    /**
+     * Устанавливает значение суммы в TextView.
+     *
+     * @param sum
+     */
     private void setSumTextView(double sum) {
         currentBalance = sum;
         sumTextView.setText(String.valueOf(sum));
         amountViewModel.insert(new TotalAmount(sum));
     }
 
+    /**
+     * Получение суммы из базы данных.
+     */
     private void getSumFromRoom() {
         amountViewModel.getLastAmount().observe(getViewLifecycleOwner(), new Observer<Double>() {
             @Override
@@ -225,11 +242,21 @@ public class MainFragment extends Fragment {
         });
     }
 
+    /**
+     * Обновление суммы на экране.
+     *
+     * @param expenseAmount
+     */
     private void updateTotalSum(double expenseAmount) {
         double newBalance = currentBalance - expenseAmount;
         setSumTextView(newBalance);
     }
 
+    /**
+     * Отображение диалогового окна для изменения суммы.
+     *
+     * @param initialSum
+     */
     private void showAlertDialogForAddingSum(double initialSum) {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
@@ -285,6 +312,9 @@ public class MainFragment extends Fragment {
         dialog.show();
     }
 
+    /**
+     * Получение списка транзакций из базы данных.
+     */
     private void getFinanceList() {
         //      repo.deleteAll();        На всякий если удалить нужно
 
@@ -295,17 +325,25 @@ public class MainFragment extends Fragment {
 
                 if (finances != null) {
                     for (Finances finance : finances) {
-                        financeList.add(new ShowFinances(finance.getId(), finance.getSumma(), finance.getFinanceResult(), finance.getComments()));
+                        financeList.add(new ShowFinances(finance.getId(), finance.getSumma(), finance.getFinanceResult(), finance.getComments(), finance.getDate()));
                     }
                 }
                 Collections.reverse(financeList);
 
                 financeAdapter.setItems(financeList);
                 financeAdapter.notifyDataSetChanged();
-                Log.d("Main Fragment", "Список после обновления: " + financeList.size() + " элементов.");
             }
         });
 
         amountViewModel.update(new TotalAmount(currentBalance));
+    }
+
+    /**
+     * Возвращает текущую дату в формате "dd.MM.yyyy".
+     *
+     * @return
+     */
+    public String getCurrentDate() {
+        return DateFormatter.formatDate(new Date());
     }
 }
