@@ -35,4 +35,7 @@ public interface DAOFinances {
     @Query("SELECT COUNT(*) FROM Finances")
     int getFinanceCount();
 
+    @Query("SELECT comments FROM Finances")
+    LiveData<List<String>> getComments();
+
 }

@@ -8,7 +8,9 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <color name="background_color">#FFFFFFFF</color>
+    <color name="colorForbbtn">#5349EB</color>
+
+    <color name="background_color">#E0F7FA</color>
     <color name="text_color">#FF000000</color>
     <color name="secondary_text_color">#8A000000</color>
     <color name="primary_button_background">#FF6200EE</color>
@@ -16,5 +18,5 @@
     <color name="appbar_background">#FF6200EE</color>
     <color name="appbar_text">#FFFFFFFF</color>
     <color name="card_background">#FFFFFFFF</color>
-    <color name="divider_color">#1F000000</color>
+    <color name="divider_color">#5349EB</color>
 </resources>

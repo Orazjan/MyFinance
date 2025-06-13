@@ -12,6 +12,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -20,6 +21,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.myfinance.Adapters.PagerAdapter;
+import com.example.myfinance.Prevalent.AddSettingToDataStoreManager;
 import com.example.myfinance.Prevalent.StatusBarColorHelper;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -37,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int ANALIZ_FRAGMENT_POSITION = 0;
     private static final int MAIN_FRAGMENT_POSITION = 1;
     private static final int PROFILE_FRAGMENT_POSITION = 2;
+    private AddSettingToDataStoreManager appSettingsManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
         StatusBarColorHelper.setStatusBarColorFromPrimaryVariant(this);
+        appSettingsManager = new AddSettingToDataStoreManager(getApplicationContext());
+        applySavedTheme(appSettingsManager.getTheme());
 
         progressBar = findViewById(R.id.progressBar);
         viewPager = findViewById(R.id.viewPager);
@@ -123,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
             if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
 
                 if (fragmentContainer != null) {
-                    fragmentContainer.setVisibility(View.GONE); // Скрываем контейнер вторичных фрагментов
+                    fragmentContainer.setVisibility(View.GONE);
                     Log.d("VisibilityDebug", "BackStack empty. fragmentContainer GONE.");
                 }
 
@@ -193,6 +198,25 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
         Log.d("FragmentTransaction", "Secondary fragment " + fragment.getClass().getSimpleName() + " committed.");
     }
+
+    private void applySavedTheme(String themeKey) {
+        switch (themeKey) {
+            case "light":
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                Log.d("ThemeApply", "Applying Light Theme.");
+                break;
+            case "dark":
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                Log.d("ThemeApply", "Applying Dark Theme.");
+                break;
+            case "system_default":
+            default:
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                Log.d("ThemeApply", "Applying System Default Theme.");
+                break;
+        }
+    }
+
 
     public void showProgressBar(boolean check) {
         if (progressBar != null) {

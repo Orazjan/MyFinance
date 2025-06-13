@@ -15,7 +15,7 @@ public class StatusBarColorHelper {
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
 
         TypedValue typedValue = new TypedValue();
-        activity.getTheme().resolveAttribute(com.google.android.material.R.attr.colorPrimaryVariant, typedValue, true);
+        activity.getTheme().resolveAttribute(com.google.android.material.R.attr.backgroundColor, typedValue, true);
         int colorPrimaryVariant = typedValue.data;
 
         window.setStatusBarColor(colorPrimaryVariant);

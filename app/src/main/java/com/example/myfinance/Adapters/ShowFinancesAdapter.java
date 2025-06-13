@@ -1,7 +1,7 @@
 package com.example.myfinance.Adapters;
 
 import android.content.Context;
-import android.util.Log; // Импорт для логирования
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -87,10 +87,8 @@ public class ShowFinancesAdapter extends BaseAdapter {
 
         ShowFinances item = (ShowFinances) getItem(position);
 
-        // Логирование данных перед установкой в TextView
         Log.d(TAG, "Item at position " + position + ": ID=" + item.getId() + ", Sum=" + item.getSum() + ", Name=" + item.getName());
 
-        // Установка текста. Добавлена проверка на null, чтобы избежать NullPointerException
         if (holder.textViewId != null) {
             holder.textViewId.setText(String.valueOf(item.getId()));
         } else {
@@ -108,8 +106,6 @@ public class ShowFinancesAdapter extends BaseAdapter {
         } else {
             Log.e(TAG, "textViewName is null for position " + position);
         }
-
-
         return convertView;
     }
 

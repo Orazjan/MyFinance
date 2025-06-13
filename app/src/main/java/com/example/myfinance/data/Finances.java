@@ -16,6 +16,9 @@ public class Finances {
     @ColumnInfo(name = "suma")
     private double summa;
 
+    @ColumnInfo(name = "comments")
+    private String comments;
+
 //
 //    @ColumnInfo(name = "Date")
 //    private String date;
@@ -23,10 +26,11 @@ public class Finances {
     public Finances() {
     }
 
-    public Finances(String financeResult, double summa) {
+    public Finances(String financeResult, double summa, String comments) {
 //        this.date = date;
-        FinanceResult = financeResult;
+        this.FinanceResult = financeResult;
         this.summa = summa;
+        this.comments = comments;
     }
 
 //    public String getDate() {
@@ -59,6 +63,14 @@ public class Finances {
 
     public void setSumma(double summa) {
         this.summa = summa;
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
     }
 
     @NonNull

@@ -31,6 +31,10 @@ public class FinanceRepository {
         databaseWriteExeutor.execute(() -> daoFinances.delete(finances));
     }
 
+    public LiveData<List<String>> getComments() {
+        return daoFinances.getComments();
+    }
+
     public void deleteAll() {
         databaseWriteExeutor.execute(daoFinances::deleteAll);
     }

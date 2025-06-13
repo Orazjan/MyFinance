@@ -39,6 +39,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class MainFragment extends Fragment {
 
@@ -115,13 +116,96 @@ public class MainFragment extends Fragment {
                 Toast.makeText(getContext(), "Ошибка: Не удалось открыть окно добавления.", Toast.LENGTH_SHORT).show();
             }
         });
+        mainCheck.setOnItemLongClickListener((parent, v, position, id) -> {
+            ShowFinances clickedItem = (ShowFinances) parent.getItemAtPosition(position);
+            showDialogForChangingData(clickedItem);
+            return true;
+        });
+
         mainCheck.setOnItemClickListener((parent, v, position, id) -> {
             ShowFinances clickedItem = (ShowFinances) parent.getItemAtPosition(position);
-            Toast.makeText(requireContext(), "Запись добавлена: " + clickedItem.getSum(), Toast.LENGTH_SHORT).show();
+            if (Objects.equals(clickedItem.getComments(), "")) {
+                Toast.makeText(requireContext(), "Запись не имеет комментариев", Toast.LENGTH_SHORT).show();
+            } else
+                Toast.makeText(requireContext(), clickedItem.getComments(), Toast.LENGTH_SHORT).show();
         });
     }
 
+    private void showDialogForChangingData(ShowFinances clickedItem) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
+        LayoutInflater inflater = requireActivity().getLayoutInflater();
+
+        View view = inflater.inflate(R.layout.dialog_change_reason_sum_somment, null);
+        TextView categoryChangeEditText = view.findViewById(R.id.category_edit_text);
+        EditText sumChangeEditText = view.findViewById(R.id.sum_edit_text);
+        EditText commentsChangeEditText = view.findViewById(R.id.comments_edit_text);
+
+        categoryChangeEditText.setText(clickedItem.getName());
+        sumChangeEditText.setText(String.valueOf(clickedItem.getSum()));
+        commentsChangeEditText.setText(clickedItem.getComments());
+        sumChangeEditText.setSelection(sumChangeEditText.getText().length());
+
+        builder.setView(view);
+        builder.setTitle("Редактирование");
+
+        builder.setPositiveButton("Изменить", (dialogInterface, i) -> {
+            String newCategory = categoryChangeEditText.getText().toString().trim();
+            String sumText = sumChangeEditText.getText().toString().trim();
+            String newComments = commentsChangeEditText.getText().toString().trim();
+
+            if (sumText.isEmpty()) {
+                Toast.makeText(requireContext(), "Введите сумму", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            double newSum;
+            try {
+                newSum = Double.parseDouble(sumText);
+            } catch (NumberFormatException e) {
+                Toast.makeText(requireContext(), "Некорректная сумма", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (newSum == 0.0) {
+                Toast.makeText(requireContext(), "Сумма не может быть нулевой", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            double sumDifference = newSum - clickedItem.getSum();
+
+            double newBalance = currentBalance - sumDifference;
+            setSumTextView(newBalance);
+
+            Finances updatedFinance = new Finances(newCategory, newSum, newComments);
+            updatedFinance.setId(clickedItem.getId());
+            finViewModel.update(updatedFinance);
+
+            Toast.makeText(requireContext(), "Запись обновлена", Toast.LENGTH_SHORT).show();
+            getFinanceList();
+            dialogInterface.dismiss();
+        });
+
+        builder.setNegativeButton("Удалить", (dialogInterface, i) -> {
+            Finances financeToDelete = new Finances(clickedItem.getName(), clickedItem.getSum(), clickedItem.getComments());
+            financeToDelete.setId(clickedItem.getId());
+
+            finViewModel.delete(financeToDelete);
+
+            double newBalance = currentBalance + clickedItem.getSum();
+            setSumTextView(newBalance);
+
+            Toast.makeText(requireContext(), "Запись удалена", Toast.LENGTH_SHORT).show();
+            getFinanceList();
+            dialogInterface.dismiss();
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
+    }
+
     private void setSumTextView(double sum) {
+        currentBalance = sum;
         sumTextView.setText(String.valueOf(sum));
         amountViewModel.insert(new TotalAmount(sum));
     }
@@ -132,17 +216,18 @@ public class MainFragment extends Fragment {
             public void onChanged(@Nullable Double lastAmount) {
                 if (lastAmount == null) {
                     currentBalance = 0.0;
+                    sumTextView.setText("0.0");
                 } else {
                     currentBalance = lastAmount;
-                    setSumTextView(currentBalance);
+                    sumTextView.setText(String.valueOf(currentBalance));
                 }
             }
         });
     }
 
-    private void updateTotalSum(double totalExpenses) {
-        double Totalsum = currentBalance - totalExpenses;
-        setSumTextView(Totalsum);
+    private void updateTotalSum(double expenseAmount) {
+        double newBalance = currentBalance - expenseAmount;
+        setSumTextView(newBalance);
     }
 
     private void showAlertDialogForAddingSum(double initialSum) {
@@ -210,7 +295,7 @@ public class MainFragment extends Fragment {
 
                 if (finances != null) {
                     for (Finances finance : finances) {
-                        financeList.add(new ShowFinances(finance.getId(), finance.getSumma(), finance.getFinanceResult()));
+                        financeList.add(new ShowFinances(finance.getId(), finance.getSumma(), finance.getFinanceResult(), finance.getComments()));
                     }
                 }
                 Collections.reverse(financeList);

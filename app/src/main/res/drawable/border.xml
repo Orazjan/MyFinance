@@ -2,12 +2,14 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <solid android:color="#FFFFFF" />
     <stroke
-        android:width="2dp"
+        android:width="1dp"
         android:color="?attr/colorPrimary" />
+    <!--тут цвет бэкграунда-->
     <corners android:radius="8dp" />
     <padding
-        android:bottom="10dp"
+        android:bottom="5dp"
         android:left="10dp"
         android:right="10dp"
-        android:top="10dp" />
+        android:top="5dp" />
+    <!--   тут цвет границы-->
 </shape>

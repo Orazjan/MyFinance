@@ -41,8 +41,8 @@ import java.util.Objects;
 public class AddingNewFinance extends Fragment {
     private Spinner standart_variant;
     private Button btnAdd;
-    private TextInputEditText sumEditText, reasonEditText;
-    private TextInputLayout sumInputLayout, reasonInputLayout;
+    private TextInputEditText sumEditText, reasonEditText, commentsEditText;
+    private TextInputLayout sumInputLayout, reasonInputLayout, commentsInputLayout;
     private String selectedCategory;
     private CategoryViewModel categoryViewModel;
     private ArrayAdapter<String> categorySpinnerAdapter;
@@ -66,6 +66,8 @@ public class AddingNewFinance extends Fragment {
         reasonEditText = view.findViewById(R.id.reasonEditText);
         sumInputLayout = view.findViewById(R.id.sumInputLayout);
         reasonInputLayout = view.findViewById(R.id.reasonInputLayout);
+        commentsEditText = view.findViewById(R.id.commentsEditText);
+        commentsInputLayout = view.findViewById(R.id.commentsInputLayout);
         database = CategoryDataBase.getDatabase(requireActivity().getApplication());
         repository = new CategoryRepository(database.daoCategories());
 //        repository.deleteAll();   На всякий случай (удаляет всё)
@@ -94,7 +96,6 @@ public class AddingNewFinance extends Fragment {
     }
 
     private void loadAndDisplay() {
-
         categoryViewModel.getAllCategories().observe(getViewLifecycleOwner(), new Observer<List<Categories>>() {
             @Override
             public void onChanged(List<Categories> categories) {
@@ -123,6 +124,7 @@ public class AddingNewFinance extends Fragment {
     private void checkFields() {
         String sumStr = Objects.requireNonNull(sumEditText.getText()).toString().trim();
         String reason = Objects.requireNonNull(reasonEditText.getText()).toString().trim();
+        String comments = Objects.requireNonNull(commentsEditText.getText()).toString().trim();
 //        String data = getCurrentDate() + " " + getCurrentTime();
 
         if (sumStr.isEmpty()) {
@@ -146,11 +148,11 @@ public class AddingNewFinance extends Fragment {
 
         try {
             double sum = Double.parseDouble(sumStr);
-            Toast.makeText(getContext(), "Данные добавлены!", Toast.LENGTH_SHORT).show();
 
             sumEditText.setText("");
             reasonEditText.setText("");
-            addingToDb(reason, sum);
+            commentsEditText.setText("");
+            addingToDb(reason, sum, comments);
 
             popBackAndPassData(sum);
         } catch (NumberFormatException e) {
@@ -167,11 +169,11 @@ public class AddingNewFinance extends Fragment {
         getParentFragmentManager().popBackStack();
     }
 
-    private void addingToDb(String reason, double sum) {
+    private void addingToDb(String reason, double sum, String comments) {
         FinanceDatabase database = FinanceDatabase.getDatabase(requireActivity().getApplication());
         FinanceRepository repository = new FinanceRepository(database.daoFinances());
 
-        repository.insert(new Finances(reason, sum));
+        repository.insert(new Finances(reason, sum, comments));
         Toast.makeText(requireContext(), "Данные добавлены!", Toast.LENGTH_SHORT).show();
         Log.d("Adding to ROOM", "Sum and reason " + reason + " " + sum);
     }
@@ -188,11 +190,11 @@ public class AddingNewFinance extends Fragment {
 
     private void setToReasonAndSum(String reason) {
         if (reason != null) {
-            reasonEditText.setText(selectedCategory);
             categoryViewModel.getSumForCategory(reason).observe(getViewLifecycleOwner(), new Observer<Double>() {
                 @Override
                 public void onChanged(Double sum) {
                     if (sum != null) {
+                        reasonEditText.setText(selectedCategory);
                         sumEditText.setText(String.valueOf(sum));
                         if (sum == 0.0) {
                             sumEditText.setText("");

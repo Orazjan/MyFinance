@@ -1,6 +1,7 @@
 package com.example.myfinance.Fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,8 +9,10 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 
 import com.example.myfinance.Prevalent.AddSettingToDataStoreManager;
@@ -37,7 +40,9 @@ public class SettingsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+
         appSettingsManager = new AddSettingToDataStoreManager(requireContext());
+        requireActivity().getOnBackPressedDispatcher().addCallback(requireActivity(), callback);
 
         initUI(view);
         setupSpinnerData();
@@ -45,6 +50,14 @@ public class SettingsFragment extends Fragment {
         loadSettingsIntoSpinners();
         setupSpinnerListeners();
     }
+
+    OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+        @Override
+        public void handleOnBackPressed() {
+            applySavedTheme(appSettingsManager.getTheme());
+            requireActivity().getSupportFragmentManager().popBackStack();
+        }
+    };
 
     /**
      * Инициализирует все элементы пользовательского интерфейса (UI) фрагмента.
@@ -106,6 +119,28 @@ public class SettingsFragment extends Fragment {
         }
     }
 
+    /**
+     * Применяет сохраненную тему из SharedPreferences
+     *
+     * @param themeKey
+     */
+    private void applySavedTheme(String themeKey) {
+        switch (themeKey) {
+            case "light":
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO); // Принудительно светлая
+                Log.d("ThemeApply", "Applying Light Theme.");
+                break;
+            case "dark":
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES); // Принудительно темная
+                Log.d("ThemeApply", "Applying Dark Theme.");
+                break;
+            case "system_default":
+            default: // По умолчанию или при неизвестном ключе
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM); // Следовать системной настройке
+                Log.d("ThemeApply", "Applying System Default Theme.");
+                break;
+        }
+    }
     /**
      * Устанавливает слушателей выбора элементов для Spinner'ов,
      * чтобы сохранять изменения в настройках.
