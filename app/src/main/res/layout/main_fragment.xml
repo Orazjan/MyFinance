@@ -15,6 +15,7 @@
             android:layout_gravity="center"
             android:layout_marginTop="5sp"
             android:text="Остаток"
+            android:textColor="?attr/colorPrimary"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -77,5 +78,5 @@
         android:layout_marginEnd="25sp"
         android:layout_marginBottom="40dp"
         android:backgroundTint="@color/primary_button_text"
-        android:src="@drawable/pen_night" />
+        android:src="@drawable/pen" />
 </FrameLayout>

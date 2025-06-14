@@ -23,6 +23,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="10sp"
             android:background="@drawable/border"
+            android:padding="7sp"
             android:orientation="horizontal">
 
             <TextView
@@ -30,6 +31,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Валюта"
+                android:paddingStart="5sp"
                 android:textSize="18sp" />
 
             <Spinner
@@ -43,6 +45,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10sp"
+            android:padding="7sp"
             android:background="@drawable/border"
             android:orientation="horizontal">
 
@@ -51,6 +54,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Тема"
+                android:paddingStart="5sp"
                 android:textSize="18sp" />
 
             <Spinner

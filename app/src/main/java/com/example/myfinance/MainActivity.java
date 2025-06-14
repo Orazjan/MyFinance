@@ -123,27 +123,39 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
-
+        /**
+         * Обработчик событий изменения состояния фрагментов.
+         */
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {
             if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
-
                 if (fragmentContainer != null) {
                     fragmentContainer.setVisibility(View.GONE);
-                    Log.d("VisibilityDebug", "BackStack empty. fragmentContainer GONE.");
+                    fragmentContainer.setClickable(false);
+                    fragmentContainer.setFocusable(false);
                 }
-
                 if (viewPager != null) {
                     viewPager.setVisibility(VISIBLE);
-                    Log.d("VisibilityDebug", "BackStack empty. ViewPager2 VISIBLE.");
+                    viewPager.setClickable(true);
+                    viewPager.setFocusable(true);
+                    viewPager.bringToFront();
                 }
             } else {
                 if (viewPager != null) {
                     viewPager.setVisibility(View.GONE);
-                    Log.d("VisibilityDebug", "BackStack not empty. ViewPager2 GONE.");
+                    viewPager.setClickable(false);
+                    viewPager.setFocusable(false);
+
+                }
+                if (fragmentContainer != null) {
+                    fragmentContainer.setVisibility(View.VISIBLE);
+                    fragmentContainer.setClickable(true);
+                    fragmentContainer.setFocusable(true);
                 }
             }
         });
-
+/**
+ * Обработчик события нажатия кнопки "Назад" для выхода из приложения.
+ */
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -178,6 +190,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Отрисовывает встроенные фрагменты в контейнере.
+     *
+     * @param fragment
+     * @param backStackTag
+     */
     public void openSecondaryFragment(Fragment fragment, String backStackTag) {
         if (fragmentContainer == null) {
             Log.e("MainActivity", "fragment_container не найден. Невозможно открыть фрагмент.");
@@ -187,7 +205,6 @@ public class MainActivity extends AppCompatActivity {
 
         if (viewPager != null) {
             viewPager.setVisibility(View.GONE);
-            Log.d("VisibilityDebug", "ViewPager2 hidden for secondary fragment.");
         }
 
         fragmentContainer.setVisibility(VISIBLE);
@@ -199,6 +216,11 @@ public class MainActivity extends AppCompatActivity {
         Log.d("FragmentTransaction", "Secondary fragment " + fragment.getClass().getSimpleName() + " committed.");
     }
 
+    /**
+     * Применяет сохраненную тему из хранилища.
+     *
+     * @param themeKey
+     */
     private void applySavedTheme(String themeKey) {
         switch (themeKey) {
             case "light":
@@ -214,17 +236,6 @@ public class MainActivity extends AppCompatActivity {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
                 Log.d("ThemeApply", "Applying System Default Theme.");
                 break;
-        }
-    }
-
-
-    public void showProgressBar(boolean check) {
-        if (progressBar != null) {
-            if (check) {
-                progressBar.setVisibility(VISIBLE);
-            } else {
-                progressBar.setVisibility(View.GONE);
-            }
         }
     }
 }

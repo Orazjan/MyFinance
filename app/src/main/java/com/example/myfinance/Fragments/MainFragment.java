@@ -61,6 +61,20 @@ public class MainFragment extends Fragment {
         return inflater.inflate(R.layout.main_fragment, container, false);
     }
 
+    /**
+     * Вызывается после создания View.
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mainCheck != null) {
+            mainCheck.post(() -> {
+                mainCheck.requestLayout();
+                mainCheck.invalidate();
+            });
+        }
+    }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -118,18 +132,20 @@ public class MainFragment extends Fragment {
             }
         });
         mainCheck.setOnItemLongClickListener((parent, v, position, id) -> {
+            Log.d("ListViewInteraction", "Long click received on ListView item at position: " + position);
             ShowFinances clickedItem = (ShowFinances) parent.getItemAtPosition(position);
             showDialogForChangingData(clickedItem);
             return true;
         });
-
         mainCheck.setOnItemClickListener((parent, v, position, id) -> {
+            Log.d("ListViewInteraction", "Short click received on ListView item at position: " + position);
             ShowFinances clickedItem = (ShowFinances) parent.getItemAtPosition(position);
             if (Objects.equals(clickedItem.getComments(), "")) {
                 Toast.makeText(requireContext(), "Запись не имеет комментариев", Toast.LENGTH_SHORT).show();
             } else
                 Toast.makeText(requireContext(), clickedItem.getComments(), Toast.LENGTH_SHORT).show();
         });
+
     }
 
     /**
@@ -150,7 +166,7 @@ public class MainFragment extends Fragment {
         categoryChangeEditText.setText(clickedItem.getName());
         sumChangeEditText.setText(String.valueOf(clickedItem.getSum()));
         commentsChangeEditText.setText(clickedItem.getComments());
-        dateChangeEditText.setText(clickedItem.getDate());
+        dateChangeEditText.setHint(clickedItem.getDate());
         sumChangeEditText.setSelection(sumChangeEditText.getText().length());
 
         builder.setView(view);
@@ -332,6 +348,14 @@ public class MainFragment extends Fragment {
 
                 financeAdapter.setItems(financeList);
                 financeAdapter.notifyDataSetChanged();
+                mainCheck.requestLayout();
+                mainCheck.invalidate();
+                Log.d("MainFragmentState", "Finance list updated. ListView in onChanged - Enabled: " + mainCheck.isEnabled() +
+                        ", isShown: " + mainCheck.isShown() +
+                        ", visibility: " + mainCheck.getVisibility() +
+                        ", clickable: " + mainCheck.isClickable() +
+                        ", longClickable: " + mainCheck.isLongClickable() +
+                        ", Adapter item count: " + financeAdapter.getCount());
             }
         });
 
