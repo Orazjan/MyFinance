@@ -16,17 +16,25 @@ import androidx.fragment.app.Fragment;
 
 import com.example.myfinance.MainActivity;
 import com.example.myfinance.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class ProfileFragment extends Fragment {
     private TextView VERSIONOFAPP;
     private Button btnProfileChange, btnPattern, btnSettings, btnSync, btnEsc;
     private int clickCount = 0;
     private static final long RESET_CLICK_COUNT_DELAY = 1000;
+    private FirebaseUser cuurentUser;
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateUserProfileUI();
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
         return inflater.inflate(R.layout.profile_fragment, container, false);
     }
 
@@ -86,12 +94,30 @@ public class ProfileFragment extends Fragment {
             Log.e("ProfileFragment", "Родительская Activity не является MainActivity!");
 
         }
+
         btnSync.setOnClickListener(v -> {
             Toast.makeText(getContext(), "Синхронизация", Toast.LENGTH_SHORT).show();
         });
-        btnEsc.setOnClickListener(v -> {
-            requireActivity().finish();
-        });
 
+        btnEsc.setOnClickListener(v -> {
+            cuurentUser = FirebaseAuth.getInstance().getCurrentUser();
+            if (cuurentUser != null) {
+                FirebaseAuth.getInstance().signOut();
+                updateUserProfileUI();
+                Toast.makeText(getContext(), "Вы вышли из аккаунта", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getContext(), "Эта кнопка для выхода из учётной записи", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    /**
+     * Обновление профиля
+     */
+    private void updateUserProfileUI() {
+        cuurentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (cuurentUser != null) {
+            FirebaseAuth.getInstance().signOut();
+        }
     }
 }

@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "980888994862",
+    "project_id": "newlibrary-2b212",
+    "storage_bucket": "newlibrary-2b212.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:980888994862:android:b86c33ccc814d8e9ba8bbf",
+        "android_client_info": {
+          "package_name": "com.example.myfinance"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "980888994862-h4a506mj2jtm2qvvch2c8p3pal7cqt95.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.myfinance",
+            "certificate_hash": "98d75516bd549643490ef50905792f1f37bdb0ec"
+          }
+        },
+        {
+          "client_id": "980888994862-uk6qg8ihp88321c713idbialsk5r0g8e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTnwHjlVbPDnxMjV8t4ydII7QN_wNHGgs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "980888994862-uk6qg8ihp88321c713idbialsk5r0g8e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
