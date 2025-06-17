@@ -18,6 +18,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.myfinance.Adapters.PagerAdapter;
@@ -28,8 +29,12 @@ import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Главное активити приложения
+ */
 public class MainActivity extends AppCompatActivity {
 
+    private final String TAG = "MainActivity";
     private ViewPager2 viewPager;
     private TabLayout tabLayout;
     private ProgressBar progressBar;
@@ -62,16 +67,17 @@ public class MainActivity extends AppCompatActivity {
         tabLayout = findViewById(R.id.tab_layout);
 
         if (viewPager == null) {
-            Log.e("MainActivity", "Error: ViewPager2 (R.id.viewPager) not found!");
+            Log.e(TAG, "Error: ViewPager2 (R.id.viewPager) not found!");
             Toast.makeText(this, "Application error: ViewPager not found.", Toast.LENGTH_LONG).show();
             finish();
             return;
         }
+
         if (tabLayout == null) {
-            Log.w("MainActivity", "Warning: TabLayout (R.id.tab_layout) not found!");
+            Log.w(TAG, "Warning: TabLayout (R.id.tab_layout) not found!");
         }
+
         if (fragmentContainer == null) {
-            Log.e("MainActivity", "Error: FrameLayout (R.id.fragment_container) not found! Check your XML layout.");
             Toast.makeText(this, "Critical error: Fragment container not found.", Toast.LENGTH_LONG).show();
             finish();
             return;
@@ -103,10 +109,10 @@ public class MainActivity extends AppCompatActivity {
                 public void onTabSelected(TabLayout.Tab tab) {
                     FragmentManager fm = getSupportFragmentManager();
                     if (fm.getBackStackEntryCount() > 0) {
+                        // Если есть открытые вторичные фрагменты, очищаем Back Stack
                         fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                        Log.d("TabSelection", "Closed secondary fragments on tab selection.");
                     }
-                    Log.d("TabSelection", "Selected tab: " + tab.getText() + ", position: " + tab.getPosition());
+                    Log.d(TAG, "Selected tab: " + tab.getText() + ", position: " + tab.getPosition());
                 }
 
                 @Override
@@ -117,17 +123,17 @@ public class MainActivity extends AppCompatActivity {
                 public void onTabReselected(TabLayout.Tab tab) {
                     FragmentManager fm = getSupportFragmentManager();
                     if (fm.getBackStackEntryCount() > 0) {
+                        // При повторном выборе вкладки, если есть вторичные фрагменты, закрываем их
                         fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                        Log.d("TabReselection", "Closed secondary fragments on tab reselection.");
                     }
                 }
             });
         }
-        /**
-         * Обработчик событий изменения состояния фрагментов.
-         */
+
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {
-            if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+            int backStackCount = getSupportFragmentManager().getBackStackEntryCount();
+
+            if (backStackCount == 0) {
                 if (fragmentContainer != null) {
                     fragmentContainer.setVisibility(View.GONE);
                     fragmentContainer.setClickable(false);
@@ -144,7 +150,6 @@ public class MainActivity extends AppCompatActivity {
                     viewPager.setVisibility(View.GONE);
                     viewPager.setClickable(false);
                     viewPager.setFocusable(false);
-
                 }
                 if (fragmentContainer != null) {
                     fragmentContainer.setVisibility(View.VISIBLE);
@@ -153,15 +158,15 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-/**
- * Обработчик события нажатия кнопки "Назад" для выхода из приложения.
- */
+
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
                 FragmentManager fragmentManager = getSupportFragmentManager();
+                Log.d(TAG, "Back button pressed. BackStackEntryCount: " + fragmentManager.getBackStackEntryCount());
 
                 if (fragmentManager.getBackStackEntryCount() > 0) {
+                    // Если есть фрагменты в BackStack, извлекаем их
                     fragmentManager.popBackStack();
                     doubleBackToExitPressedOnce = false;
                     return;
@@ -191,14 +196,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Отрисовывает встроенные фрагменты в контейнере.
+     * Отрисовывает встроенные фрагменты в контейнере, используя show/hide.
      *
-     * @param fragment
-     * @param backStackTag
+     * @param fragment     Фрагмент, который нужно показать.
+     * @param backStackTag Тег для Back Stack.
      */
     public void openSecondaryFragment(Fragment fragment, String backStackTag) {
         if (fragmentContainer == null) {
-            Log.e("MainActivity", "fragment_container не найден. Невозможно открыть фрагмент.");
+            Log.e(TAG, "fragment_container не найден. Невозможно открыть фрагмент.");
             Toast.makeText(this, "Ошибка: Контейнер для фрагментов не найден.", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -206,14 +211,35 @@ public class MainActivity extends AppCompatActivity {
         if (viewPager != null) {
             viewPager.setVisibility(View.GONE);
         }
+        fragmentContainer.setVisibility(View.VISIBLE);
 
-        fragmentContainer.setVisibility(VISIBLE);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        Fragment existingFragment = fragmentManager.findFragmentByTag(backStackTag);
 
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .addToBackStack(backStackTag)
-                .commit();
-        Log.d("FragmentTransaction", "Secondary fragment " + fragment.getClass().getSimpleName() + " committed.");
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+
+        // Скрываем все видимые фрагменты в контейнере, которые не являются целевым фрагментом
+        for (Fragment f : fragmentManager.getFragments()) {
+            if (f != null && f.isVisible() && f.getId() == R.id.fragment_container && !f.equals(existingFragment)) {
+                transaction.hide(f);
+                Log.d(TAG, "Hiding existing fragment: " + f.getClass().getSimpleName());
+            }
+        }
+
+        if (existingFragment == null) {
+            // Если фрагмента нет, добавляем его
+            transaction.add(R.id.fragment_container, fragment, backStackTag);
+            Log.d(TAG, "Adding new secondary fragment: " + fragment.getClass().getSimpleName());
+        } else {
+            // Если фрагмент уже существует, просто показываем его
+            transaction.show(existingFragment);
+            Log.d(TAG, "Showing existing secondary fragment: " + existingFragment.getClass().getSimpleName());
+        }
+
+        // Добавляем транзакцию в Back Stack.
+        transaction.addToBackStack(backStackTag);
+        transaction.commit();
+        Log.d(TAG, "Secondary fragment transaction committed.");
     }
 
     /**

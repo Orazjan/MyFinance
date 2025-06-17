@@ -1,5 +1,6 @@
 package com.example.myfinance.Fragments;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
@@ -27,8 +28,11 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 import com.google.firebase.auth.FirebaseUser;
 
+/**
+ * Фрагмент для входа пользователя в систему.
+ */
 public class LoginFragment extends Fragment {
-    private static final String TAG = "LoginFragment"; // Правильное объявление TAG
+    private static final String TAG = "LoginFragment";
 
     private EditText usernameEditText;
     private EditText passwordEditText;
@@ -74,7 +78,6 @@ public class LoginFragment extends Fragment {
         if (context instanceof OnLoginSuccessListener) {
             loginSuccessListener = (OnLoginSuccessListener) context;
         } else {
-            // Если Activity не реализует OnLoginSuccessListener, это ошибка
             throw new RuntimeException(context.toString() + " must implement OnLoginSuccessListener");
         }
     }
@@ -82,9 +85,7 @@ public class LoginFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Log.d(TAG, "onViewCreated called");
-
-        auth = FirebaseAuth.getInstance(); // Инициализация FirebaseAuth
+        auth = FirebaseAuth.getInstance();
 
         usernameEditText = binding.usernameEditText;
         passwordEditText = binding.passwordEditText;
@@ -97,7 +98,6 @@ public class LoginFragment extends Fragment {
         setupTextWatchers();
 
         loginButton.setOnClickListener(v -> {
-            Log.d(TAG, "Login button clicked.");
             if (isUsernameValid && isPasswordValid) {
                 signInUser(usernameEditText.getText().toString(), passwordEditText.getText().toString());
             } else {
@@ -113,30 +113,27 @@ public class LoginFragment extends Fragment {
      * @param password Пароль пользователя
      */
     private void signInUser(String email, String password) {
-        Log.d(TAG, "Attempting to sign in user: " + email);
         auth.signInWithEmailAndPassword(email, password).addOnCompleteListener(requireActivity(), new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
                     FirebaseUser user = auth.getCurrentUser();
-                    Toast.makeText(getContext(), "Вход выполнен! Добро пожаловать, " + user.getEmail(), Toast.LENGTH_LONG).show();
+                    Log.d(TAG, "SignIn: Пользователь успешно вошел! Email: " + (user != null ? user.getEmail() : "NULL_USER_AFTER_SUCCESS"));
                     if (loginSuccessListener != null) {
-                        loginSuccessListener.onLoginSuccess(); // Вызов коллбэка об успехе входа
+                        loginSuccessListener.onLoginSuccess();
                     }
-                    Log.d(TAG, "Sign-in successful! User: " + user.getEmail());
                 } else {
-                    Log.e(TAG, "Sign-in failed: " + task.getException().getMessage(), task.getException()); // Использовать Log.e для ошибок
-                    String errorMessage = "Ошибка входа.";
+                    Log.e(TAG, "Sign-in failed: " + task.getException().getMessage(), task.getException());
+
+                    String errorMessage = "Произошла неизвестная ошибка при входе.";
                     Exception exception = task.getException();
 
                     if (exception instanceof FirebaseAuthInvalidCredentialsException) {
                         errorMessage = "Неверный Email или пароль.";
                     } else if (exception instanceof FirebaseAuthInvalidUserException) {
                         errorMessage = "Пользователь с таким Email не зарегистрирован.";
-                    } else {
-                        errorMessage = "Произошла неизвестная ошибка при входе.";
                     }
-                    Toast.makeText(getContext(), errorMessage, Toast.LENGTH_LONG).show();
+                    Log.e(TAG, "Sign-in failed: " + errorMessage, exception);
                 }
             }
         });
@@ -184,8 +181,8 @@ public class LoginFragment extends Fragment {
      *
      * @param username Введенный текст email
      */
+    @SuppressLint("SetTextI18n")
     private void validateUsername(String username) {
-        // Убраны неактуальные проверки Build.VERSION.SDK_INT
         if (username.trim().isEmpty()) {
             isUsernameValid = false;
             usernameErrorTextView.setText("Email не может быть пустым");
@@ -233,7 +230,6 @@ public class LoginFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        Log.d(TAG, "onDestroyView called");
         binding = null;
     }
 
@@ -243,7 +239,6 @@ public class LoginFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        Log.d(TAG, "onDetach called");
         loginSuccessListener = null;
     }
 }

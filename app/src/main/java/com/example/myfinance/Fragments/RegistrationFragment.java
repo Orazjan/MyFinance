@@ -1,7 +1,6 @@
 package com.example.myfinance.Fragments;
 
-// import static android.content.ContentValues.TAG; // Удалите эту строку
-
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
@@ -30,8 +29,11 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
 import com.google.firebase.auth.FirebaseUser;
 
+/**
+ * Фрагмент для регистрации пользователя
+ */
 public class RegistrationFragment extends Fragment {
-    private static final String TAG = "RegistrationFragment"; // Правильное объявление TAG
+    private static final String TAG = "RegistrationFragment";
 
     private TextView textViewForLogin;
     private EditText usernameEditText;
@@ -43,14 +45,19 @@ public class RegistrationFragment extends Fragment {
 
     private boolean isUsernameValid = false;
     private boolean isPasswordValid = false;
-    private FirebaseAuth auth; // Объявлено, но не инициализировано
+    private FirebaseAuth auth;
 
-    private OnRegSuccessListener RegSuccessListener; // Тип RegistrationFragment.OnRegSuccessListener не нужен, просто OnRegSuccessListener
+    private OnRegSuccessListener RegSuccessListener;
 
     public RegistrationFragment() {
 
     }
 
+    /**
+     * Вызывается при прикреплении фрагмента к активности
+     *
+     * @param context
+     */
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -64,14 +71,19 @@ public class RegistrationFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        Log.d(TAG, "onCreateView called");
         return inflater.inflate(R.layout.fragment_registration, container, false);
     }
 
+    /**
+     * Этот метод вызывается после создания View фрагмента.
+     *
+     * @param view               The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     *                           from a previous saved state as given here.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Log.d(TAG, "onViewCreated called");
 
         auth = FirebaseAuth.getInstance();
 
@@ -82,16 +94,11 @@ public class RegistrationFragment extends Fragment {
         usernameErrorTextView = view.findViewById(R.id.username_error_text_view);
         passwordErrorTextView = view.findViewById(R.id.password_error_text_view);
 
-        Log.d("RegistrationFragment", "usernameEditText: " + (usernameEditText != null));
-        Log.d("RegistrationFragment", "passwordEditText: " + (passwordEditText != null));
-        Log.d("RegistrationFragment", "regButton: " + (regButton != null));
-
         regButton.setEnabled(false);
 
         setupTextWatchers();
 
         regButton.setOnClickListener(v -> {
-            Log.d(TAG, "Registration button clicked.");
             if (isUsernameValid && isPasswordValid) {
                 String email = usernameEditText.getText().toString();
                 String password = passwordEditText.getText().toString();
@@ -110,11 +117,16 @@ public class RegistrationFragment extends Fragment {
         });
     }
 
+    /**
+     * Интерфейс для коллбэка
+     */
     public interface OnRegSuccessListener {
         void onRegSuccess();
     }
 
-    // --- Метод setupTextWatchers теперь вызывается ---
+    /**
+     * Настройка слушателей для текстовых полей
+     */
     private void setupTextWatchers() {
         usernameEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -128,7 +140,7 @@ public class RegistrationFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable editable) {
                 validateUsername(editable.toString());
-                updateRegistrationButtonState(); // Изменено название
+                updateRegistrationButtonState();
             }
         });
 
@@ -144,7 +156,7 @@ public class RegistrationFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable editable) {
                 validatePassword(editable.toString());
-                updateRegistrationButtonState(); // Изменено название
+                updateRegistrationButtonState();
             }
         });
     }
@@ -154,8 +166,8 @@ public class RegistrationFragment extends Fragment {
      *
      * @param username Введенный текст email
      */
+    @SuppressLint("SetTextI18n")
     private void validateUsername(String username) {
-        // Убраны неактуальные проверки Build.VERSION.SDK_INT
         if (username.trim().isEmpty()) {
             isUsernameValid = false;
             usernameErrorTextView.setText("Email не может быть пустым");
@@ -180,7 +192,7 @@ public class RegistrationFragment extends Fragment {
             isPasswordValid = false;
             passwordErrorTextView.setText("Пароль не может быть пустым");
             passwordErrorTextView.setVisibility(View.VISIBLE);
-        } else if (password.length() < 6) { // Firebase требует минимум 6 символов
+        } else if (password.length() < 6) {
             isPasswordValid = false;
             passwordErrorTextView.setText("Пароль должен быть не менее 6 символов");
             passwordErrorTextView.setVisibility(View.VISIBLE);
@@ -193,7 +205,7 @@ public class RegistrationFragment extends Fragment {
     /**
      * Обновление состояния кнопки регистрации (активна, если оба поля валидны)
      */
-    private void updateRegistrationButtonState() { // Переименовано для ясности
+    private void updateRegistrationButtonState() {
         regButton.setEnabled(isUsernameValid && isPasswordValid);
     }
 
@@ -210,38 +222,34 @@ public class RegistrationFragment extends Fragment {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
                     FirebaseUser user = auth.getCurrentUser();
-                    Toast.makeText(getContext(), "Регистрация успешна! Добро пожаловать, " + user.getEmail(), Toast.LENGTH_LONG).show();
+                    Log.d(TAG, "Registration: Пользователь успешно создан! Email: " + (user != null ? user.getEmail() : "NULL_USER_AFTER_REG_SUCCESS"));
                     if (RegSuccessListener != null) {
-                        RegSuccessListener.onRegSuccess(); // Вызов коллбэка об успехе
-                        Log.d(TAG, "RegSuccessListener.onRegSuccess() called.");
-                    } else {
-                        Log.w(TAG, "RegSuccessListener is null. Cannot notify activity of successful registration.");
+                        RegSuccessListener.onRegSuccess();
                     }
                 } else {
-                    Log.e(TAG, "Registration failed: " + task.getException().getMessage(), task.getException()); // Использовать Log.e для ошибок
-                    String errorMessage = "Ошибка регистрации.";
-                    Exception exception = task.getException();
+                    Log.e(TAG, "Registration failed: " + task.getException().getMessage(), task.getException());
 
+                    String errorMessage = "Произошла неизвестная ошибка при регистрации.";
+                    Exception exception = task.getException();
                     if (exception instanceof FirebaseAuthWeakPasswordException) {
                         errorMessage = "Пароль слишком слабый (минимум 6 символов).";
                     } else if (exception instanceof FirebaseAuthInvalidCredentialsException) {
                         errorMessage = "Некорректный Email адрес.";
                     } else if (exception instanceof FirebaseAuthUserCollisionException) {
                         errorMessage = "Пользователь с таким Email уже существует.";
-                    } else {
-                        errorMessage = "Произошла неизвестная ошибка при регистрации.";
                     }
-                    Toast.makeText(getContext(), errorMessage, Toast.LENGTH_LONG).show();
+                    Log.e(TAG, "Registration failed: " + errorMessage, exception);
                 }
             }
         });
     }
 
+    /**
+     * Очистка ресурсов при уничтожении View фрагмента
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        Log.d(TAG, "onDestroyView called");
-        // Здесь можно обнулять binding, если вы его использовали (в этом фрагменте нет)
     }
 
     /**
@@ -250,7 +258,6 @@ public class RegistrationFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        Log.d(TAG, "onDetach called");
-        RegSuccessListener = null; // Избегаем утечек памяти
+        RegSuccessListener = null;
     }
 }

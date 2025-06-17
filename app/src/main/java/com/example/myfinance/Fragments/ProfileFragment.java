@@ -19,6 +19,9 @@ import com.example.myfinance.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+/**
+ * Класс фрагмента профиля
+ */
 public class ProfileFragment extends Fragment {
     private TextView VERSIONOFAPP;
     private Button btnProfileChange, btnPattern, btnSettings, btnSync, btnEsc;
@@ -92,7 +95,6 @@ public class ProfileFragment extends Fragment {
             }
         } else {
             Log.e("ProfileFragment", "Родительская Activity не является MainActivity!");
-
         }
 
         btnSync.setOnClickListener(v -> {
@@ -102,10 +104,11 @@ public class ProfileFragment extends Fragment {
         btnEsc.setOnClickListener(v -> {
             cuurentUser = FirebaseAuth.getInstance().getCurrentUser();
             if (cuurentUser != null) {
+                btnEsc.setEnabled(true);
                 FirebaseAuth.getInstance().signOut();
-                updateUserProfileUI();
                 Toast.makeText(getContext(), "Вы вышли из аккаунта", Toast.LENGTH_SHORT).show();
             } else {
+                btnEsc.setEnabled(false);
                 Toast.makeText(getContext(), "Эта кнопка для выхода из учётной записи", Toast.LENGTH_SHORT).show();
             }
         });
@@ -115,9 +118,13 @@ public class ProfileFragment extends Fragment {
      * Обновление профиля
      */
     private void updateUserProfileUI() {
-        cuurentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (cuurentUser != null) {
-            FirebaseAuth.getInstance().signOut();
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            Log.d("ProfileFragment", "User is logged in: " + currentUser.getEmail());
+            btnEsc.setEnabled(true);
+        } else {
+            Log.d("ProfileFragment", "User is not logged in.");
+            btnEsc.setEnabled(false);
         }
     }
 }

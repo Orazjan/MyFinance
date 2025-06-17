@@ -4,13 +4,14 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 import com.example.myfinance.Fragments.LoginFragment;
 import com.example.myfinance.Fragments.RegistrationFragment;
 
+/**
+ * Активность для входа и регистрации пользователя.
+ */
 public class LoginActivity extends AppCompatActivity implements RegistrationFragment.OnRegSuccessListener, LoginFragment.OnLoginSuccessListener {
 
     @Override
@@ -25,11 +26,13 @@ public class LoginActivity extends AppCompatActivity implements RegistrationFrag
         }
     }
 
+    /**
+     * Этот метод будет вызван, когда пользователь успешно зарегистрировался.
+     */
     @Override
     public void onRegSuccess() {
-        // Логика, что делать после успешной регистрации
-        Toast.makeText(this, "Регистрация успешна в LoginActivity!", Toast.LENGTH_SHORT).show();
-        finish(); // Например, закрыть LoginActivity и вернуться на предыдущий экран
+        Toast.makeText(this, "Регистрация прошла успешна! Добро пожаловать", Toast.LENGTH_SHORT).show();
+        finish();
     }
 
     /**
@@ -37,22 +40,10 @@ public class LoginActivity extends AppCompatActivity implements RegistrationFrag
      */
     @Override
     public void onLoginSuccess() {
+        Toast.makeText(this, "Вход выполнен! Добро пожаловать", Toast.LENGTH_SHORT).show();
         finish();
     }
 
-    /**
-     * Загружает фрагмент LoginFragment в контейнер активности.
-     *
-     * @param fragment Экземпляр LoginFragment для загрузки.
-     */
-    private void loadLoginFragment(Fragment fragment) {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-        fragmentTransaction.replace(R.id.fragment_container, fragment);
-
-        fragmentTransaction.commit();
-    }
 
     /**
      * Обработка нажатия кнопки "Назад".
