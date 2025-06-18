@@ -52,7 +52,7 @@ public class ProfileFragment extends Fragment {
         btnEsc = view.findViewById(R.id.btnEsc);
         VERSIONOFAPP = view.findViewById(R.id.VERSIONOFAPP);
 
-        VERSIONOFAPP.setText("VERSION 0.7");
+        VERSIONOFAPP.setText("VERSION 0.8");
 
         if (getActivity() instanceof MainActivity) {
             MainActivity mainActivity = (MainActivity) getActivity();

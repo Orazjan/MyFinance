@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.example.myfinance.LoginActivity;
 import com.example.myfinance.R;
@@ -72,6 +73,7 @@ public class ProfileChangeFragment extends Fragment {
             }
         };
         btnSave.setOnClickListener(v -> {
+            requireActivity().getSupportFragmentManager().popBackStack("ProfileChange", FragmentManager.POP_BACK_STACK_INCLUSIVE);
             Toast.makeText(getContext(), "Сохранено", Toast.LENGTH_SHORT).show();
         });
         nameTextView.setOnClickListener(v -> {
