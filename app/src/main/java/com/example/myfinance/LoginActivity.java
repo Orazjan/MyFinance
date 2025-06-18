@@ -44,7 +44,6 @@ public class LoginActivity extends AppCompatActivity implements RegistrationFrag
         finish();
     }
 
-
     /**
      * Обработка нажатия кнопки "Назад".
      * Если это LoginActivity и она содержит только LoginFragment (без Back Stack),

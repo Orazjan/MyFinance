@@ -120,18 +120,16 @@ public class ProfileChangeFragment extends Fragment {
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
             String formattedDate = sdf.format(creationDate);
 
-            emailTextView.setText(userEmail != null ? userEmail : "Email не указан");
-            regDataTextView.setText(formattedDate);
+            emailTextView.setText(userEmail != null ? userEmail : "Нажмите чтобы войти");
+            regDataTextView.setHint(formattedDate);
 
             emailTextView.setEnabled(false);
             regDataTextView.setEnabled(false);
             if (nameTextView != null) nameTextView.setEnabled(false);
             if (famTextView != null) famTextView.setEnabled(false);
 
-
         } else {
             emailTextView.setText("Не авторизован");
-            regDataTextView.setText("Не доступно");
             if (nameTextView != null) nameTextView.setText("Не авторизован");
             if (famTextView != null) famTextView.setText("Не авторизован");
         }

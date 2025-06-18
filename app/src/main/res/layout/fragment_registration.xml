@@ -10,11 +10,44 @@
         android:id="@+id/username_edit_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:hint="Имя"
+        android:inputType="textCapSentences" />
+
+    <TextView
+        android:id="@+id/username_error_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/holo_red_dark"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
+    <EditText
+        android:id="@+id/surname_edit_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+
+        android:hint="Фамилия"
+        android:inputType="textCapSentences" />
+
+    <TextView
+        android:id="@+id/surname_error_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/holo_red_dark"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
+    <EditText
+        android:id="@+id/email_edit_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:hint="Email"
         android:inputType="textEmailAddress" />
 
     <TextView
-        android:id="@+id/username_error_text_view"
+        android:id="@+id/email_error_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@android:color/holo_red_dark"
@@ -41,6 +74,8 @@
         android:id="@+id/textViewForLogin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:alpha="1"
+        android:textColor="?android:attr/textColorSecondary"
         android:text="Уже есть аккаунт? Нажмите для входа" />
 
     <Button

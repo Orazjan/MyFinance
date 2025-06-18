@@ -17,17 +17,20 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.myfinance.R;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
-import com.google.firebase.auth.FirebaseAuthUserCollisionException;
-import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
-import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Фрагмент для регистрации пользователя
@@ -36,16 +39,22 @@ public class RegistrationFragment extends Fragment {
     private static final String TAG = "RegistrationFragment";
 
     private TextView textViewForLogin;
-    private EditText usernameEditText;
-    private EditText passwordEditText;
+    private EditText usernameEditText, emailEditText, surnameEditText, passwordEditText;
+
     private Button regButton;
 
-    private TextView usernameErrorTextView;
+    private TextView emailErrorTextView;
     private TextView passwordErrorTextView;
+    private TextView surnameErrorTextView;
+    private TextView usernameErrorTextView;
 
     private boolean isUsernameValid = false;
+    private boolean isEmailValid = false;
+    private boolean isSurnameValid = false;
     private boolean isPasswordValid = false;
+
     private FirebaseAuth auth;
+    FirebaseFirestore fb;
 
     private OnRegSuccessListener RegSuccessListener;
 
@@ -86,28 +95,35 @@ public class RegistrationFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         auth = FirebaseAuth.getInstance();
+        fb = FirebaseFirestore.getInstance();
 
         textViewForLogin = view.findViewById(R.id.textViewForLogin);
-        usernameEditText = view.findViewById(R.id.username_edit_text);
+        emailEditText = view.findViewById(R.id.email_edit_text);
         passwordEditText = view.findViewById(R.id.password_edit_text);
         regButton = view.findViewById(R.id.reg_button);
-        usernameErrorTextView = view.findViewById(R.id.username_error_text_view);
+        emailErrorTextView = view.findViewById(R.id.email_error_text_view);
         passwordErrorTextView = view.findViewById(R.id.password_error_text_view);
+        usernameEditText = view.findViewById(R.id.username_edit_text);
+        surnameEditText = view.findViewById(R.id.surname_edit_text);
+        usernameErrorTextView = view.findViewById(R.id.username_error_text_view);
+        surnameErrorTextView = view.findViewById(R.id.surname_error_text_view);
 
         regButton.setEnabled(false);
 
         setupTextWatchers();
 
         regButton.setOnClickListener(v -> {
-            if (isUsernameValid && isPasswordValid) {
-                String email = usernameEditText.getText().toString();
+            if (isEmailValid && isPasswordValid && isUsernameValid && isSurnameValid) {
+                String email = emailEditText.getText().toString();
                 String password = passwordEditText.getText().toString();
-                createUser(email, password);
+                String username = usernameEditText.getText().toString();
+                String surname = surnameEditText.getText().toString();
+
+                createUser(email, password, username, surname);
             } else {
                 Toast.makeText(getContext(), "Пожалуйста, исправьте ошибки ввода", Toast.LENGTH_SHORT).show();
             }
         });
-
 
         textViewForLogin.setOnClickListener(v -> {
             getParentFragmentManager().beginTransaction()
@@ -130,6 +146,42 @@ public class RegistrationFragment extends Fragment {
     private void setupTextWatchers() {
         usernameEditText.addTextChangedListener(new TextWatcher() {
             @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                validateUserName(editable.toString());
+                updateRegistrationButtonState();
+            }
+        });
+
+        surnameEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                validateSurname(editable.toString());
+                updateRegistrationButtonState();
+            }
+        });
+
+        emailEditText.addTextChangedListener(new TextWatcher() {
+            @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int int_after) {
             }
 
@@ -139,7 +191,7 @@ public class RegistrationFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                validateUsername(editable.toString());
+                validateEmail(editable.toString());
                 updateRegistrationButtonState();
             }
         });
@@ -162,23 +214,63 @@ public class RegistrationFragment extends Fragment {
     }
 
     /**
-     * Проверка ввода пользователя (Email)
+     * Проверка ввода пользователя (Имя)
      *
-     * @param username Введенный текст email
+     * @param username
      */
-    @SuppressLint("SetTextI18n")
-    private void validateUsername(String username) {
+    private void validateUserName(String username) {
         if (username.trim().isEmpty()) {
             isUsernameValid = false;
-            usernameErrorTextView.setText("Email не может быть пустым");
+            usernameErrorTextView.setText("Имя пользователя не может быть пустым");
             usernameErrorTextView.setVisibility(View.VISIBLE);
-        } else if (!Patterns.EMAIL_ADDRESS.matcher(username).matches()) {
+        } else if (username.length() < 2) {
             isUsernameValid = false;
-            usernameErrorTextView.setText("Введите корректный Email адрес");
+            usernameErrorTextView.setText("Имя пользователя должно быть больше 2х букв");
             usernameErrorTextView.setVisibility(View.VISIBLE);
         } else {
-            isUsernameValid = true;
             usernameErrorTextView.setVisibility(View.GONE);
+            isUsernameValid = true;
+        }
+    }
+
+    /**
+     * Проверка ввода пользователя (Фамилия)
+     *
+     * @param surname
+     */
+    private void validateSurname(String surname) {
+        if (surname.trim().isEmpty()) {
+            isSurnameValid = false;
+            surnameErrorTextView.setText("Имя пользователя не может быть пустым");
+            surnameErrorTextView.setVisibility(View.VISIBLE);
+        } else if (surname.length() < 2) {
+            isSurnameValid = false;
+            surnameErrorTextView.setText("Фамилия пользователя должно быть больше 2х букв");
+            surnameErrorTextView.setVisibility(View.VISIBLE);
+        } else {
+            surnameErrorTextView.setVisibility(View.GONE);
+            isSurnameValid = true;
+        }
+    }
+
+    /**
+     * Проверка ввода пользователя (Email)
+     *
+     * @param email Введенный текст email
+     */
+    @SuppressLint("SetTextI18n")
+    private void validateEmail(String email) {
+        if (email.trim().isEmpty()) {
+            isEmailValid = false;
+            emailErrorTextView.setText("Email не может быть пустым");
+            emailErrorTextView.setVisibility(View.VISIBLE);
+        } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            isEmailValid = false;
+            emailErrorTextView.setText("Введите корректный Email адрес");
+            emailErrorTextView.setVisibility(View.VISIBLE);
+        } else {
+            isEmailValid = true;
+            emailErrorTextView.setVisibility(View.GONE);
         }
     }
 
@@ -206,40 +298,58 @@ public class RegistrationFragment extends Fragment {
      * Обновление состояния кнопки регистрации (активна, если оба поля валидны)
      */
     private void updateRegistrationButtonState() {
-        regButton.setEnabled(isUsernameValid && isPasswordValid);
+        regButton.setEnabled(isEmailValid && isPasswordValid && isUsernameValid && isSurnameValid);
     }
 
     /**
-     * Регистрация пользователя
-     *
+     * Создание пользователя в Firebase
      * @param email
      * @param password
+     * @param username
+     * @param surname
      */
-    private void createUser(String email, String password) {
-        Log.d(TAG, "Attempting to create user: " + email);
-        auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(requireActivity(), new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if (task.isSuccessful()) {
-                    FirebaseUser user = auth.getCurrentUser();
-                    Log.d(TAG, "Registration: Пользователь успешно создан! Email: " + (user != null ? user.getEmail() : "NULL_USER_AFTER_REG_SUCCESS"));
-                    if (RegSuccessListener != null) {
-                        RegSuccessListener.onRegSuccess();
+    private void createUser(String email, String password, String username, String surname) {
+        auth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(ContextCompat.getMainExecutor(requireContext()), new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "createUserWithEmail:success");
+                            if (RegSuccessListener != null)
+                                RegSuccessListener.onRegSuccess();
+                            saveToFirebase(email, username, surname);
+                        } else {
+                            Log.w(TAG, "createUserWithEmail:failure", task.getException());
+                            Toast.makeText(getContext(), "Ошибка при регистрации", Toast.LENGTH_SHORT).show();
+                        }
                     }
-                } else {
-                    Log.e(TAG, "Registration failed: " + task.getException().getMessage(), task.getException());
 
-                    String errorMessage = "Произошла неизвестная ошибка при регистрации.";
-                    Exception exception = task.getException();
-                    if (exception instanceof FirebaseAuthWeakPasswordException) {
-                        errorMessage = "Пароль слишком слабый (минимум 6 символов).";
-                    } else if (exception instanceof FirebaseAuthInvalidCredentialsException) {
-                        errorMessage = "Некорректный Email адрес.";
-                    } else if (exception instanceof FirebaseAuthUserCollisionException) {
-                        errorMessage = "Пользователь с таким Email уже существует.";
-                    }
-                    Log.e(TAG, "Registration failed: " + errorMessage, exception);
-                }
+                });
+
+    }
+
+    /**
+     * Сохранение данных пользователя в Firebase
+     *
+     * @param email
+     * @param name
+     * @param surname
+     */
+    private void saveToFirebase(String email, String name, String surname) {
+        DocumentReference userRef = fb.collection("users").document(email);
+        Map<String, String> userData = new HashMap<>();
+        userData.put("name", name);
+        userData.put("surname", surname);
+        userRef.set(userData).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.e(TAG, "Error saving user data to Firebase: " + e.getMessage());
+                Toast.makeText(getContext(), "Ошибка при сохранении данных пользователя", Toast.LENGTH_SHORT).show();
             }
         });
     }

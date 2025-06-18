@@ -40,6 +40,7 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth.ktx)
     implementation (libs.facebook.login)
+    implementation(libs.firebase.firestore)
 
     implementation(libs.room.runtime)
     implementation(libs.annotation)
