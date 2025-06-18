@@ -31,5 +31,6 @@ public interface DAOTotalAmount {
     @Query("SELECT amount FROM total_amount ORDER BY id DESC LIMIT 1")
     LiveData<Double> getLastAmount();
 
-
+    @Query("SELECT summa FROM total_amount ORDER BY id DESC LIMIT 1")
+    LiveData<Double> getSumma();
 }

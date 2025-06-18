@@ -27,6 +27,7 @@ import com.example.myfinance.MainActivity;
 import com.example.myfinance.Models.AmountViewModel;
 import com.example.myfinance.Models.FinanceViewModel;
 import com.example.myfinance.Models.ShowFinances;
+import com.example.myfinance.Prevalent.AddSettingToDataStoreManager;
 import com.example.myfinance.Prevalent.DateFormatter;
 import com.example.myfinance.R;
 import com.example.myfinance.data.AmountDatabase;
@@ -44,14 +45,16 @@ import java.util.List;
 import java.util.Objects;
 
 public class MainFragment extends Fragment {
-
+    private AddSettingToDataStoreManager appSettingsManager;
     private TextView sumTextView;
+    private TextView valutaTextView, summaTextView;
     private ImageButton changeSumButton;
     private FloatingActionButton btnAddNewCheck;
     private ListView mainCheck;
     private List<ShowFinances> financeList;
     private ShowFinancesAdapter financeAdapter;
     private double currentBalance;
+    private double plusSumma;
     private AmountViewModel amountViewModel;
     private FinanceViewModel finViewModel;
 
@@ -73,6 +76,7 @@ public class MainFragment extends Fragment {
                 mainCheck.invalidate();
             });
         }
+        updateCurrencyDisplay();
     }
 
     @Override
@@ -80,9 +84,14 @@ public class MainFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         sumTextView = view.findViewById(R.id.sum);
+        valutaTextView = view.findViewById(R.id.valutaTextView);
+        summaTextView = view.findViewById(R.id.summaTextView);
         changeSumButton = view.findViewById(R.id.changeSum);
         btnAddNewCheck = view.findViewById(R.id.btnAddNewCheck);
         mainCheck = view.findViewById(R.id.mainCheck);
+
+        appSettingsManager = new AddSettingToDataStoreManager(requireContext());
+        valutaTextView.setText(appSettingsManager.getCurrencyType());
 
         FinanceDatabase finDb = FinanceDatabase.getDatabase(requireActivity().getApplication());
         AmountDatabase amdb = AmountDatabase.getDatabase(requireActivity().getApplication());
@@ -113,7 +122,7 @@ public class MainFragment extends Fragment {
                 updateTotalSum(sum);
             }
         });
-        getSumFromRoom();
+        updateCurrencyDisplay();
         getFinanceList();
 
         changeSumButton.setOnClickListener(v -> {
@@ -145,7 +154,35 @@ public class MainFragment extends Fragment {
             } else
                 Toast.makeText(requireContext(), clickedItem.getComments(), Toast.LENGTH_SHORT).show();
         });
+    }
 
+    /**
+     * Обновление отображения валюты.
+     */
+    private void updateCurrencyDisplay() {
+        amountViewModel.getLastAmount().observe(getViewLifecycleOwner(), new Observer<Double>() {
+            @Override
+            public void onChanged(@Nullable Double lastAmount) {
+                if (lastAmount == null) {
+                    currentBalance = 0.0;
+                    sumTextView.setText("0.0");
+                } else {
+                    currentBalance = lastAmount;
+                    sumTextView.setText(String.valueOf(currentBalance));
+                }
+            }
+        });
+        amountViewModel.getSumma().observe(getViewLifecycleOwner(), new Observer<Double>() {
+            @Override
+            public void onChanged(Double aDouble) {
+                if (aDouble == null) {
+                    summaTextView.setText("0.0");
+                } else {
+                    plusSumma = aDouble;
+                    summaTextView.setText(String.valueOf(plusSumma));
+                }
+            }
+        });
     }
 
     /**
@@ -236,36 +273,36 @@ public class MainFragment extends Fragment {
      */
     private void setSumTextView(double sum) {
         currentBalance = sum;
-        sumTextView.setText(String.valueOf(sum));
-        amountViewModel.insert(new TotalAmount(sum));
+        sumTextView.setText(String.valueOf(currentBalance));
+        amountViewModel.insert(new TotalAmount(sum, plusSumma));
+    }
+
+    private void insertToDb(double sum, double Plussumma) {
+        amountViewModel.insert(new TotalAmount(sum, Plussumma));
     }
 
     /**
-     * Получение суммы из базы данных.
+     * Устанавливает значение суммы в TextView.
+     * @param summa
      */
-    private void getSumFromRoom() {
-        amountViewModel.getLastAmount().observe(getViewLifecycleOwner(), new Observer<Double>() {
-            @Override
-            public void onChanged(@Nullable Double lastAmount) {
-                if (lastAmount == null) {
-                    currentBalance = 0.0;
-                    sumTextView.setText("0.0");
-                } else {
-                    currentBalance = lastAmount;
-                    sumTextView.setText(String.valueOf(currentBalance));
-                }
-            }
-        });
+    private void setPlusSummaTextView(double summa) {
+        plusSumma = summa;
+        summaTextView.setText(String.valueOf(plusSumma));
     }
 
     /**
-     * Обновление суммы на экране.
-     *
+     * Обновление общей суммы.
      * @param expenseAmount
      */
     private void updateTotalSum(double expenseAmount) {
-        double newBalance = currentBalance - expenseAmount;
-        setSumTextView(newBalance);
+        if (expenseAmount == 0.0) {
+            return;
+        }
+        plusSumma = plusSumma + expenseAmount;
+        currentBalance = currentBalance - expenseAmount;
+        setPlusSummaTextView(plusSumma);
+        setSumTextView(currentBalance);
+        insertToDb(currentBalance, plusSumma);
     }
 
     /**
@@ -359,7 +396,7 @@ public class MainFragment extends Fragment {
             }
         });
 
-        amountViewModel.update(new TotalAmount(currentBalance));
+        amountViewModel.update(new TotalAmount(currentBalance, plusSumma));
     }
 
     /**

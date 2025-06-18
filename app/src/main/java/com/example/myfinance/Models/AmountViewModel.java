@@ -11,10 +11,12 @@ import com.example.myfinance.data.TotalAmount;
 public class AmountViewModel extends ViewModel {
     private AmountRepository repository;
     private LiveData<Double> lastAmount;
+    private LiveData<Double> summa;
 
     public AmountViewModel(AmountRepository repository) {
         this.repository = repository;
         this.lastAmount = repository.getLastAmount();
+        this.summa = repository.getSumma();
     }
 
     public void insert(TotalAmount totalAmount) {
@@ -33,8 +35,12 @@ public class AmountViewModel extends ViewModel {
         repository.delete(totalAmount);
     }
 
-    public LiveData<Double> getLastAmount() { // Метод для предоставления LiveData в UI
+    public LiveData<Double> getLastAmount() {
         return lastAmount;
+    }
+
+    public LiveData<Double> getSumma() {
+        return summa;
     }
 
     public static class TaskViewModelFactory implements ViewModelProvider.Factory {

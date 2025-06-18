@@ -111,7 +111,17 @@ public class ProfileFragment extends Fragment {
                 btnEsc.setEnabled(false);
                 Toast.makeText(getContext(), "Эта кнопка для выхода из учётной записи", Toast.LENGTH_SHORT).show();
             }
+            updateUserProfileUI();
         });
+    }
+
+    /**
+     * Обновление профиля при возврате к фрагменту
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateUserProfileUI();
     }
 
     /**

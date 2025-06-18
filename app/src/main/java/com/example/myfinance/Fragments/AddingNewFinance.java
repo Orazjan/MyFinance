@@ -131,7 +131,6 @@ public class AddingNewFinance extends Fragment {
         String sumStr = Objects.requireNonNull(sumEditText.getText()).toString().trim();
         String reason = Objects.requireNonNull(reasonEditText.getText()).toString().trim();
         String comments = Objects.requireNonNull(commentsEditText.getText()).toString().trim();
-//        String data = getCurrentDate() + " " + getCurrentTime();
 
         if (sumStr.isEmpty()) {
             sumInputLayout.setError("Введите сумму");

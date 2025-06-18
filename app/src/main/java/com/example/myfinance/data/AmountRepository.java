@@ -1,6 +1,8 @@
 package com.example.myfinance.data;
 
 import androidx.lifecycle.LiveData;
+import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 
 import com.example.myfinance.DAO.DAOTotalAmount;
 
@@ -12,6 +14,7 @@ public class AmountRepository {
 
     private LiveData<Double> totalSumOfAmounts;
     private LiveData<Double> lastAmount;
+    private LiveData<Double> summa;
 
     private static final int NUMBER_OF_THREADS = 4;
     public static final ExecutorService databaseWriteExecutor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
@@ -19,8 +22,10 @@ public class AmountRepository {
     public AmountRepository(DAOTotalAmount daOtotalAmount) {
         this.DAOtotalAmount = daOtotalAmount;
         this.lastAmount = DAOtotalAmount.getLastAmount();
+        this.summa = DAOtotalAmount.getSumma();
     }
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     public void insert(TotalAmount totalAmount) {
         databaseWriteExecutor.execute(() -> DAOtotalAmount.insert(totalAmount));
     }
@@ -35,6 +40,10 @@ public class AmountRepository {
 
     public LiveData<Double> getLastAmount() {
         return lastAmount;
+    }
+
+    public LiveData<Double> getSumma() {
+        return summa;
     }
 
     public void deleteAll() {
