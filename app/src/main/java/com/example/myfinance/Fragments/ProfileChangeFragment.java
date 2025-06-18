@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,6 +40,7 @@ public class ProfileChangeFragment extends Fragment {
     private static final String TAG = "ProfileChangeFragment";
 
     private TextView emailTextView, nameTextView, famTextView, regDataTextView;
+    Button btnSave;
 
     private FirebaseAuth auth;
     private FirebaseFirestore fb;
@@ -58,6 +60,7 @@ public class ProfileChangeFragment extends Fragment {
         nameTextView = view.findViewById(R.id.nameTextView);
         famTextView = view.findViewById(R.id.famTextView);
         regDataTextView = view.findViewById(R.id.regDataTextView);
+        btnSave = view.findViewById(R.id.btnForSave);
 
         auth = FirebaseAuth.getInstance();
         fb = FirebaseFirestore.getInstance();
@@ -68,7 +71,9 @@ public class ProfileChangeFragment extends Fragment {
                 updateUserProfileUI();
             }
         };
-
+        btnSave.setOnClickListener(v -> {
+            Toast.makeText(getContext(), "Сохранено", Toast.LENGTH_SHORT).show();
+        });
         nameTextView.setOnClickListener(v -> {
             showDialogToChangeNameSurname(nameTextView);
         });
