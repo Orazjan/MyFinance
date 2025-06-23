@@ -4,13 +4,17 @@
     android:layout_height="match_parent"
     android:background="?android:attr/windowBackground">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:text="Пока что окно анализа пусто, но скоро будет круто"
-        android:textColor="?attr/colorPrimaryDark"
-        android:textSize="30sp" />
+        android:orientation="vertical">
 
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/pieChart"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginTop="16dp" />
+
+    </LinearLayout>
 
 </FrameLayout>

@@ -36,6 +36,10 @@ android {
 }
 
 dependencies {
+    implementation (libs.mpandroidchart)
+    implementation (libs.lifecycle.livedata.v262)
+    implementation (libs.lifecycle.viewmodel.v262)
+
     implementation (libs.facebook.android.sdk)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth.ktx)
@@ -50,6 +54,7 @@ dependencies {
     implementation(libs.credentials)
     implementation(libs.credentials.play.services.auth)
     implementation(libs.googleid)
+    implementation(libs.constraintlayout.core)
     annotationProcessor(libs.room.compiler)
     implementation(libs.room.paging)
     testImplementation(libs.room.testing)
