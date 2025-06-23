@@ -1,13 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!--
-    Стили которые будут использованы в приложении
-        android:background="?android:attr/windowBackground"
-        android:textColor="?android:attr/textColorPrimary"  textcolor
-
-
-
-    -->
     <style name="Theme.MyFinance" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">@color/white</item>
         <item name="colorPrimaryVariant">@color/purple_700</item>

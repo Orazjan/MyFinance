@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,6 +54,13 @@ public class ProfileChangeFragment extends Fragment {
         return inflater.inflate(R.layout.profile_change_fragment, container, false);
     }
 
+    /**
+     * Вызывается после создания View.
+     *
+     * @param view               The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     *                           from a previous saved state as given here.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -105,6 +113,7 @@ public class ProfileChangeFragment extends Fragment {
 
         TextView dialogTitleTextView = view.findViewById(R.id.NameTextView);
         EditText nameChangeEditText = view.findViewById(R.id.name_edit_text);
+        ImageView imgClose = view.findViewById(R.id.imgClose);
 
         if (nameSurnameTextViewToUpdate != null) {
             String currentText = nameSurnameTextViewToUpdate.getText().toString();
@@ -126,7 +135,7 @@ public class ProfileChangeFragment extends Fragment {
             Log.w("Dialog", "TextView для обновления данных был null.");
         }
 
-        builder.setView(view).setTitle("Редактирование").setPositiveButton("Сохранить", (dialog, id) -> {
+        builder.setView(view).setPositiveButton("Сохранить", (dialog, id) -> {
             String newValue = nameChangeEditText.getText().toString().trim();
             if (!newValue.isEmpty()) {
                 String fieldToUpdate;
@@ -148,6 +157,9 @@ public class ProfileChangeFragment extends Fragment {
         });
 
         AlertDialog alertDialog = builder.create();
+        imgClose.setOnClickListener(v -> {
+            alertDialog.dismiss();
+        });
         alertDialog.show();
     }
 

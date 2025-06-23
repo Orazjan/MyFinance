@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -79,6 +80,13 @@ public class MainFragment extends Fragment {
         updateCurrencyDisplay();
     }
 
+    /**
+     * Вызывается после создания View.
+     *
+     * @param view               The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     *                           from a previous saved state as given here.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -198,6 +206,7 @@ public class MainFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.dialog_change_reason_sum_somment, null);
         TextView categoryChangeEditText = view.findViewById(R.id.category_edit_text);
+        ImageView imgClose = view.findViewById(R.id.imgClose);
         EditText sumChangeEditText = view.findViewById(R.id.sum_edit_text);
         EditText commentsChangeEditText = view.findViewById(R.id.comments_edit_text);
         EditText dateChangeEditText = view.findViewById(R.id.date_edit_text);
@@ -209,7 +218,6 @@ public class MainFragment extends Fragment {
         sumChangeEditText.setSelection(sumChangeEditText.getText().length());
 
         builder.setView(view);
-        builder.setTitle("Редактирование");
 
         builder.setPositiveButton("Изменить", (dialogInterface, i) -> {
             String newCategory = categoryChangeEditText.getText().toString().trim();
@@ -263,7 +271,11 @@ public class MainFragment extends Fragment {
             dialogInterface.dismiss();
         });
 
+
         AlertDialog dialog = builder.create();
+        imgClose.setOnClickListener(v -> {
+            dialog.dismiss();
+        });
         dialog.setCanceledOnTouchOutside(false);
         dialog.show();
     }

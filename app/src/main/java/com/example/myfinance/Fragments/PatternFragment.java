@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -176,15 +177,15 @@ public class PatternFragment extends Fragment {
         LayoutInflater inflater = requireActivity().getLayoutInflater();
 
         View dialogView = inflater.inflate(R.layout.dialog_change_or_delete, null);
-        TextView instructionTextView = dialogView.findViewById(R.id.categoryNameTextView); // Убедитесь, что ID корректен
+        TextView instructionTextView = dialogView.findViewById(R.id.categoryNameTextView);
         EditText editTextSum = dialogView.findViewById(R.id.sum_edit_text);
+        ImageView imgClose = dialogView.findViewById(R.id.imgClose);
 
         instructionTextView.setText("Изменить сумму для " + categoryName + ":");
         editTextSum.setText(String.valueOf(currentSum));
         editTextSum.setSelection(editTextSum.getText().length());
 
         builder.setView(dialogView);
-        builder.setTitle("Действия с категорией");
 
         builder.setPositiveButton("Изменить", (dialogInterface, i) -> {
             String sumText = editTextSum.getText().toString().trim();
@@ -215,6 +216,9 @@ public class PatternFragment extends Fragment {
             focusAndOpenKeyboard(editTextSum);
         });
         dialog.setCanceledOnTouchOutside(false);
+        imgClose.setOnClickListener(v -> {
+            dialog.dismiss();
+        });
         dialog.show();
     }
 

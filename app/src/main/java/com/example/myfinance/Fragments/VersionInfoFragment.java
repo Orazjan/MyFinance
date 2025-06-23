@@ -126,8 +126,8 @@ public class VersionInfoFragment extends Fragment {
         versionSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedVersion = versionNames.get(position); // Получаем название выбранной версии
-                String description = versionDescriptions.get(selectedVersion); // Получаем описание по названию
+                String selectedVersion = versionNames.get(position);
+                String description = versionDescriptions.get(selectedVersion);
 
                 if (description != null) {
                     infoText.setText(description);
