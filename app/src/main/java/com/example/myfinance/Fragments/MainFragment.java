@@ -47,7 +47,7 @@ import java.util.Objects;
 public class MainFragment extends Fragment {
     private AddSettingToDataStoreManager appSettingsManager;
     private TextView sumTextView;
-    private TextView valutaTextView, summaTextView;
+    private TextView valutaTextView, summaTextView, SecondvalutaTextView;
     private ImageButton changeSumButton;
     private FloatingActionButton btnAddNewCheck;
     private ListView mainCheck;
@@ -89,9 +89,9 @@ public class MainFragment extends Fragment {
         changeSumButton = view.findViewById(R.id.changeSum);
         btnAddNewCheck = view.findViewById(R.id.btnAddNewCheck);
         mainCheck = view.findViewById(R.id.mainCheck);
+        SecondvalutaTextView = view.findViewById(R.id.SecondvalutaTextView);
 
         appSettingsManager = new AddSettingToDataStoreManager(requireContext());
-        valutaTextView.setText(appSettingsManager.getCurrencyType());
 
         FinanceDatabase finDb = FinanceDatabase.getDatabase(requireActivity().getApplication());
         AmountDatabase amdb = AmountDatabase.getDatabase(requireActivity().getApplication());
@@ -160,6 +160,8 @@ public class MainFragment extends Fragment {
      * Обновление отображения валюты.
      */
     private void updateCurrencyDisplay() {
+        valutaTextView.setText(appSettingsManager.getCurrencyType());
+        SecondvalutaTextView.setText(appSettingsManager.getCurrencyType());
         amountViewModel.getLastAmount().observe(getViewLifecycleOwner(), new Observer<Double>() {
             @Override
             public void onChanged(@Nullable Double lastAmount) {
@@ -277,6 +279,12 @@ public class MainFragment extends Fragment {
         amountViewModel.insert(new TotalAmount(sum, plusSumma));
     }
 
+    /**
+     * Вставка данных в базу данных.
+     *
+     * @param sum
+     * @param Plussumma
+     */
     private void insertToDb(double sum, double Plussumma) {
         amountViewModel.insert(new TotalAmount(sum, Plussumma));
     }

@@ -12,24 +12,38 @@
         android:orientation="vertical">
 
         <TextView
+            android:layout_width="300sp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="5sp"
+            android:layout_marginTop="15sp"
+            android:text="Имя" />
+
+        <TextView
             android:id="@+id/nameTextView"
             android:layout_width="300sp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="15sp"
             android:background="@drawable/border"
             android:backgroundTint="?attr/colorOnPrimary"
             android:gravity="center_vertical"
             android:hint="@string/tap_to_change"
             android:padding="12dp"
             android:textColor="?attr/colorOnSecondary" />
+
+        <TextView
+            android:layout_width="300sp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="5sp"
+            android:layout_marginTop="15sp"
+            android:text="Фаимлия" />
 
         <TextView
             android:id="@+id/famTextView"
             android:layout_width="300sp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="15sp"
             android:background="@drawable/border"
             android:backgroundTint="?attr/colorOnPrimary"
             android:gravity="center_vertical"
@@ -38,11 +52,18 @@
             android:textColor="?attr/colorOnSecondary" />
 
         <TextView
+            android:layout_width="300sp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="5sp"
+            android:layout_marginTop="15sp"
+            android:text="Почта" />
+
+        <TextView
             android:id="@+id/emailTextView"
             android:layout_width="300sp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="15sp"
             android:background="@drawable/border"
             android:backgroundTint="?attr/colorOnPrimary"
             android:gravity="center_vertical"
@@ -51,11 +72,18 @@
             android:textColor="?attr/colorOnSecondary" />
 
         <TextView
+            android:layout_width="300sp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="5sp"
+            android:layout_marginTop="15sp"
+            android:text="Дата регистрации" />
+
+        <TextView
             android:id="@+id/regDataTextView"
             android:layout_width="300sp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="15sp"
             android:background="@drawable/border"
             android:backgroundTint="?attr/colorOnPrimary"
             android:gravity="center_vertical"

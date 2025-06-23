@@ -62,8 +62,8 @@ public class VersionInfoFragment extends Fragment {
     private void setupVersionData() {
         versionDescriptions = new LinkedHashMap<>();
         versionDescriptions.put("V 0.8", "V 0.8\n" +
-                "\nДобавлено: " +
-                "\n-Исправлено:");
+                "\nДобавлено: \n " +
+                "\n-Исправлено: \n- Вкладки расходы и остатки\n- Страница профиль");
 
         versionDescriptions.put("V 0.7", "V 0.7\n" +
                 "\nДобавлено: \n-Кнопка Сохранить в профиле сохраняет и выходит\n-Расходы\n-Изменения имени и фамилии\n-Регистрация и авторизация\n-Время добавления записи в список\n-Страница Профиль изменена\n-Вход в учётную запись через логин и пароль\n" +

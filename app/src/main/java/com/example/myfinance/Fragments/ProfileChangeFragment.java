@@ -228,6 +228,7 @@ public class ProfileChangeFragment extends Fragment {
 
         } else {
             emailTextView.setText("Не авторизован");
+            regDataTextView.setText("Не авторизован");
             if (nameTextView != null) nameTextView.setText("Не авторизован");
             if (famTextView != null) famTextView.setText("Не авторизован");
         }

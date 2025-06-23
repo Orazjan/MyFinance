@@ -76,7 +76,7 @@ public class SettingsFragment extends Fragment {
      * Подготавливает данные (списки опций) для Spinner'ов.
      */
     private void setupSpinnerData() {
-        currencyOptions = new ArrayList<>(Arrays.asList("TMT", "RUB", "USD", "EUR"));
+        currencyOptions = new ArrayList<>(Arrays.asList("СОМ", "TMT", "RUB", "USD", "EUR"));
         themeOptions = new ArrayList<>(Arrays.asList("Системная", "Тёмная", "Светлая"));
     }
 
@@ -130,20 +130,21 @@ public class SettingsFragment extends Fragment {
     private void applySavedTheme(String themeKey) {
         switch (themeKey) {
             case "light":
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO); // Принудительно светлая
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
                 Log.d("ThemeApply", "Applying Light Theme.");
                 break;
             case "dark":
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES); // Принудительно темная
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
                 Log.d("ThemeApply", "Applying Dark Theme.");
                 break;
             case "system_default":
-            default: // По умолчанию или при неизвестном ключе
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM); // Следовать системной настройке
+            default:
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
                 Log.d("ThemeApply", "Applying System Default Theme.");
                 break;
         }
     }
+
     /**
      * Устанавливает слушателей выбора элементов для Spinner'ов,
      * чтобы сохранять изменения в настройках.
