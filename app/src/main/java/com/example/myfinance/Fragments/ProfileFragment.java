@@ -13,9 +13,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.myfinance.MainActivity;
+import com.example.myfinance.Models.FinanceChartViewModel;
 import com.example.myfinance.R;
+import com.example.myfinance.data.FinanceRepository;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -28,6 +31,7 @@ public class ProfileFragment extends Fragment {
     private int clickCount = 0;
     private static final long RESET_CLICK_COUNT_DELAY = 1000;
     private FirebaseUser cuurentUser;
+    private FinanceChartViewModel financeChartViewModel;
 
     @Override
     public void onStart() {
@@ -99,6 +103,27 @@ public class ProfileFragment extends Fragment {
 
         btnSync.setOnClickListener(v -> {
             Toast.makeText(getContext(), "Синхронизация", Toast.LENGTH_SHORT).show();
+            financeChartViewModel = new ViewModelProvider(this).get(FinanceChartViewModel.class);
+
+            if (financeChartViewModel != null) {
+                // Вызываем метод синхронизации из FinanceRepository
+                financeChartViewModel.syncDataFromFirestore(new FinanceRepository.SyncCallback() {
+                    @Override
+                    public void onSyncComplete(boolean success, String message) {
+                        if (getActivity() != null) {
+                            getActivity().runOnUiThread(() -> {
+                                if (success) {
+                                    Toast.makeText(getContext(), "Синхронизация завершена: " + message, Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(getContext(), "Ошибка синхронизации: " + message, Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
+                    }
+                });
+            } else {
+                Toast.makeText(getContext(), "ViewModel не инициализирован.", Toast.LENGTH_SHORT).show();
+            }
         });
 
         btnEsc.setOnClickListener(v -> {

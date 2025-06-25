@@ -63,6 +63,7 @@ public class VersionInfoFragment extends Fragment {
         versionDescriptions = new LinkedHashMap<>();
         versionDescriptions.put("V 0.8", "V 0.8\n" +
                 "\nДобавлено: \n- Страница анализа. Теперь можно посмотреть на что Вы тратите" +
+                "\n- Синхронизация с помощью базы данных" +
                 "\n-Исправлено: \n- Вкладки расходы и остатки\n- Страница профиль");
 
         versionDescriptions.put("V 0.7", "V 0.7\n" +

@@ -28,12 +28,12 @@ import com.example.myfinance.MainActivity;
 import com.example.myfinance.Models.AmountViewModel;
 import com.example.myfinance.Models.FinanceViewModel;
 import com.example.myfinance.Models.ShowFinances;
+import com.example.myfinance.MyApplication;
 import com.example.myfinance.Prevalent.AddSettingToDataStoreManager;
 import com.example.myfinance.Prevalent.DateFormatter;
 import com.example.myfinance.R;
 import com.example.myfinance.data.AmountDatabase;
 import com.example.myfinance.data.AmountRepository;
-import com.example.myfinance.data.FinanceDatabase;
 import com.example.myfinance.data.FinanceRepository;
 import com.example.myfinance.data.Finances;
 import com.example.myfinance.data.TotalAmount;
@@ -58,6 +58,7 @@ public class MainFragment extends Fragment {
     private double plusSumma;
     private AmountViewModel amountViewModel;
     private FinanceViewModel finViewModel;
+    private FinanceRepository financeRepository;
 
     @Nullable
     @Override
@@ -85,7 +86,7 @@ public class MainFragment extends Fragment {
      *
      * @param view               The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
      * @param savedInstanceState If non-null, this fragment is being re-constructed
-     *                           from a previous saved state as given here.
+     * from a previous saved state as given here.
      */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -101,19 +102,18 @@ public class MainFragment extends Fragment {
 
         appSettingsManager = new AddSettingToDataStoreManager(requireContext());
 
-        FinanceDatabase finDb = FinanceDatabase.getDatabase(requireActivity().getApplication());
-        AmountDatabase amdb = AmountDatabase.getDatabase(requireActivity().getApplication());
+        appSettingsManager = new AddSettingToDataStoreManager(requireContext());
 
-        FinanceRepository repo = new FinanceRepository(finDb.daoFinances());
+        financeRepository = ((MyApplication) requireActivity().getApplication()).getFinanceRepository();
+
+        AmountDatabase amdb = AmountDatabase.getDatabase(requireActivity().getApplication());
         AmountRepository amrepo = new AmountRepository(amdb.daoTotalAmount());
 
-        FinanceViewModel.TaskViewModelFactory finViewModelTaskFactory = new FinanceViewModel.TaskViewModelFactory(repo);
+        FinanceViewModel.TaskViewModelFactory finViewModelTaskFactory = new FinanceViewModel.TaskViewModelFactory(financeRepository);
         finViewModel = new ViewModelProvider(requireActivity(), finViewModelTaskFactory).get(FinanceViewModel.class);
 
         AmountViewModel.TaskViewModelFactory amViewModelTaskFactory = new AmountViewModel.TaskViewModelFactory(amrepo);
         amountViewModel = new ViewModelProvider(requireActivity(), amViewModelTaskFactory).get(AmountViewModel.class);
-
-        Log.d(requireContext().toString(), "startBalance " + sumTextView.getText().toString());
 
         if (financeList == null) {
             financeList = new ArrayList<>();
@@ -123,10 +123,10 @@ public class MainFragment extends Fragment {
             mainCheck.setAdapter(financeAdapter);
         }
 
+        //  Получение суммы из родительской активности.
         getParentFragmentManager().setFragmentResultListener("ValueSum", getViewLifecycleOwner(), (requestKey, bundle) -> {
             if (requestKey.equals("ValueSum")) {
                 double sum = bundle.getDouble("ValueSum");
-
                 updateTotalSum(sum);
             }
         });
@@ -149,13 +149,11 @@ public class MainFragment extends Fragment {
             }
         });
         mainCheck.setOnItemLongClickListener((parent, v, position, id) -> {
-            Log.d("ListViewInteraction", "Long click received on ListView item at position: " + position);
             ShowFinances clickedItem = (ShowFinances) parent.getItemAtPosition(position);
             showDialogForChangingData(clickedItem);
             return true;
         });
         mainCheck.setOnItemClickListener((parent, v, position, id) -> {
-            Log.d("ListViewInteraction", "Short click received on ListView item at position: " + position);
             ShowFinances clickedItem = (ShowFinances) parent.getItemAtPosition(position);
             if (Objects.equals(clickedItem.getComments(), "")) {
                 Toast.makeText(requireContext(), "Запись не имеет комментариев", Toast.LENGTH_SHORT).show();
@@ -170,27 +168,21 @@ public class MainFragment extends Fragment {
     private void updateCurrencyDisplay() {
         valutaTextView.setText(appSettingsManager.getCurrencyType());
         SecondvalutaTextView.setText(appSettingsManager.getCurrencyType());
-        amountViewModel.getLastAmount().observe(getViewLifecycleOwner(), new Observer<Double>() {
-            @Override
-            public void onChanged(@Nullable Double lastAmount) {
-                if (lastAmount == null) {
-                    currentBalance = 0.0;
-                    sumTextView.setText("0.0");
-                } else {
-                    currentBalance = lastAmount;
-                    sumTextView.setText(String.valueOf(currentBalance));
-                }
+        amountViewModel.getLastAmount().observe(getViewLifecycleOwner(), lastAmount -> {
+            if (lastAmount == null) {
+                currentBalance = 0.0;
+                sumTextView.setText("0.0");
+            } else {
+                currentBalance = lastAmount;
+                sumTextView.setText(String.valueOf(currentBalance));
             }
         });
-        amountViewModel.getSumma().observe(getViewLifecycleOwner(), new Observer<Double>() {
-            @Override
-            public void onChanged(Double aDouble) {
-                if (aDouble == null) {
-                    summaTextView.setText("0.0");
-                } else {
-                    plusSumma = aDouble;
-                    summaTextView.setText(String.valueOf(plusSumma));
-                }
+        amountViewModel.getSumma().observe(getViewLifecycleOwner(), aDouble -> {
+            if (aDouble == null) {
+                summaTextView.setText("0.0");
+            } else {
+                plusSumma = aDouble;
+                summaTextView.setText(String.valueOf(plusSumma));
             }
         });
     }
@@ -243,31 +235,51 @@ public class MainFragment extends Fragment {
                 return;
             }
 
-            double sumDifference = newSum - clickedItem.getSum();
-
-            double newBalance = currentBalance - sumDifference;
-            setSumTextView(newBalance);
-
+            // Создаем объект Finances для обновления
             Finances updatedFinance = new Finances(newCategory, newSum, newComments, date);
             updatedFinance.setId(clickedItem.getId());
+            updatedFinance.setFirestoreId(clickedItem.getFirestoreId());
+            updatedFinance.setSynced(false);
+
+
+            double sumDifference = newSum - clickedItem.getSum();
+            double balanceChange = 0;
+            if (clickedItem.getName().equals("Доход") && newCategory.equals("Доход")) {
+                balanceChange = newSum - clickedItem.getSum();
+            } else if (clickedItem.getName().equals("Расход") && newCategory.equals("Расход")) {
+                balanceChange = -(newSum - clickedItem.getSum());
+            } else if (clickedItem.getName().equals("Доход") && newCategory.equals("Расход")) {
+                balanceChange = -clickedItem.getSum() - newSum;
+            } else if (clickedItem.getName().equals("Расход") && newCategory.equals("Доход")) {
+                balanceChange = clickedItem.getSum() + newSum;
+            }
+
+            currentBalance += balanceChange;
+            setSumTextView(currentBalance);
+
             finViewModel.update(updatedFinance);
 
             Toast.makeText(requireContext(), "Запись обновлена", Toast.LENGTH_SHORT).show();
-            getFinanceList();
             dialogInterface.dismiss();
         });
 
         builder.setNegativeButton("Удалить", (dialogInterface, i) -> {
             Finances financeToDelete = new Finances(clickedItem.getName(), clickedItem.getSum(), clickedItem.getComments(), clickedItem.getDate());
             financeToDelete.setId(clickedItem.getId());
+            financeToDelete.setFirestoreId(clickedItem.getFirestoreId());
 
             finViewModel.delete(financeToDelete);
 
-            double newBalance = currentBalance + clickedItem.getSum();
-            setSumTextView(newBalance);
+            double balanceChange = 0;
+            if (clickedItem.getName().equals("Доход")) {
+                balanceChange = -clickedItem.getSum();
+            } else if (clickedItem.getName().equals("Расход")) {
+                balanceChange = clickedItem.getSum();
+            }
+            currentBalance += balanceChange;
+            setSumTextView(currentBalance);
 
             Toast.makeText(requireContext(), "Запись удалена", Toast.LENGTH_SHORT).show();
-            getFinanceList();
             dialogInterface.dismiss();
         });
 
@@ -288,17 +300,7 @@ public class MainFragment extends Fragment {
     private void setSumTextView(double sum) {
         currentBalance = sum;
         sumTextView.setText(String.valueOf(currentBalance));
-        amountViewModel.insert(new TotalAmount(sum, plusSumma));
-    }
-
-    /**
-     * Вставка данных в базу данных.
-     *
-     * @param sum
-     * @param Plussumma
-     */
-    private void insertToDb(double sum, double Plussumma) {
-        amountViewModel.insert(new TotalAmount(sum, Plussumma));
+        amountViewModel.insert(new TotalAmount(currentBalance, plusSumma));
     }
 
     /**
@@ -312,17 +314,17 @@ public class MainFragment extends Fragment {
 
     /**
      * Обновление общей суммы.
-     * @param expenseAmount
+     * @param expenseAmount - это будет сумма расхода (положительная)
      */
     private void updateTotalSum(double expenseAmount) {
         if (expenseAmount == 0.0) {
             return;
         }
+
         plusSumma = plusSumma + expenseAmount;
         currentBalance = currentBalance - expenseAmount;
         setPlusSummaTextView(plusSumma);
         setSumTextView(currentBalance);
-        insertToDb(currentBalance, plusSumma);
     }
 
     /**
@@ -389,8 +391,6 @@ public class MainFragment extends Fragment {
      * Получение списка транзакций из базы данных.
      */
     private void getFinanceList() {
-        //      repo.deleteAll();        На всякий если удалить нужно
-
         finViewModel.getAllFinances().observe(getViewLifecycleOwner(), new Observer<List<Finances>>() {
             @Override
             public void onChanged(@Nullable List<Finances> finances) {
@@ -398,7 +398,7 @@ public class MainFragment extends Fragment {
 
                 if (finances != null) {
                     for (Finances finance : finances) {
-                        financeList.add(new ShowFinances(finance.getId(), finance.getSumma(), finance.getFinanceResult(), finance.getComments(), finance.getDate()));
+                        financeList.add(new ShowFinances(finance.getId(), finance.getSumma(), finance.getFinanceResult(), finance.getComments(), finance.getDate(), finance.getFirestoreId()));
                     }
                 }
                 Collections.reverse(financeList);
@@ -407,16 +407,8 @@ public class MainFragment extends Fragment {
                 financeAdapter.notifyDataSetChanged();
                 mainCheck.requestLayout();
                 mainCheck.invalidate();
-                Log.d("MainFragmentState", "Finance list updated. ListView in onChanged - Enabled: " + mainCheck.isEnabled() +
-                        ", isShown: " + mainCheck.isShown() +
-                        ", visibility: " + mainCheck.getVisibility() +
-                        ", clickable: " + mainCheck.isClickable() +
-                        ", longClickable: " + mainCheck.isLongClickable() +
-                        ", Adapter item count: " + financeAdapter.getCount());
             }
         });
-
-        amountViewModel.update(new TotalAmount(currentBalance, plusSumma));
     }
 
     /**

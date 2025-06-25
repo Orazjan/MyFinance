@@ -1,5 +1,6 @@
 package com.example.myfinance;
 
+import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 
 import android.os.Bundle;
@@ -26,6 +27,8 @@ import com.example.myfinance.Prevalent.AddSettingToDataStoreManager;
 import com.example.myfinance.Prevalent.StatusBarColorHelper;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.concurrent.TimeUnit;
 
@@ -46,6 +49,25 @@ public class MainActivity extends AppCompatActivity {
     private static final int PROFILE_FRAGMENT_POSITION = 2;
     private AddSettingToDataStoreManager appSettingsManager;
 
+    private FirebaseAuth mAuth;
+    private FirebaseAuth.AuthStateListener mAuthListener;
+
+    /**
+     * Вызывается при запуске активити.
+     */
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (mAuthListener != null) {
+            mAuth.addAuthStateListener(mAuthListener);
+        }
+    }
+
+    /**
+     * Вызывается при создании активити.
+     *
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,8 +88,28 @@ public class MainActivity extends AppCompatActivity {
         fragmentContainer = findViewById(R.id.fragment_container);
         tabLayout = findViewById(R.id.tab_layout);
 
+        if (progressBar != null) {
+            progressBar.setVisibility(VISIBLE);
+        }
+
+        mAuth = FirebaseAuth.getInstance();
+
+        // Добавляем слушатель состояния аутентификации и обновляем UI
+        mAuthListener = firebaseAuth -> {
+            FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+            if (progressBar != null) {
+                progressBar.setVisibility(INVISIBLE);
+            }
+
+            if (currentUser != null) {
+                progressBar.setVisibility(INVISIBLE);
+            } else {
+                progressBar.setVisibility(INVISIBLE);
+            }
+        };
+
+        // Проверяем, что ViewPager не равен null, чтобы избежать NullPointerException
         if (viewPager == null) {
-            Log.e(TAG, "Error: ViewPager2 (R.id.viewPager) not found!");
             Toast.makeText(this, "Application error: ViewPager not found.", Toast.LENGTH_LONG).show();
             finish();
             return;
@@ -109,10 +151,8 @@ public class MainActivity extends AppCompatActivity {
                 public void onTabSelected(TabLayout.Tab tab) {
                     FragmentManager fm = getSupportFragmentManager();
                     if (fm.getBackStackEntryCount() > 0) {
-                        // Если есть открытые вторичные фрагменты, очищаем Back Stack
                         fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                     }
-                    Log.d(TAG, "Selected tab: " + tab.getText() + ", position: " + tab.getPosition());
                 }
 
                 @Override
@@ -123,13 +163,13 @@ public class MainActivity extends AppCompatActivity {
                 public void onTabReselected(TabLayout.Tab tab) {
                     FragmentManager fm = getSupportFragmentManager();
                     if (fm.getBackStackEntryCount() > 0) {
-                        // При повторном выборе вкладки, если есть вторичные фрагменты, закрываем их
                         fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                     }
                 }
             });
         }
 
+        // Добавляем слушатель состояния BackStack
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {
             int backStackCount = getSupportFragmentManager().getBackStackEntryCount();
 
@@ -159,6 +199,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // Добавляем обработчик OnBackPressedCallback
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -193,6 +234,18 @@ public class MainActivity extends AppCompatActivity {
                 fragmentContainer.setVisibility(View.GONE);
             if (viewPager != null) viewPager.setVisibility(VISIBLE);
         });
+    }
+
+    /**
+     * Вызывается при остановке активити.
+     * Открепляем слушатель состояния аутентификации, чтобы избежать утечек памяти.
+     */
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mAuthListener != null) {
+            mAuth.removeAuthStateListener(mAuthListener);
+        }
     }
 
     /**

@@ -26,7 +26,9 @@ public abstract class FinanceDatabase extends RoomDatabase {
         if (INSTANCE == null) {
             synchronized (FinanceDatabase.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = Room.databaseBuilder(context.getApplicationContext(), FinanceDatabase.class, "finance_Database").build();
+                    INSTANCE = Room.databaseBuilder(context.getApplicationContext(), FinanceDatabase.class, "finance_Database")
+                            .fallbackToDestructiveMigration()
+                            .build();
                 }
             }
         }

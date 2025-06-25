@@ -22,7 +22,14 @@ public class Finances {
     @ColumnInfo(name = "date")
     private String date;
 
+    @ColumnInfo(name = "isSynced")
+    private boolean isSynced;
+
+    private String firestoreId;
+
     public Finances() {
+        this.isSynced = false;
+        this.firestoreId = null;
     }
 
     public Finances(String financeResult, double summa, String comments, String date) {
@@ -30,6 +37,16 @@ public class Finances {
         this.FinanceResult = financeResult;
         this.summa = summa;
         this.comments = comments;
+        this.isSynced = false;
+    }
+
+    public Finances(String firestoreId, String financeResult, double summa, String comments, String date) {
+        this.firestoreId = firestoreId;
+        this.date = date;
+        this.FinanceResult = financeResult;
+        this.summa = summa;
+        this.comments = comments;
+        this.isSynced = true;
     }
 
     public String getFinanceResult() {
@@ -72,9 +89,32 @@ public class Finances {
         this.date = date;
     }
 
+    public void setFirestoreId(String firestoreId) {
+        this.firestoreId = firestoreId;
+    }
+
+    public String getFirestoreId() {
+        return firestoreId;
+    }
+
+    public boolean isSynced() {
+        return isSynced;
+    }
+
+    public void setSynced(boolean synced) {
+        isSynced = synced;
+    }
+
     @NonNull
     @Override
     public String toString() {
-        return "Finances{" + "comments='" + comments + '\'' + ", id=" + id + ", FinanceResult='" + FinanceResult + '\'' + ", summa=" + summa + ", date=" + date + '}';
+        return "Finances{" +
+                "comments='" + comments + '\'' +
+                ", id=" + id +
+                ", FinanceResult='" + FinanceResult + '\'' +
+                ", summa=" + summa +
+                ", date='" + date + '\'' +
+                ", firestoreId='" + firestoreId + '\'' +
+                '}';
     }
 }

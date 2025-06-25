@@ -40,6 +40,15 @@ public class AnalizFragment extends Fragment {
     private Double summa;
     private List<String> xAxisLabels = new ArrayList<>();
 
+    /**
+     * Вызывается после создания фрагмента.
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateSum();
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -64,17 +73,7 @@ public class AnalizFragment extends Fragment {
         AmountRepository amrepo = new AmountRepository(amdb.daoTotalAmount());
         AmountViewModel.TaskViewModelFactory amViewModelTaskFactory = new AmountViewModel.TaskViewModelFactory(amrepo);
         amountViewModel = new ViewModelProvider(requireActivity(), amViewModelTaskFactory).get(AmountViewModel.class);
-        amountViewModel.getSumma().observe(getViewLifecycleOwner(), new Observer<Double>() {
-            @Override
-            public void onChanged(Double aDouble) {
-                if (aDouble == null) {
-                    summa = aDouble;
-                } else {
-                    summa = aDouble;
-                }
-            }
-        });
-
+        updateSum();
         financeChartViewModel.getPieChartData().observe(getViewLifecycleOwner(), pieEntries -> {
             if (pieEntries != null && !pieEntries.isEmpty()) {
                 setupPieChart(pieEntries);
@@ -83,6 +82,22 @@ public class AnalizFragment extends Fragment {
                 pieChart.invalidate();
                 pieChart.setNoDataText("Нет данных для кругового графика");
                 pieChart.setNoDataTextColor(Color.BLACK);
+            }
+        });
+    }
+
+    /**
+     * Обновляется сумма
+     */
+    private void updateSum() {
+        amountViewModel.getSumma().observe(getViewLifecycleOwner(), new Observer<Double>() {
+            @Override
+            public void onChanged(Double aDouble) {
+                if (aDouble == null) {
+                    summa = aDouble;
+                } else {
+                    summa = aDouble;
+                }
             }
         });
     }

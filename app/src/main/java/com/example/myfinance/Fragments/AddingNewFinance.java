@@ -22,12 +22,13 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.myfinance.Models.CategoryViewModel;
+import com.example.myfinance.Models.FinanceViewModel;
+import com.example.myfinance.MyApplication;
 import com.example.myfinance.Prevalent.DateFormatter;
 import com.example.myfinance.R;
 import com.example.myfinance.data.Categories;
 import com.example.myfinance.data.CategoryDataBase;
 import com.example.myfinance.data.CategoryRepository;
-import com.example.myfinance.data.FinanceDatabase;
 import com.example.myfinance.data.FinanceRepository;
 import com.example.myfinance.data.Finances;
 import com.google.android.material.textfield.TextInputEditText;
@@ -49,6 +50,7 @@ public class AddingNewFinance extends Fragment {
     private CategoryViewModel.TaskViewModelFactory viewModelFactory;
     private CategoryRepository repository;
     private CategoryDataBase database;
+    private FinanceViewModel financeViewModel;
 
     @Nullable
     @Override
@@ -56,6 +58,11 @@ public class AddingNewFinance extends Fragment {
         return inflater.inflate(R.layout.adding_new_finance_fragment, container, false);
     }
 
+    /**
+     * @param view               The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     *                           from a previous saved state as given here.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -73,6 +80,10 @@ public class AddingNewFinance extends Fragment {
 //        repository.deleteAll();   На всякий случай (удаляет всё)
         viewModelFactory = new CategoryViewModel.TaskViewModelFactory(repository);
         categoryViewModel = new ViewModelProvider(requireActivity(), viewModelFactory).get(CategoryViewModel.class);
+        FinanceRepository financeRepository = ((MyApplication) requireActivity().getApplication()).getFinanceRepository();
+        FinanceViewModel.TaskViewModelFactory finViewModelTaskFactory = new FinanceViewModel.TaskViewModelFactory(financeRepository);
+        financeViewModel = new ViewModelProvider(requireActivity(), finViewModelTaskFactory).get(FinanceViewModel.class);
+
         loadAndDisplay();
 
         standart_variant.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -187,12 +198,9 @@ public class AddingNewFinance extends Fragment {
      * @param comments
      */
     private void addingToDb(String reason, double sum, String comments) {
-        FinanceDatabase database = FinanceDatabase.getDatabase(requireActivity().getApplication());
-        FinanceRepository repository = new FinanceRepository(database.daoFinances());
-
-        repository.insert(new Finances(reason, sum, comments, getCurrentDate()));
+        Finances newFinance = new Finances(reason, sum, comments, getCurrentDate());
+        financeViewModel.insert(newFinance);
         Toast.makeText(requireContext(), "Данные добавлены!", Toast.LENGTH_SHORT).show();
-        Log.d("Adding to ROOM", "Sum and reason " + reason + " " + sum);
     }
 
     /**

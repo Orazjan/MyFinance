@@ -6,13 +6,17 @@ plugins {
 android {
     namespace = "com.example.myfinance"
     compileSdk = 35
-
+    buildFeatures {
+        buildConfig = true
+    }
     defaultConfig {
         applicationId = "com.example.myfinance"
         minSdk = 28
         targetSdk = 35
         versionCode = 1
         versionName = "0.8"
+
+        buildConfigField("boolean", "FIREBASE_DEBUG", "true")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -41,16 +45,19 @@ dependencies {
     implementation (libs.lifecycle.viewmodel.v262)
 
     implementation (libs.facebook.android.sdk)
+
+    implementation(libs.firebase.firestore.ktx)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.auth)
     implementation (libs.facebook.login)
     implementation(libs.firebase.firestore)
+    implementation(libs.work.runtime.ktx)
 
     implementation(libs.room.runtime)
     implementation(libs.annotation)
     implementation(libs.lifecycle.livedata.ktx)
     implementation(libs.lifecycle.viewmodel.ktx)
-    implementation(libs.firebase.auth)
     implementation(libs.credentials)
     implementation(libs.credentials.play.services.auth)
     implementation(libs.googleid)

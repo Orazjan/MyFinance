@@ -32,6 +32,19 @@
                 android:textColor="?attr/colorOnPrimary"
                 android:textSize="30sp"
                 android:textStyle="italic|bold" />
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="30sp"
+                android:layout_height="30sp"
+                android:layout_gravity="end"
+                android:layout_marginEnd="10sp"
+                android:indeterminateTint="?attr/colorOnPrimary"
+                android:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -69,17 +82,5 @@
         app:layout_constraintStart_toStartOf="parent"
         app:tabGravity="fill"
         app:tabMode="fixed" />
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:indeterminateTint="?attr/colorPrimary"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

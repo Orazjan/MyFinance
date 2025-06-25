@@ -17,7 +17,7 @@ import java.util.List;
 @Dao
 public interface DAOFinances {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    void insert(Finances finances);
+    long insert(Finances finances);
 
     @Update
     void update(Finances finances);
@@ -60,4 +60,13 @@ public interface DAOFinances {
             "WHERE suma > 0 " +
             "GROUP BY date ORDER BY date ASC")
     LiveData<List<DateSum>> getExpensesByDate();
+
+    @Query("SELECT * FROM Finances WHERE isSynced = 0")
+    List<Finances> getUnsyncedFinances();
+
+    @Query("UPDATE Finances SET isSynced = :isSynced, firestoreId = :firestoreId WHERE id = :roomId")
+    void updateSyncStatus(int roomId, String firestoreId, boolean isSynced);
+
+    @Update(onConflict = OnConflictStrategy.REPLACE)
+    void updateFinances(Finances finances);
 }

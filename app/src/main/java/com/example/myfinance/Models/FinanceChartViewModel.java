@@ -6,8 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
+import com.example.myfinance.MyApplication;
 import com.example.myfinance.data.DateSum;
-import com.example.myfinance.data.FinanceDatabase;
 import com.example.myfinance.data.FinanceRepository;
 import com.github.mikephil.charting.data.PieEntry;
 
@@ -20,8 +20,7 @@ public class FinanceChartViewModel extends AndroidViewModel {
 
     public FinanceChartViewModel(@NonNull Application application) {
         super(application);
-        FinanceDatabase db = FinanceDatabase.getDatabase(application);
-        repository = new FinanceRepository(db.daoFinances());
+        this.repository = ((MyApplication) application).getFinanceRepository();
         pieChartData = repository.getExpensesForPieChart();
         lineChartDateSums = repository.getExpensesDateSums();
     }
@@ -32,5 +31,9 @@ public class FinanceChartViewModel extends AndroidViewModel {
 
     public LiveData<List<DateSum>> getLineChartDateSums() {
         return lineChartDateSums;
+    }
+
+    public void syncDataFromFirestore(FinanceRepository.SyncCallback callback) {
+        repository.syncFromFirestore(callback);
     }
 }

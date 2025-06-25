@@ -3,22 +3,27 @@ package com.example.myfinance.Models;
 import androidx.annotation.NonNull;
 
 public class ShowFinances {
-    private int id;
+    private int id; // Room ID
     private double sum;
-    private String name;
+    private String name; // Category
     private String comments;
     private String date;
+    private String firestoreId;
 
     public ShowFinances() {
     }
 
-    public ShowFinances(int id, double sum, String name, String comments, String date) {
+    public ShowFinances(int id, double sum, String name, String comments, String date, String firestoreId) {
         this.id = id;
         this.sum = sum;
         this.name = name;
         this.comments = comments;
         this.date = date;
+        this.firestoreId = firestoreId;
+    }
 
+    public String getFirestoreId() {
+        return firestoreId;
     }
 
     public int getId() {
