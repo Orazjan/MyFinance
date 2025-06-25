@@ -3,6 +3,9 @@ package com.example.myfinance.Fragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -83,8 +86,10 @@ public class AddingNewFinance extends Fragment {
         FinanceRepository financeRepository = ((MyApplication) requireActivity().getApplication()).getFinanceRepository();
         FinanceViewModel.TaskViewModelFactory finViewModelTaskFactory = new FinanceViewModel.TaskViewModelFactory(financeRepository);
         financeViewModel = new ViewModelProvider(requireActivity(), finViewModelTaskFactory).get(FinanceViewModel.class);
+        btnAdd.setEnabled(false);
 
         loadAndDisplay();
+        setupTextWatchers();
 
         standart_variant.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -142,39 +147,101 @@ public class AddingNewFinance extends Fragment {
         String sumStr = Objects.requireNonNull(sumEditText.getText()).toString().trim();
         String reason = Objects.requireNonNull(reasonEditText.getText()).toString().trim();
         String comments = Objects.requireNonNull(commentsEditText.getText()).toString().trim();
+        boolean isValid = true;
+
+        if (TextUtils.isEmpty(selectedCategory) || "Категория не выбрана" .equals(selectedCategory)) {
+            Toast.makeText(getContext(), "Пожалуйста, выберите категорию", Toast.LENGTH_SHORT).show();
+            isValid = false;
+        }
 
         if (sumStr.isEmpty()) {
             sumInputLayout.setError("Введите сумму");
-            return;
+            isValid = false;
         } else {
-            sumInputLayout.setError(null);
+            try {
+                Double.parseDouble(sumStr);
+                sumInputLayout.setError(null);
+            } catch (NumberFormatException e) {
+                sumInputLayout.setError("Неверный формат суммы");
+                isValid = false;
+            }
         }
 
         if (reason.isEmpty()) {
             reasonInputLayout.setError("Введите причину");
-            return;
+            isValid = false;
         } else {
             reasonInputLayout.setError(null);
         }
 
-        if (selectedCategory == null || selectedCategory.isEmpty() || selectedCategory.equals("Категория не выбрана")) {
-            Toast.makeText(getContext(), "Пожалуйста, выберите категорию", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        if (!isValid) return;
 
-        try {
-            double sum = Double.parseDouble(sumStr);
+        double sum = Double.parseDouble(sumStr);
+        addingToDb(reason, sum, comments);
+        clearFields();
+        popBackAndPassData(sum);
+    }
 
-            sumEditText.setText("");
-            reasonEditText.setText("");
-            commentsEditText.setText("");
-            addingToDb(reason, sum, comments);
+    /**
+     * Очиста полей ввода.
+     */
+    private void clearFields() {
+        sumEditText.setText("");
+        reasonEditText.setText("");
+        commentsEditText.setText("");
+    }
 
-            popBackAndPassData(sum);
-        } catch (NumberFormatException e) {
-            sumInputLayout.setError("Неверный формат суммы");
-            Log.e("AddingNewFinance", "NumberFormatException: " + e.getMessage());
-        }
+    /**
+     * Настройка слушателей для полей ввода.
+     */
+    private void setupTextWatchers() {
+        TextWatcher watcher = new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                validateFieldsForButton();
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+        };
+
+        sumEditText.addTextChangedListener(watcher);
+        reasonEditText.addTextChangedListener(watcher);
+
+        standart_variant.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                selectedCategory = adapterView.getItemAtPosition(i).toString();
+                setToReasonAndSum(selectedCategory);
+                validateFieldsForButton();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                selectedCategory = null;
+                validateFieldsForButton();
+            }
+        });
+    }
+
+    /**
+     * Проверяет, являются ли все поля заполнены,
+     */
+    private void validateFieldsForButton() {
+        String sum = sumEditText.getText() != null ? sumEditText.getText().toString().trim() : "";
+        String reason = reasonEditText.getText() != null ? reasonEditText.getText().toString().trim() : "";
+
+        boolean isValid = !sum.isEmpty() &&
+                !reason.isEmpty() &&
+                selectedCategory != null &&
+                !selectedCategory.equals("Категория не выбрана");
+
+        btnAdd.setEnabled(isValid);
     }
 
     /**
@@ -254,7 +321,6 @@ public class AddingNewFinance extends Fragment {
      * @return
      */
     public String getCurrentDate() {
-
         return DateFormatter.formatDate(new Date());
     }
 }
