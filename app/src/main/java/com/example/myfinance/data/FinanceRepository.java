@@ -43,31 +43,72 @@ public class FinanceRepository {
         auth.addAuthStateListener(firebaseAuth -> {
             FirebaseUser user = firebaseAuth.getCurrentUser();
             if (user != null) {
-                // Пользователь авторизовался. Запускаем фоновую синхронизацию.
-                System.out.println("Auth state changed: User is logged in. Starting background sync.");
-                syncUnsyncedDataToFirestore();
+                syncUnsyncedDataToFirestore().addOnCompleteListener(pushTask -> {
+                    if (pushTask.isSuccessful()) {
+                        syncFromFirestore(new SyncCallback() {
+                            @Override
+                            public void onSyncComplete(boolean success, String message) {
+                                if (success) {
+                                    Log.d(TAG, "Full sync from Firestore completed successfully: " + message);
+                                } else {
+                                    Log.e(TAG, "Full sync from Firestore failed: " + message);
+                                }
+                            }
+                        });
+                    } else {
+                        Log.e(TAG, "Failed to push unsynced local data to Firestore: " + pushTask.getException().getMessage());
+                    }
+                });
+
             } else {
                 System.out.println("Auth state changed: User is logged out.");
             }
         });
     }
 
+    /**
+     * Получение комментариев
+     *
+     * @return
+     */
     public LiveData<List<String>> getComments() {
         return daoFinances.getComments();
     }
 
+    /**
+     * Получение всех записей
+     *
+     * @return
+     */
     public LiveData<List<Finances>> getAllFinances() {
         return allFinances;
     }
 
+    /**
+     * Получение записи по ID
+     *
+     * @param id
+     * @return
+     */
     public LiveData<Finances> getFinancesById(int id) {
         return daoFinances.getFinancesById(id);
     }
 
+    /**
+     * Получение количества записей
+     *
+     * @return
+     */
     public int getFinanceCount() {
         return daoFinances.getFinanceCount();
     }
 
+    /**
+     * Получение даты по ID
+     *
+     * @param id
+     * @return
+     */
     public LiveData<List<String>> getDateById(int id) {
         return daoFinances.getDateById(id);
     }
@@ -87,48 +128,53 @@ public class FinanceRepository {
         return null;
     }
 
+    /**
+     * Вставка записи в Room и Firestore
+     * @param finances
+     */
     public void insert(Finances finances) {
         finances.setSynced(false);
         finances.setFirestoreId(null);
+
+        Log.d(TAG, "Insert (pre-Room): RoomID=" + finances.getId() + ", FirestoreID=" + finances.getFirestoreId() + ", isSynced=" + finances.isSynced());
 
         databaseWriteExeutor.execute(() -> {
             long roomId = daoFinances.insert(finances);
             finances.setId((int) roomId);
 
+            Log.d(TAG, "Insert (post-Room): RoomID=" + finances.getId() + ", FirestoreID=" + finances.getFirestoreId() + ", isSynced=" + finances.isSynced());
+
             attemptFirestoreSync(finances);
         });
     }
 
     /**
-     * Обновление данных в Room
-     *
+     * Обновление записи в Room и Firestore
      * @param finances
      */
     public void update(Finances finances) {
         finances.setSynced(false);
 
+        Log.d(TAG, "Update (pre-Room): RoomID=" + finances.getId() + ", FirestoreID=" + finances.getFirestoreId() + ", isSynced=" + finances.isSynced());
+
         databaseWriteExeutor.execute(() -> {
             daoFinances.update(finances);
+            Log.d(TAG, "Update (post-Room): RoomID=" + finances.getId() + ", FirestoreID=" + finances.getFirestoreId() + ", isSynced=" + finances.isSynced());
             attemptFirestoreSync(finances);
         });
     }
 
     /**
-     * Удаление данных из Room
-     *
+     * Удаление записи из Room и Firestore
      * @param finances
      */
     public void delete(Finances finances) {
         databaseWriteExeutor.execute(() -> {
-
             daoFinances.delete(finances);
 
             CollectionReference userFinancesRef = getUserFinancesCollection();
             if (userFinancesRef != null && finances.getFirestoreId() != null) {
-                userFinancesRef.document(finances.getFirestoreId()).delete()
-                        .addOnSuccessListener(aVoid ->
-                                Log.d(TAG, "DocumentSnapshot successfully deleted!"))
-                        .addOnFailureListener(e -> Log.w(TAG, "Error deleting document", e));
+                userFinancesRef.document(finances.getFirestoreId()).delete().addOnSuccessListener(aVoid -> System.out.println("DocumentSnapshot successfully deleted!")).addOnFailureListener(e -> System.err.println("Error deleting document: " + e.getMessage()));
             } else {
                 Log.e(TAG, "User not authenticated or Firestore ID is missing for delete.");
             }
@@ -136,7 +182,7 @@ public class FinanceRepository {
     }
 
     /**
-     * Удаление всех данных из Room
+     * Удаление всех записей из Room и Firestore
      */
     public void deleteAll() {
         databaseWriteExeutor.execute(() -> {
@@ -195,13 +241,19 @@ public class FinanceRepository {
         MediatorLiveData<List<Entry>> result = new MediatorLiveData<>();
         result.addSource(daoFinances.getExpensesByDate(), dateSums -> {
             List<Entry> entries = new ArrayList<>();
+
         });
         return null;
     }
 
+    /**
+     * Для линейного графика
+     * @return
+     */
     public LiveData<List<DateSum>> getExpensesDateSums() {
         return daoFinances.getExpensesByDate();
     }
+
 
     /**
      * Для кругового графика (доходы по категориям)
@@ -229,8 +281,7 @@ public class FinanceRepository {
     }
 
     /**
-     * Синхронизация данных в Firestore
-     *
+     * Синхронизация данных с Firestore
      * @param finances
      */
     private void attemptFirestoreSync(Finances finances) {
@@ -247,7 +298,8 @@ public class FinanceRepository {
                             });
                         })
                         .addOnFailureListener(e -> {
-                            Log.e(TAG, "Firestore UPDATE FAILED for Room ID: " + finances.getId() + ": " + e.getMessage(), e);
+                            System.err.println("Error updating finances to Firestore: " + e.getMessage());
+                            Log.e(TAG, "Error updating finances to Firestore for Room ID: " + finances.getId(), e);
                         });
             } else {
                 userFinancesRef.add(finances)
@@ -260,7 +312,8 @@ public class FinanceRepository {
                             });
                         })
                         .addOnFailureListener(e -> {
-                            Log.e(TAG, "Firestore ADD FAILED for Room ID: " + finances.getId() + ": " + e.getMessage(), e);
+                            System.err.println("Error adding finances to Firestore: " + e.getMessage());
+                            Log.e(TAG, "Error adding finances to Firestore for Room ID: " + finances.getId(), e);
                         });
             }
         } else {
@@ -269,24 +322,26 @@ public class FinanceRepository {
     }
 
     /**
-     * Синхронизация несинхронизированных данных из Room в Firestore
+     * Синхронизация несинхронизированных данных из Room в Firestore.
+     * Возвращает Task, чтобы можно было отслеживать завершение.
      */
-    public void syncUnsyncedDataToFirestore() {
+    public Task<Void> syncUnsyncedDataToFirestore() {
         FirebaseUser user = auth.getCurrentUser();
         CollectionReference userFinancesRef = getUserFinancesCollection();
 
+        Log.d(TAG, "syncUnsyncedDataToFirestore called. Current Firebase User: " + (user != null ? user.getEmail() : "null"));
+
         if (user == null || userFinancesRef == null) {
             Log.d(TAG, "syncUnsyncedDataToFirestore SKIPPED. User not authenticated or Firestore ref null.");
-            return;
+            return Tasks.forResult(null);
         }
-        /*
-          Синхронизация несинхронизированных данных из Room в Firestore
-         */
-        databaseWriteExeutor.execute(() -> {
+
+        return Tasks.call(databaseWriteExeutor, () -> {
             List<Finances> unsyncedFinances = daoFinances.getUnsyncedFinances();
+
             if (unsyncedFinances.isEmpty()) {
                 Log.d(TAG, "No unsynced finances found.");
-                return;
+                return null;
             }
 
             List<Task<Void>> syncTasks = new ArrayList<>();
@@ -298,12 +353,13 @@ public class FinanceRepository {
                                 if (task.isSuccessful()) {
                                     databaseWriteExeutor.execute(() -> {
                                         finance.setSynced(true);
+
                                         daoFinances.update(finance);
                                     });
                                 } else {
                                     Log.e(TAG, "syncUnsynced: UPDATE FAILED for Room ID: " + finance.getId() + ": " + task.getException());
                                 }
-                                return (Void) null;
+                                return null;
                             }));
                 } else {
                     syncTasks.add(userFinancesRef.add(finance)
@@ -318,14 +374,17 @@ public class FinanceRepository {
                                 } else {
                                     Log.e(TAG, "syncUnsynced: ADD FAILED for Room ID: " + finance.getId() + ": " + task.getException());
                                 }
-                                return (Void) null;
+                                return null;
                             }));
                 }
             }
-            Tasks.whenAllComplete(syncTasks)
-                    .addOnCompleteListener(allTasks -> {
-                        System.out.println("Completed all unsynced data sync attempts.");
-                    });
+            return Tasks.whenAllComplete(syncTasks);
+        }).continueWith(task -> {
+            if (!task.isSuccessful()) {
+                Log.e(TAG, "Error during syncUnsyncedDataToFirestore batch operation: " + task.getException().getMessage());
+                throw task.getException();
+            }
+            return null;
         });
     }
 
@@ -354,19 +413,21 @@ public class FinanceRepository {
                             finance.setSynced(true);
                             daoFinances.insert(finance);
                         }
+                        Log.d(TAG, "Full sync from Firestore completed. " + queryDocumentSnapshots.size() + " documents loaded.");
                         if (callback != null)
                             callback.onSyncComplete(true, "Data synced successfully.");
                     });
                 })
                 .addOnFailureListener(e -> {
-                    Log.d(TAG, "syncFromFirestore: FAILED: " + e.getMessage());
+                    System.err.println("Error syncing data from Firestore: " + e.getMessage());
+                    Log.e(TAG, "Full sync from Firestore FAILED: " + e.getMessage(), e);
                     if (callback != null)
                         callback.onSyncComplete(false, "Error syncing data: " + e.getMessage());
                 });
     }
 
     /**
-     * Интерфейс для коллбэка синхронизации
+     * Интерфейс для обратного вызова после завершения синхронизации.
      */
     public interface SyncCallback {
         void onSyncComplete(boolean success, String message);

@@ -12,7 +12,7 @@ import com.example.myfinance.data.TotalAmount;
 
 @Dao
 public interface DAOTotalAmount {
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(TotalAmount totalAmount);
 
     @Update
@@ -24,7 +24,6 @@ public interface DAOTotalAmount {
     @Query("SELECT SUM(amount) FROM Total_amount")
     Double getSumAmounts();
 
-
     @Query("DELETE FROM total_amount")
     void deleteAll();
 
@@ -33,4 +32,10 @@ public interface DAOTotalAmount {
 
     @Query("SELECT summa FROM total_amount ORDER BY id DESC LIMIT 1")
     LiveData<Double> getSumma();
+
+    @Query("SELECT * FROM total_amount WHERE id = :id LIMIT 1")
+    LiveData<TotalAmount> getTotalAmountById(int id);
+
+    @Query("SELECT * FROM total_amount WHERE id = :id LIMIT 1")
+    TotalAmount getSingleTotalAmountById(int id);
 }
