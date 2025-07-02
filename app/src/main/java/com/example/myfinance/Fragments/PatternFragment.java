@@ -20,7 +20,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -30,25 +29,22 @@ import com.example.myfinance.Models.CategoryViewModel;
 import com.example.myfinance.Prevalent.CategoryItem;
 import com.example.myfinance.R;
 import com.example.myfinance.data.Categories;
-import com.example.myfinance.data.CategoryDataBase;
-import com.example.myfinance.data.CategoryRepository;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class PatternFragment extends Fragment {
+    private final String TAG = "PatternFragment";
+
     private TextInputLayout reasonInputLayout, sumInputLayout;
     private TextInputEditText reasonEditText, sumEditText;
     private Button btnAddPattern;
     private double sumInDouble;
     private String reason;
     private RecyclerView RecyclerForCategory;
-    private CategoryRepository categoryRepository;
-    private CategoryViewModel.TaskViewModelFactory viewModelFactory;
-    private CategoryDataBase database;
+
     private CategoryViewModel categoryViewModel;
     private CategoryViewAdapter CategoryAdapter;
 
@@ -68,50 +64,65 @@ public class PatternFragment extends Fragment {
         btnAddPattern = view.findViewById(R.id.btnaddPattern);
         RecyclerForCategory = view.findViewById(R.id.RecyclerForCategory);
 
-        database = CategoryDataBase.getDatabase(requireActivity().getApplication());
-        categoryRepository = new CategoryRepository(database.daoCategories());
-        viewModelFactory = new CategoryViewModel.TaskViewModelFactory(categoryRepository);
-        categoryViewModel = new ViewModelProvider(requireActivity(), viewModelFactory).get(CategoryViewModel.class);
+        categoryViewModel = new ViewModelProvider(requireActivity(), new CategoryViewModel.TaskViewModelFactory(requireActivity().getApplication())).get(CategoryViewModel.class);
+
         loadAndDisplay();
-        checkFields();
-        onClickAdapter();
+        setupTextWatchersAndClickListeners();
     }
 
+    /**
+     * Загружает и отображает все категории из базы данных Room.
+     * Использует LiveData из CategoryViewModel для реактивного обновления UI.
+     */
     private void loadAndDisplay() {
-        categoryViewModel.getAllCategories().observe(getViewLifecycleOwner(), new Observer<List<Categories>>() {
-            @Override
-            public void onChanged(List<Categories> categories) {
-                Log.d("PatternFragment", "All categories from DB: " + categories);
-                List<CategoryItem> categoryNames = new ArrayList<>();
-                for (Categories category : categories) {
-                    categoryNames.add(new CategoryItem(category.getCategoryName(), category.getSum()));
-                }
-                if (CategoryAdapter == null) {
-                    RecyclerForCategory.setLayoutManager(new LinearLayoutManager(requireContext()));
-                    CategoryAdapter = new CategoryViewAdapter(categoryNames);
-                    RecyclerForCategory.setAdapter(CategoryAdapter);
-                    onClickAdapter();
-                } else {
-                    CategoryAdapter.clear();
-                    CategoryAdapter.setItems(categoryNames);
-                    CategoryAdapter.notifyDataSetChanged();
-                }
+        categoryViewModel.getAllCategories().observe(getViewLifecycleOwner(), categories -> {
+            List<CategoryItem> categoryItems = new ArrayList<>();
+            for (Categories category : categories) {
+                categoryItems.add(new CategoryItem(category.getCategoryName(), category.getSum()));
+            }
+
+            if (CategoryAdapter == null) {
+                RecyclerForCategory.setLayoutManager(new LinearLayoutManager(requireContext()));
+                CategoryAdapter = new CategoryViewAdapter(categoryItems);
+                RecyclerForCategory.setAdapter(CategoryAdapter);
+                onClickAdapter();
+            } else {
+                CategoryAdapter.clear();
+                CategoryAdapter.setItems(categoryItems);
+                CategoryAdapter.notifyDataSetChanged();
             }
         });
     }
 
+    /**
+     * Настраивает слушатель кликов для адаптера RecyclerView.
+     * Теперь использует getCategoryByNameAsync для одноразового получения данных.
+     */
     private void onClickAdapter() {
         if (CategoryAdapter != null) {
             CategoryAdapter.setOnItemClickListener(item -> {
-                showCategoryActionsDialog(item.getCategoryName(), item.getSum());
-                CategoryAdapter.notifyDataSetChanged();
+                // Используем getCategoryByNameAsync для одноразового получения категории
+                categoryViewModel.getCategoryByNameAsync(item.getCategoryName()).addOnSuccessListener(categories -> {
+                    if (categories != null) {
+                        showCategoryActionsDialog(categories);
+                    } else {
+                        Log.e(TAG, "onClickAdapter: Category " + item.getCategoryName() + " not found for dialog (might have been deleted concurrently).");
+                        Toast.makeText(requireContext(), "Категория не найдена или была удалена.", Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnFailureListener(e -> {
+                    Log.e(TAG, "onClickAdapter: Failed to retrieve category asynchronously for " + item.getCategoryName() + ": " + e.getMessage(), e);
+                    Toast.makeText(requireContext(), "Ошибка при загрузке категории.", Toast.LENGTH_SHORT).show();
+                });
             });
         } else {
-            Log.e("PatternFragment", "CategoryAdapter is null in onClickAdapter(). This should not happen if called correctly.");
+            Log.e(TAG, "onClickAdapter(): CategoryAdapter is null. This should not happen if called correctly.");
         }
     }
 
-    private void checkFields() {
+    /**
+     * Объединяет настройку TextWatchers и OnClickListener для кнопок.
+     */
+    private void setupTextWatchersAndClickListeners() {
         reasonEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -123,13 +134,13 @@ public class PatternFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                if (reasonEditText.getText().toString().trim().isEmpty()) {
+                reason = editable.toString().trim();
+                if (reason.isEmpty()) {
                     reasonInputLayout.setError("Причина не может быть пустой");
-                    reason = "";
                 } else {
                     reasonInputLayout.setError(null);
-                    reason = Objects.requireNonNull(reasonEditText.getText()).toString().trim();
                 }
+                updateAddButtonState();
             }
         });
 
@@ -144,7 +155,7 @@ public class PatternFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                String sumText = sumEditText.getText().toString().trim();
+                String sumText = editable.toString().trim();
                 if (sumText.isEmpty()) {
                     sumInputLayout.setError("Сумма не может быть пустой");
                     sumInDouble = 0;
@@ -157,22 +168,66 @@ public class PatternFragment extends Fragment {
                         sumInDouble = 0;
                     }
                 }
+                updateAddButtonState();
             }
         });
 
         btnAddPattern.setOnClickListener(v -> {
-            if (reason.isEmpty() || sumInDouble <= 0) {
-                Toast.makeText(requireContext(), "Пожалуйста, введите корректные данные для шаблона.", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "btnAddPattern clicked.");
+            if (reason == null || reason.isEmpty()) {
+                reasonInputLayout.setError("Введите причину");
+                Toast.makeText(requireContext(), "Причина не может быть пустой.", Toast.LENGTH_SHORT).show();
+                Log.w(TAG, "Add button clicked: Reason is empty.");
+                return;
+            }
+            if (sumInDouble <= 0) {
+                sumInputLayout.setError("Сумма должна быть больше нуля");
+                Toast.makeText(requireContext(), "Сумма должна быть больше нуля.", Toast.LENGTH_SHORT).show();
+                Log.w(TAG, "Add button clicked: Sum is not positive.");
                 return;
             }
 
+            Categories newCategory = new Categories(reason, sumInDouble);
+            Log.d(TAG, "btnAddPattern: Attempting to insert new category via ViewModel: " + newCategory.getCategoryName() + ", Sum: " + newCategory.getSum());
+            categoryViewModel.insert(newCategory);
+
             Toast.makeText(requireContext(), "Шаблон добавлен!", Toast.LENGTH_SHORT).show();
-            categoryRepository.insert(new Categories(reason, sumInDouble));
-            requireActivity().getSupportFragmentManager().popBackStack();
+            clearInputFields();
+            hideKeyboard(v);
+            Log.d(TAG, "btnAddPattern: Category added, fields cleared, keyboard hidden.");
         });
+
+        updateAddButtonState();
     }
 
-    private void showCategoryActionsDialog(String categoryName, double currentSum) {
+    /**
+     * Очищает поля ввода.
+     */
+    private void clearInputFields() {
+        reasonEditText.setText("");
+        sumEditText.setText("");
+        reasonInputLayout.setError(null);
+        sumInputLayout.setError(null);
+    }
+
+    /**
+     * Обновляет состояние кнопки "Добавить".
+     * Если причина и сумма не пустые, кнопка становится активной.
+     * Иначе - неактивной.
+     */
+    private void updateAddButtonState() {
+        boolean isReasonValid = reason != null && !reason.isEmpty();
+        boolean isSumValid = sumInDouble > 0;
+        btnAddPattern.setEnabled(isReasonValid && isSumValid);
+    }
+
+    /**
+     * Показывает диалог для изменения или удаления категории.
+     * Теперь принимает полный объект Categories.
+     *
+     * @param category Объект категории, которую нужно изменить или удалить.
+     */
+    private void showCategoryActionsDialog(Categories category) {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
 
@@ -181,13 +236,16 @@ public class PatternFragment extends Fragment {
         EditText editTextSum = dialogView.findViewById(R.id.sum_edit_text);
         ImageView imgClose = dialogView.findViewById(R.id.imgClose);
 
-        instructionTextView.setText("Изменить сумму для " + categoryName + ":");
-        editTextSum.setText(String.valueOf(currentSum));
+        instructionTextView.setText("Изменить сумму для " + category.getCategoryName() + ":");
+        editTextSum.setText(String.valueOf(category.getSum()));
         editTextSum.setSelection(editTextSum.getText().length());
 
         builder.setView(dialogView);
 
-        builder.setPositiveButton("Изменить", (dialogInterface, i) -> {
+        final AlertDialog dialog = builder.create();
+
+        // Устанавливаем PositiveButton
+        dialog.setButton(AlertDialog.BUTTON_POSITIVE, "Изменить", (dialogInterface, i) -> {
             String sumText = editTextSum.getText().toString().trim();
             double newSum;
 
@@ -201,27 +259,40 @@ public class PatternFragment extends Fragment {
                     return;
                 }
             }
-            categoryViewModel.updateCategorySumByName(categoryName, newSum);
-            dialogInterface.dismiss();
-        });
 
-        builder.setNegativeButton("Удалить", (dialogInterface, i) -> {
-            categoryViewModel.delete(new Categories(categoryName, currentSum));
-            Toast.makeText(requireContext(), "Категория '" + categoryName + "' удалена.", Toast.LENGTH_SHORT).show();
-            dialogInterface.dismiss();
-        });
+            // Если сумма не изменилась, нет смысла обновлять
+            if (newSum == category.getSum()) {
+                Toast.makeText(requireContext(), "Сумма не изменилась.", Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+                return;
+            }
 
-        AlertDialog dialog = builder.create();
-        dialog.setOnShowListener(dialogInterface -> {
-            focusAndOpenKeyboard(editTextSum);
-        });
-        dialog.setCanceledOnTouchOutside(false);
-        imgClose.setOnClickListener(v -> {
+            Categories updatedCategory = new Categories(category.getCategoryName(), newSum, category.getFirestoreId(), false);
+            updatedCategory.setId(category.getId());
+            categoryViewModel.update(updatedCategory);
+
+            Toast.makeText(requireContext(), "Сумма для категории '" + category.getCategoryName() + "' изменена на " + newSum + ".", Toast.LENGTH_SHORT).show();
             dialog.dismiss();
         });
+
+        // Устанавливаем NegativeButton
+        dialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Удалить", (dialogInterface, i) -> {
+            categoryViewModel.delete(category);
+            Toast.makeText(requireContext(), "Категория '" + category.getCategoryName() + "' удалена.", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        });
+
+        dialog.setOnShowListener(dialogInterface -> focusAndOpenKeyboard(editTextSum));
+        dialog.setCanceledOnTouchOutside(false);
+        imgClose.setOnClickListener(v -> dialog.dismiss()); // Явно закрываем диалог
         dialog.show();
     }
 
+    /**
+     * Устанавливает фокус на TextView и открывает клавиатуру.
+     *
+     * @param textView Текстовое поле, на которое нужно сфокусироваться.
+     */
     private void focusAndOpenKeyboard(TextView textView) {
         textView.requestFocus();
         new Handler().postDelayed(() -> {
@@ -230,5 +301,17 @@ public class PatternFragment extends Fragment {
                 imm.showSoftInput(textView, InputMethodManager.SHOW_IMPLICIT);
             }
         }, 100);
+    }
+
+    /**
+     * Скрывает клавиатуру.
+     *
+     * @param view Любой View из текущего окна.
+     */
+    private void hideKeyboard(View view) {
+        InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 }

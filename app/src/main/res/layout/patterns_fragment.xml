@@ -44,7 +44,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="Добавить новые шаблоны"
-                    android:textColor="@color/primary_button_background"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="15sp" />
 
                 <com.google.android.material.textfield.TextInputLayout

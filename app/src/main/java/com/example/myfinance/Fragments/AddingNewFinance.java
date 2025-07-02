@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +20,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.myfinance.Models.CategoryViewModel;
@@ -30,8 +28,6 @@ import com.example.myfinance.MyApplication;
 import com.example.myfinance.Prevalent.DateFormatter;
 import com.example.myfinance.R;
 import com.example.myfinance.data.Categories;
-import com.example.myfinance.data.CategoryDataBase;
-import com.example.myfinance.data.CategoryRepository;
 import com.example.myfinance.data.FinanceRepository;
 import com.example.myfinance.data.Finances;
 import com.google.android.material.textfield.TextInputEditText;
@@ -48,12 +44,11 @@ public class AddingNewFinance extends Fragment {
     private TextInputEditText sumEditText, reasonEditText, commentsEditText;
     private TextInputLayout sumInputLayout, reasonInputLayout, commentsInputLayout;
     private String selectedCategory;
+
     private CategoryViewModel categoryViewModel;
-    private ArrayAdapter<String> categorySpinnerAdapter;
-    private CategoryViewModel.TaskViewModelFactory viewModelFactory;
-    private CategoryRepository repository;
-    private CategoryDataBase database;
     private FinanceViewModel financeViewModel;
+
+    private ArrayAdapter<String> categorySpinnerAdapter;
 
     @Nullable
     @Override
@@ -61,11 +56,6 @@ public class AddingNewFinance extends Fragment {
         return inflater.inflate(R.layout.adding_new_finance_fragment, container, false);
     }
 
-    /**
-     * @param view               The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
-     * @param savedInstanceState If non-null, this fragment is being re-constructed
-     *                           from a previous saved state as given here.
-     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -78,65 +68,50 @@ public class AddingNewFinance extends Fragment {
         reasonInputLayout = view.findViewById(R.id.reasonInputLayout);
         commentsEditText = view.findViewById(R.id.commentsEditText);
         commentsInputLayout = view.findViewById(R.id.commentsInputLayout);
-        database = CategoryDataBase.getDatabase(requireActivity().getApplication());
-        repository = new CategoryRepository(database.daoCategories());
-//        repository.deleteAll();   На всякий случай (удаляет всё)
-        viewModelFactory = new CategoryViewModel.TaskViewModelFactory(repository);
-        categoryViewModel = new ViewModelProvider(requireActivity(), viewModelFactory).get(CategoryViewModel.class);
+
+        categoryViewModel = new ViewModelProvider(
+                requireActivity(),
+                new CategoryViewModel.TaskViewModelFactory(requireActivity().getApplication()) // Передаем Application контекст
+        ).get(CategoryViewModel.class);
+
         FinanceRepository financeRepository = ((MyApplication) requireActivity().getApplication()).getFinanceRepository();
         FinanceViewModel.TaskViewModelFactory finViewModelTaskFactory = new FinanceViewModel.TaskViewModelFactory(financeRepository);
         financeViewModel = new ViewModelProvider(requireActivity(), finViewModelTaskFactory).get(FinanceViewModel.class);
-        btnAdd.setEnabled(false);
 
-        loadAndDisplay();
-        setupTextWatchers();
+        btnAdd.setEnabled(false); // Кнопка изначально отключена
 
-        standart_variant.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                selectedCategory = adapterView.getItemAtPosition(i).toString();
-                setToReasonAndSum(selectedCategory);
-            }
+        loadAndDisplay(); // Загружает категории и настраивает Spinner
+        setupTextWatchers(); // Настраивает слушателей для полей ввода
 
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-                sumEditText.setText("");
-                reasonEditText.setText("Категория не выбрана");
-                selectedCategory = null;
-            }
-        });
-
-        btnAdd.setOnClickListener(v -> {
-            checkFields();
-        });
+        btnAdd.setOnClickListener(v -> checkFields());
     }
 
     /**
      * Загрузка и отображение всех категорий из базы данных.
+     * Использует categoryViewModel (поле класса).
      */
     private void loadAndDisplay() {
-        categoryViewModel.getAllCategories().observe(getViewLifecycleOwner(), new Observer<List<Categories>>() {
-            @Override
-            public void onChanged(List<Categories> categories) {
-                Log.d("AddingNewFinance", "All categories from DB: " + categories);
-                List<String> categoryNames = new ArrayList<>();
-                for (Categories category : categories) {
-                    categoryNames.add(category.getCategoryName());
-                }
-                if (categorySpinnerAdapter == null) {
-                    categorySpinnerAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, categoryNames);
-                    categorySpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    standart_variant.setAdapter(categorySpinnerAdapter);
-                } else {
-                    categorySpinnerAdapter.clear();
-                    categorySpinnerAdapter.addAll(categoryNames);
-                    categorySpinnerAdapter.notifyDataSetChanged();
-                }
-
-                if (!categoryNames.isEmpty() && selectedCategory == null) {
-                    selectedCategory = categoryNames.get(0);
-                }
+        categoryViewModel.getAllCategories().observe(getViewLifecycleOwner(), categories -> {
+            List<String> categoryNames = new ArrayList<>();
+            for (Categories category : categories) {
+                categoryNames.add(category.getCategoryName());
             }
+
+            if (categorySpinnerAdapter == null) {
+                categorySpinnerAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, categoryNames);
+                categorySpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                standart_variant.setAdapter(categorySpinnerAdapter);
+            } else {
+                categorySpinnerAdapter.clear();
+                categorySpinnerAdapter.addAll(categoryNames);
+                categorySpinnerAdapter.notifyDataSetChanged();
+            }
+
+            // Установка выбранной категории по умолчанию, если список не пуст и категория еще не выбрана
+            if (!categoryNames.isEmpty() && selectedCategory == null) {
+                selectedCategory = categoryNames.get(0);
+            }
+            validateFieldsForButton();
         });
     }
 
@@ -149,7 +124,7 @@ public class AddingNewFinance extends Fragment {
         String comments = Objects.requireNonNull(commentsEditText.getText()).toString().trim();
         boolean isValid = true;
 
-        if (TextUtils.isEmpty(selectedCategory) || "Категория не выбрана" .equals(selectedCategory)) {
+        if (TextUtils.isEmpty(selectedCategory) || "Категория не выбрана".equals(selectedCategory)) {
             Toast.makeText(getContext(), "Пожалуйста, выберите категорию", Toast.LENGTH_SHORT).show();
             isValid = false;
         }
@@ -183,7 +158,7 @@ public class AddingNewFinance extends Fragment {
     }
 
     /**
-     * Очиста полей ввода.
+     * Очистка полей ввода.
      */
     private void clearFields() {
         sumEditText.setText("");
@@ -217,20 +192,22 @@ public class AddingNewFinance extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 selectedCategory = adapterView.getItemAtPosition(i).toString();
-                setToReasonAndSum(selectedCategory);
-                validateFieldsForButton();
+                setToReasonAndSum(selectedCategory); // Обновляем поля, когда выбрана категория
+                validateFieldsForButton(); // Валидируем кнопку
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
                 selectedCategory = null;
+                sumEditText.setText(""); // Очищаем сумму при отсутствии выбора
+                reasonEditText.setText(""); // Очищаем причину
                 validateFieldsForButton();
             }
         });
     }
 
     /**
-     * Проверяет, являются ли все поля заполнены,
+     * Проверяет, заполнены ли все необходимые поля, и включает/отключает кнопку добавления.
      */
     private void validateFieldsForButton() {
         String sum = sumEditText.getText() != null ? sumEditText.getText().toString().trim() : "";
@@ -245,9 +222,9 @@ public class AddingNewFinance extends Fragment {
     }
 
     /**
-     * Возвращает данные в родительский фрагмент.
+     * Возвращает данные в родительский фрагмент и закрывает текущий.
      *
-     * @param sum
+     * @param sum Сумма, которую нужно передать.
      */
     private void popBackAndPassData(double sum) {
         Bundle result = new Bundle();
@@ -258,11 +235,11 @@ public class AddingNewFinance extends Fragment {
     }
 
     /**
-     * Добавление данных в базу данных.
+     * Добавление данных о новой финансовой операции в базу данных.
      *
-     * @param reason
-     * @param sum
-     * @param comments
+     * @param reason   Причина операции.
+     * @param sum      Сумма операции.
+     * @param comments Комментарии к операции.
      */
     private void addingToDb(String reason, double sum, String comments) {
         Finances newFinance = new Finances(reason, sum, comments, getCurrentDate());
@@ -273,7 +250,7 @@ public class AddingNewFinance extends Fragment {
     /**
      * Определение фокуса на поле ввода и открытие клавиатуры.
      *
-     * @param textView
+     * @param textView Текстовое поле, на котором нужно сфокусироваться.
      */
     private void focusAndOpenKeyboard(TextView textView) {
         textView.requestFocus();
@@ -286,26 +263,23 @@ public class AddingNewFinance extends Fragment {
     }
 
     /**
-     * Устанавливает значение суммы и причины в текстовых полях,
+     * Устанавливает значение суммы и причины в текстовых полях на основе выбранной категории.
      *
-     * @param reason
+     * @param categoryName Имя выбранной категории.
      */
-    private void setToReasonAndSum(String reason) {
-        if (reason != null) {
-            categoryViewModel.getSumForCategory(reason).observe(getViewLifecycleOwner(), new Observer<Double>() {
-                @Override
-                public void onChanged(Double sum) {
-                    if (sum != null) {
-                        reasonEditText.setText(selectedCategory);
-                        sumEditText.setText(String.valueOf(sum));
-                        if (sum == 0.0) {
-                            sumEditText.setText("");
-                            focusAndOpenKeyboard(sumEditText);
-                        }
-                    } else {
+    private void setToReasonAndSum(String categoryName) {
+        if (categoryName != null) {
+            categoryViewModel.getSumForCategory(categoryName).observe(getViewLifecycleOwner(), sum -> {
+                if (sum != null) {
+                    reasonEditText.setText(categoryName);
+                    // sumEditText.setText(String.valueOf(sum)); // Закомментировано, чтобы пользователь всегда вводил сумму
+                    if (sum == 0.0) {
                         sumEditText.setText("");
                         focusAndOpenKeyboard(sumEditText);
                     }
+                } else {
+                    sumEditText.setText("");
+                    focusAndOpenKeyboard(sumEditText);
                 }
             });
         } else {
@@ -318,7 +292,7 @@ public class AddingNewFinance extends Fragment {
     /**
      * Возвращает текущую дату в формате "dd.MM.yyyy".
      *
-     * @return
+     * @return Текущая дата в строковом формате.
      */
     public String getCurrentDate() {
         return DateFormatter.formatDate(new Date());

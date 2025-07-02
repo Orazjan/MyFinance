@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="2"
         android:paddingStart="5sp"
-        android:textColor="@color/primary_button_background"
+        android:textColor="?attr/colorPrimary"
         android:textSize="20sp" />
 
     <TextView
@@ -21,6 +21,6 @@
         android:layout_weight="1"
         android:paddingEnd="5sp"
         android:textAlignment="textEnd"
-        android:textColor="@color/primary_button_background"
+        android:textColor="?attr/colorPrimary"
         android:textSize="20sp" />
 </LinearLayout>
