@@ -35,12 +35,9 @@ public interface DAOcategories {
     @Query("DELETE FROM categories_table")
     void deleteAll();
 
-    // Получение категории по имени. LiveData.
     @Query("SELECT * FROM categories_table WHERE categoryName = :categoryName")
     LiveData<Categories> getCategoryByName(String categoryName);
 
-    // Получение категории по имени. Не LiveData,
-    // используется в фоновых потоках, например, для проверки существования.
     @Query("SELECT * FROM categories_table WHERE categoryName = :categoryName LIMIT 1")
     Categories getSingleCategoryByNameBlocking(String categoryName);
 
@@ -53,23 +50,16 @@ public interface DAOcategories {
     @Query("SELECT SUM(sum) FROM categories_table WHERE categoryName = :categoryName")
     LiveData<Double> getTotalSumByCategory(String categoryName);
 
-    // Дополнительный метод для получения суммы по категории, если он нужен в репозитории.
-    @Query("SELECT SUM(sum) FROM categories_table WHERE categoryName = :categoryName")
-    LiveData<Double> getSumForCategory(String categoryName);
+    // Метод getSumForCategory удален, так как getTotalSumByCategory выполняет ту же функцию.
+    // @Query("SELECT SUM(sum) FROM categories_table WHERE categoryName = :categoryName")
+    // LiveData<Double> getSumForCategory(String categoryName); // УДАЛЕНО
 
-
-    // Обновление суммы категории по имени. Теперь также устанавливает isSynced в false,
-    // чтобы инициировать синхронизацию.
     @Query("UPDATE categories_table SET sum = :newSum, isSynced = 0 WHERE categoryName = :name")
-    void updateCategorySum(String name, double newSum); // Изменено название метода
+    void updateCategorySum(String name, double newSum);
 
-    // Получение несинхронизированных категорий из Room.
-    // Используется для "push" операций в Firestore.
     @Query("SELECT * FROM categories_table WHERE isSynced = 0")
     List<Categories> getUnsyncedCategoriesBlocking();
 
-    // Получение категории по Firestore ID.
-    // Используется для "pull" операций, чтобы найти локальную копию по Firestore ID.
     @Query("SELECT * FROM categories_table WHERE firestoreId = :firestoreId LIMIT 1")
     Categories getCategoryByFirestoreId(String firestoreId);
 }

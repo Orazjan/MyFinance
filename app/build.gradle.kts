@@ -41,23 +41,16 @@ android {
 
 dependencies {
     implementation (libs.mpandroidchart)
-    implementation (libs.lifecycle.livedata.v262)
-    implementation (libs.lifecycle.viewmodel.v262)
 
     implementation (libs.facebook.android.sdk)
 
-    implementation(libs.firebase.firestore.ktx)
     implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.auth)
     implementation (libs.facebook.login)
     implementation(libs.firebase.firestore)
-    implementation(libs.work.runtime.ktx)
 
     implementation(libs.room.runtime)
     implementation(libs.annotation)
-    implementation(libs.lifecycle.livedata.ktx)
-    implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.credentials)
     implementation(libs.credentials.play.services.auth)
     implementation(libs.googleid)

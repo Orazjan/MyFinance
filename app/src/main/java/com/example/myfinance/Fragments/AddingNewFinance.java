@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,6 +40,8 @@ import java.util.List;
 import java.util.Objects;
 
 public class AddingNewFinance extends Fragment {
+    private final String TAG = "AddingNewFinance";
+
     private Spinner standart_variant;
     private Button btnAdd;
     private TextInputEditText sumEditText, reasonEditText, commentsEditText;
@@ -71,17 +74,17 @@ public class AddingNewFinance extends Fragment {
 
         categoryViewModel = new ViewModelProvider(
                 requireActivity(),
-                new CategoryViewModel.TaskViewModelFactory(requireActivity().getApplication()) // Передаем Application контекст
+                new CategoryViewModel.TaskViewModelFactory(requireActivity().getApplication())
         ).get(CategoryViewModel.class);
 
         FinanceRepository financeRepository = ((MyApplication) requireActivity().getApplication()).getFinanceRepository();
         FinanceViewModel.TaskViewModelFactory finViewModelTaskFactory = new FinanceViewModel.TaskViewModelFactory(financeRepository);
         financeViewModel = new ViewModelProvider(requireActivity(), finViewModelTaskFactory).get(FinanceViewModel.class);
 
-        btnAdd.setEnabled(false); // Кнопка изначально отключена
+        btnAdd.setEnabled(false);
 
-        loadAndDisplay(); // Загружает категории и настраивает Spinner
-        setupTextWatchers(); // Настраивает слушателей для полей ввода
+        loadAndDisplay();
+        setupTextWatchers();
 
         btnAdd.setOnClickListener(v -> checkFields());
     }
@@ -91,25 +94,44 @@ public class AddingNewFinance extends Fragment {
      * Использует categoryViewModel (поле класса).
      */
     private void loadAndDisplay() {
+        Log.d(TAG, "loadAndDisplay: Called. Observing all categories from ViewModel.");
         categoryViewModel.getAllCategories().observe(getViewLifecycleOwner(), categories -> {
             List<String> categoryNames = new ArrayList<>();
-            for (Categories category : categories) {
-                categoryNames.add(category.getCategoryName());
+            if (categories != null) {
+                for (Categories category : categories) {
+                    categoryNames.add(category.getCategoryName());
+                }
             }
+
+            Log.d(TAG, "loadAndDisplay: Categories received from ViewModel: " + categoryNames.size() + " items. Content: " + categoryNames.toString());
 
             if (categorySpinnerAdapter == null) {
                 categorySpinnerAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, categoryNames);
                 categorySpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 standart_variant.setAdapter(categorySpinnerAdapter);
+                Log.d(TAG, "loadAndDisplay: New adapter set for spinner.");
             } else {
                 categorySpinnerAdapter.clear();
                 categorySpinnerAdapter.addAll(categoryNames);
                 categorySpinnerAdapter.notifyDataSetChanged();
+                Log.d(TAG, "loadAndDisplay: Existing adapter updated.");
             }
 
-            // Установка выбранной категории по умолчанию, если список не пуст и категория еще не выбрана
-            if (!categoryNames.isEmpty() && selectedCategory == null) {
-                selectedCategory = categoryNames.get(0);
+            if (!categoryNames.isEmpty()) {
+                if (selectedCategory == null || !categoryNames.contains(selectedCategory)) {
+                    selectedCategory = categoryNames.get(0);
+                    standart_variant.setSelection(0); // Устанавливаем первый элемент по умолчанию
+                    Log.d(TAG, "loadAndDisplay: Initial selected category set to: " + selectedCategory);
+                } else {
+                    int position = categoryNames.indexOf(selectedCategory);
+                    if (position >= 0) {
+                        standart_variant.setSelection(position);
+                        Log.d(TAG, "loadAndDisplay: Retained selected category: " + selectedCategory + " at position: " + position);
+                    }
+                }
+            } else {
+                selectedCategory = null;
+                Log.d(TAG, "loadAndDisplay: Category list is empty. Selected category set to null.");
             }
             validateFieldsForButton();
         });
@@ -192,16 +214,18 @@ public class AddingNewFinance extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 selectedCategory = adapterView.getItemAtPosition(i).toString();
-                setToReasonAndSum(selectedCategory); // Обновляем поля, когда выбрана категория
-                validateFieldsForButton(); // Валидируем кнопку
+                setToReasonAndSum(selectedCategory);
+                validateFieldsForButton();
+                Log.d(TAG, "Spinner item selected: " + selectedCategory);
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
                 selectedCategory = null;
-                sumEditText.setText(""); // Очищаем сумму при отсутствии выбора
-                reasonEditText.setText(""); // Очищаем причину
+                sumEditText.setText("");
+                reasonEditText.setText("");
                 validateFieldsForButton();
+                Log.d(TAG, "Spinner: Nothing selected.");
             }
         });
     }
@@ -219,6 +243,7 @@ public class AddingNewFinance extends Fragment {
                 !selectedCategory.equals("Категория не выбрана");
 
         btnAdd.setEnabled(isValid);
+        Log.d(TAG, "validateFieldsForButton: isValid=" + isValid + ", current selectedCategory=" + selectedCategory);
     }
 
     /**
@@ -269,23 +294,28 @@ public class AddingNewFinance extends Fragment {
      */
     private void setToReasonAndSum(String categoryName) {
         if (categoryName != null) {
+            // Используем getTotalSumByCategory, так как getSumForCategory был удален/консолидирован
             categoryViewModel.getSumForCategory(categoryName).observe(getViewLifecycleOwner(), sum -> {
                 if (sum != null) {
                     reasonEditText.setText(categoryName);
-                    // sumEditText.setText(String.valueOf(sum)); // Закомментировано, чтобы пользователь всегда вводил сумму
                     if (sum == 0.0) {
                         sumEditText.setText("");
                         focusAndOpenKeyboard(sumEditText);
+                    } else {
+                        sumEditText.setText(String.valueOf(sum)); // Устанавливаем сумму, если она не 0
                     }
+                    Log.d(TAG, "setToReasonAndSum: Reason and sum set for category: " + categoryName + ", sum: " + sum);
                 } else {
                     sumEditText.setText("");
                     focusAndOpenKeyboard(sumEditText);
+                    Log.d(TAG, "setToReasonAndSum: Sum is null for category: " + categoryName + ". Clearing sum field.");
                 }
             });
         } else {
             reasonEditText.setText("");
             sumEditText.setText("");
             focusAndOpenKeyboard(reasonEditText);
+            Log.d(TAG, "setToReasonAndSum: categoryName is null. Clearing fields.");
         }
     }
 

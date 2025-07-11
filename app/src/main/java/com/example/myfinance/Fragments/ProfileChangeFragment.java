@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Фрагмент для изменения профиля пользователя.
@@ -42,7 +43,8 @@ public class ProfileChangeFragment extends Fragment {
     private static final String TAG = "ProfileChangeFragment";
 
     private TextView emailTextView, nameTextView, famTextView, regDataTextView;
-    Button btnSave;
+    private Button btnSave;
+    private Button btnForAutentification;
 
     private FirebaseAuth auth;
     private FirebaseFirestore fb;
@@ -59,7 +61,7 @@ public class ProfileChangeFragment extends Fragment {
      *
      * @param view               The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
      * @param savedInstanceState If non-null, this fragment is being re-constructed
-     *                           from a previous saved state as given here.
+     * from a previous saved state as given here.
      */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -70,6 +72,7 @@ public class ProfileChangeFragment extends Fragment {
         famTextView = view.findViewById(R.id.famTextView);
         regDataTextView = view.findViewById(R.id.regDataTextView);
         btnSave = view.findViewById(R.id.btnForSave);
+        btnForAutentification = view.findViewById(R.id.btnForAutentification);
 
         auth = FirebaseAuth.getInstance();
         fb = FirebaseFirestore.getInstance();
@@ -85,17 +88,24 @@ public class ProfileChangeFragment extends Fragment {
             Toast.makeText(getContext(), "Сохранено", Toast.LENGTH_SHORT).show();
         });
         nameTextView.setOnClickListener(v -> {
-            showDialogToChangeNameSurname(nameTextView);
+            if (nameTextView.getText().equals("Не авторизован"))
+                nameTextView.setEnabled(false);
+            else
+                showDialogToChangeNameSurname(nameTextView);
         });
         famTextView.setOnClickListener(v -> {
-            showDialogToChangeNameSurname(famTextView);
+            if (famTextView.getText().equals("Не авторизован"))
+                famTextView.setEnabled(false);
+            else
+                showDialogToChangeNameSurname(famTextView);
         });
         emailTextView.setOnClickListener(v -> {
             if (auth.getCurrentUser() != null) {
-                Toast.makeText(getContext(), "Это ваш Email. Для изменения потребуется переаутентификация.", Toast.LENGTH_SHORT).show();
-            } else {
-                startActivity(new Intent(requireContext(), LoginActivity.class));
+                Toast.makeText(getContext(), "Это ваш Email. Для изменения потребуется аутентификация.", Toast.LENGTH_SHORT).show();
             }
+        });
+        btnForAutentification.setOnClickListener(v -> {
+            startActivity(new Intent(requireContext(), LoginActivity.class));
         });
     }
 
@@ -201,6 +211,16 @@ public class ProfileChangeFragment extends Fragment {
 
         if (currentUser != null) {
             String userEmail = currentUser.getEmail();
+            long creationTimestamp = Objects.requireNonNull(currentUser.getMetadata()).getCreationTimestamp();
+            Date creationDate = new Date(creationTimestamp);
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
+            String formattedDate = sdf.format(creationDate);
+
+            emailTextView.setText(userEmail != null ? userEmail : "Нажмите чтобы войти");
+            regDataTextView.setText(formattedDate);
+
+            emailTextView.setEnabled(true);
+            regDataTextView.setEnabled(false);
 
             assert userEmail != null;
             fb.collection("users").document(userEmail).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
@@ -226,17 +246,6 @@ public class ProfileChangeFragment extends Fragment {
                     famTextView.setText("Ошибка загрузки");
                 }
             });
-
-            long creationTimestamp = currentUser.getMetadata() != null ? currentUser.getMetadata().getCreationTimestamp() : 0;
-            Date creationDate = new Date(creationTimestamp);
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
-            String formattedDate = sdf.format(creationDate);
-
-            emailTextView.setText(userEmail != null ? userEmail : "Нажмите чтобы войти");
-            regDataTextView.setHint(formattedDate);
-
-            emailTextView.setEnabled(true);
-            regDataTextView.setEnabled(false);
 
         } else {
             emailTextView.setText("Не авторизован");
@@ -264,6 +273,7 @@ public class ProfileChangeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        updateUserProfileUI();
     }
 
     @Override

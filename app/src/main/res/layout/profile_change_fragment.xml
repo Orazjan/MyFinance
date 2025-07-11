@@ -92,13 +92,22 @@
             android:textColor="?attr/colorOnSecondary" />
 
         <Button
+            android:id="@+id/btnForAutentification"
+            android:layout_width="240sp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="10sp"
+            android:text="Зарегистрироваться"
+            android:textColor="?attr/colorOnPrimary" />
+        <Button
             android:id="@+id/btnForSave"
-            android:layout_width="wrap_content"
+            android:layout_width="240sp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="10sp"
             android:text="Сохранить"
             android:textColor="?attr/colorOnPrimary" />
+
 
     </LinearLayout>
 

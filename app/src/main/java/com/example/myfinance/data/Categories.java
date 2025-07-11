@@ -21,7 +21,6 @@ public class Categories {
 
     private String firestoreId;
 
-    // Конструктор по умолчанию для Room
     public Categories() {
         this.isSynced = false;
         this.firestoreId = null;
@@ -91,3 +90,4 @@ public class Categories {
                 '}';
     }
 }
+    

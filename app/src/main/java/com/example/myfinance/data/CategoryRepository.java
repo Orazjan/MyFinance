@@ -1,7 +1,6 @@
 package com.example.myfinance.data;
 
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.lifecycle.LiveData;
 
@@ -40,12 +39,8 @@ public class CategoryRepository {
 
     private final ExecutorService databaseWriteExecutor = Executors.newSingleThreadExecutor();
 
-    /**
-     * Конструктор для CategoryRepository.
-     *
-     * @param daoCategories
-     */
     public CategoryRepository(DAOcategories daoCategories) {
+        Log.d(TAG, "CategoryRepository constructor called. Instance created.");
 
         this.daoCategories = daoCategories;
         this.allCategories = daoCategories.getAllCategories();
@@ -57,6 +52,8 @@ public class CategoryRepository {
             FirebaseUser user = firebaseAuth.getCurrentUser();
             if (user != null) {
                 if (isAuthSyncInProgress.compareAndSet(false, true)) {
+                    Log.d(TAG, "Auth state changed: User is logged in. Starting Category sync (push then pull). User Email: " + user.getEmail());
+
                     syncUnsyncedCategoriesToFirestore().addOnCompleteListener(pushTask -> {
                         if (pushTask.isSuccessful()) {
                             Log.d(TAG, "All unsynced local categories pushed to Firestore successfully. Now pulling categories from Firestore.");
@@ -68,7 +65,6 @@ public class CategoryRepository {
                             if (!pullTask.isSuccessful()) {
                                 Log.e(TAG, "Failed to pull categories from Firestore: " + (pullTask.getException() != null ? pullTask.getException().getMessage() : "Unknown error"));
                             }
-                            initializeDefaultCategories();
                         });
                     });
                 } else {
@@ -80,13 +76,9 @@ public class CategoryRepository {
             }
         };
         auth.addAuthStateListener(mAuthStateListener);
+        initializeDefaultCategories();
     }
 
-    /**
-     * Получение ссылки на коллекцию пользователя
-     *
-     * @return
-     */
     private CollectionReference getUserCategoriesCollection() {
         FirebaseUser user = auth.getCurrentUser();
         if (user != null && user.getEmail() != null && !user.getEmail().isEmpty()) {
@@ -94,25 +86,26 @@ public class CategoryRepository {
                     .document(user.getEmail())
                     .collection(FIRESTORE_CATEGORIES_COLLECTION_NAME);
         }
+        Log.w(TAG, "getUserCategoriesCollection: User is null or Email is empty. Cannot get Firestore collection reference.");
         return null;
     }
 
-    /**
-     * Вставка записи в Room и Firestore
-     *
-     * @param category
-     */
     public void insert(Categories category) {
         category.setSynced(false);
         category.setFirestoreId(null);
+
+        Log.d(TAG, "Insert: Attempting to insert category locally: " + category.getCategoryName() + " (Room ID: " + category.getId() + ", isSynced: " + category.isSynced() + ")");
 
         databaseWriteExecutor.execute(() -> {
             try {
                 long roomId = daoCategories.insert(category);
                 category.setId((int) roomId);
 
+                Log.d(TAG, "Insert: Category inserted locally: " + category.getCategoryName() + " with Room ID: " + category.getId());
+
                 if (auth.getCurrentUser() != null) {
-                    attemptFirestoreCategorySync(category);
+                    Log.d(TAG, "Insert: User logged in, attempting immediate sync for " + category.getCategoryName());
+                    syncUnsyncedCategoriesToFirestore();
                 } else {
                     Log.d(TAG, "Insert: User not logged in. " + category.getCategoryName() + " will be synced on next login.");
                 }
@@ -122,19 +115,17 @@ public class CategoryRepository {
         });
     }
 
-    /**
-     * Обновление записи в Room и Firestore
-     *
-     * @param category
-     */
     public void update(Categories category) {
         category.setSynced(false);
 
+        Log.d(TAG, "Update: Attempting to update category locally: " + category.getCategoryName() + " (Room ID: " + category.getId() + ", isSynced: " + category.isSynced() + ")");
         databaseWriteExecutor.execute(() -> {
             try {
                 daoCategories.update(category);
+                Log.d(TAG, "Update: Category updated locally: " + category.getCategoryName() + " (Room ID: " + category.getId() + ")");
                 if (auth.getCurrentUser() != null) {
-                    attemptFirestoreCategorySync(category);
+                    Log.d(TAG, "Update: User logged in, attempting immediate sync for " + category.getCategoryName());
+                    syncUnsyncedCategoriesToFirestore();
                 } else {
                     Log.d(TAG, "Update: User not logged in. " + category.getCategoryName() + " will be synced on next login.");
                 }
@@ -144,18 +135,16 @@ public class CategoryRepository {
         });
     }
 
-    /**
-     * Удаление записи из Room и Firestore
-     *
-     * @param category
-     */
     public void delete(Categories category) {
+        Log.d(TAG, "Delete: Attempting to delete category locally: " + category.getCategoryName() + " (Room ID: " + category.getId() + ")");
         databaseWriteExecutor.execute(() -> {
             try {
                 daoCategories.delete(category);
+                Log.d(TAG, "Delete: Category deleted from Room: " + category.getCategoryName());
 
                 CollectionReference categoriesRef = getUserCategoriesCollection();
                 if (categoriesRef != null && category.getFirestoreId() != null && !category.getFirestoreId().isEmpty()) {
+                    Log.d(TAG, "Delete: Attempting to delete from Firestore: " + category.getCategoryName() + " (Firestore ID: " + category.getFirestoreId() + ")");
                     categoriesRef.document(category.getFirestoreId()).delete()
                             .addOnSuccessListener(aVoid -> Log.d(TAG, "Delete: Category successfully deleted from Firestore: " + category.getFirestoreId()))
                             .addOnFailureListener(e -> Log.e(TAG, "Delete: Error deleting category from Firestore: " + category.getFirestoreId(), e));
@@ -168,18 +157,16 @@ public class CategoryRepository {
         });
     }
 
-    /**
-     * Удаление всех записей из Room и Firestore
-     * <p>
-     * если вдруг нужно удалить все категории
-     */
     public void deleteAll() {
+        Log.d(TAG, "DeleteAll: Attempting to delete all categories locally.");
         databaseWriteExecutor.execute(() -> {
             try {
                 daoCategories.deleteAll();
+                Log.d(TAG, "DeleteAll: All categories deleted from Room.");
 
                 CollectionReference categoriesRef = getUserCategoriesCollection();
                 if (categoriesRef != null) {
+                    Log.d(TAG, "DeleteAll: Attempting to delete all categories from Firestore.");
                     categoriesRef.get().addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             databaseWriteExecutor.execute(() -> {
@@ -204,23 +191,22 @@ public class CategoryRepository {
         });
     }
 
-    /**
-     * Обновление суммы категории в Room и Firestore
-     *
-     * @param name
-     * @param newSum
-     */
     public void updateCategorySumByName(String name, double newSum) {
+        Log.d(TAG, "UpdateCategorySumByName: Attempting to update sum for: " + name + " to " + newSum);
         databaseWriteExecutor.execute(() -> {
             try {
-                Categories categoryToUpdate = daoCategories.getSingleCategoryByNameBlocking(name);
-                if (categoryToUpdate != null) {
-                    categoryToUpdate.setSum(newSum);
-                    categoryToUpdate.setSynced(false);
-                    daoCategories.update(categoryToUpdate);
-                    attemptFirestoreCategorySync(categoryToUpdate);
+                daoCategories.updateCategorySum(name, newSum);
+                Categories updatedCategory = daoCategories.getSingleCategoryByNameBlocking(name);
+                if (updatedCategory != null) {
+                    Log.d(TAG, "UpdateCategorySumByName: Category sum updated locally and marked unsynced: " + name + " (Room ID: " + updatedCategory.getId() + ")");
+                    if (auth.getCurrentUser() != null) {
+                        Log.d(TAG, "UpdateCategorySumByName: User logged in, attempting immediate sync for " + name);
+                        syncUnsyncedCategoriesToFirestore();
+                    } else {
+                        Log.d(TAG, "UpdateCategorySumByName: User not logged in. " + name + " sum update will be synced on next login.");
+                    }
                 } else {
-                    Log.e(TAG, "UpdateCategorySumByName: Category not found for sum update: " + name);
+                    Log.e(TAG, "UpdateCategorySumByName: Category not found for sum update by name: " + name);
                 }
             } catch (Exception e) {
                 Log.e(TAG, "UpdateCategorySumByName: Failed to update category sum locally for: " + name, e);
@@ -228,131 +214,71 @@ public class CategoryRepository {
         });
     }
 
-    /**
-     * Получение всех категорий
-     *
-     * @return
-     */
     public LiveData<List<Categories>> getAllCategories() {
         return allCategories;
     }
 
-    /**
-     * Получение категории по имени категории
-     *
-     * @param categoryName
-     * @return
-     */
+    public LiveData<Categories> getCategoryById(int id) {
+        return daoCategories.getCategoryById(id);
+    }
+
     public LiveData<Categories> getCategoryByName(String categoryName) {
         return daoCategories.getCategoryByName(categoryName);
     }
 
-    /**
-     * Получение категории по имени категории
-     *
-     * @param categoryName
-     * @return
-     */
+    public LiveData<Double> getTotalSumByCategory(String categoryName) {
+        return daoCategories.getTotalSumByCategory(categoryName);
+    }
+
+    public LiveData<Categories> getCategoryBySum(double sum) {
+        return daoCategories.getCategoryBySum(sum);
+    }
+
     public Task<Categories> getCategoryByNameAsync(String categoryName) {
         return Tasks.call(databaseWriteExecutor, () -> {
             return daoCategories.getSingleCategoryByNameBlocking(categoryName);
         });
     }
 
-    /**
-     * Получение суммы категории по имени категории
-     *
-     * @param categoryName
-     * @return
-     */
-    public LiveData<Double> getTotalSumByCategory(String categoryName) {
-        return daoCategories.getTotalSumByCategory(categoryName);
-    }
-
-    /**
-     * Попытка синхронизации категории с Firestore через .set()
-     *
-     * @param category
-     */
-    private void attemptFirestoreCategorySync(Categories category) {
-        FirebaseUser user = auth.getCurrentUser();
-        CollectionReference categoriesRef = getUserCategoriesCollection();
-
-        if (user == null || categoriesRef == null) {
-            Log.d(TAG, "attemptFirestoreCategorySync SKIPPED for " + category.getCategoryName() + ". User not authenticated or Firestore ref null.");
-            Toast.makeText(null, "attemptFirestoreCategorySync SKIPPED for " + category.getCategoryName() + ". User not authenticated or Firestore ref null.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (category.getFirestoreId() != null && !category.getFirestoreId().isEmpty()) {
-            categoriesRef.document(category.getFirestoreId()).set(category)
-                    .addOnSuccessListener(aVoid -> {
-                        databaseWriteExecutor.execute(() -> {
-                            category.setSynced(true);
-                            daoCategories.update(category);
-                        });
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e(TAG, "attemptFirestoreCategorySync: Firestore Category UPDATE FAILED for Room ID: " + category.getId() + ": " + e.getMessage(), e);
-                    });
-        } else {
-            categoriesRef.add(category)
-                    .addOnSuccessListener(documentReference -> {
-                        String firestoreId = documentReference.getId();
-                        databaseWriteExecutor.execute(() -> {
-                            category.setFirestoreId(firestoreId);
-                            category.setSynced(true);
-                            daoCategories.update(category);
-                        });
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e(TAG, "attemptFirestoreCategorySync: Firestore Category ADD FAILED for Room ID: " + category.getId() + ": " + e.getMessage(), e);
-                    });
-        }
-    }
-
-    /**
-     * Получение всех несинхронизированных категорий из Room
-     *
-     * @return
-     */
     public Task<Void> syncUnsyncedCategoriesToFirestore() {
         FirebaseUser user = auth.getCurrentUser();
         CollectionReference categoriesRef = getUserCategoriesCollection();
 
         if (user == null || categoriesRef == null) {
-            Log.d(TAG, "syncUnsyncedCategoriesToFirestore SKIPPED. User not authenticated or Firestore ref null.");
-            Toast.makeText(null, "syncUnsyncedCategoriesToFirestore SKIPPED. User not authenticated or Firestore ref null.", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "SyncUnsynced: Cannot sync unsynced Categories to Firestore: User not authenticated or Firestore ref null.");
             return Tasks.forResult(null);
         }
 
-        return Tasks.call(databaseWriteExecutor, (Callable<List<Categories>>) () -> daoCategories.getUnsyncedCategoriesBlocking())
+        Log.d(TAG, "SyncUnsynced: Starting PUSH operation.");
+        return Tasks.call(databaseWriteExecutor, daoCategories::getUnsyncedCategoriesBlocking)
                 .continueWithTask(roomTask -> {
                     if (!roomTask.isSuccessful()) {
+                        Log.e(TAG, "SyncUnsynced: Failed to get unsynced categories from Room: " + roomTask.getException().getMessage());
                         return Tasks.forException(roomTask.getException());
                     }
 
                     List<Categories> unsyncedCategories = roomTask.getResult();
 
                     if (unsyncedCategories == null || unsyncedCategories.isEmpty()) {
-                        Log.d(TAG, "syncUnsyncedCategoriesToFirestore: No unsynced categories found in Room to push.");
+                        Log.d(TAG, "SyncUnsynced: No unsynced categories found in Room to push.");
                         return Tasks.forResult(null);
                     }
 
                     WriteBatch batch = db.batch();
                     List<Task<Void>> individualFirestoreReadWriteTasks = new ArrayList<>();
 
+                    Log.d(TAG, "SyncUnsynced: Processing " + unsyncedCategories.size() + " categories for push.");
                     for (Categories category : unsyncedCategories) {
                         if (category.getFirestoreId() != null && !category.getFirestoreId().isEmpty()) {
-                            batch.set(categoriesRef.document(category.getFirestoreId()), category);
-                            individualFirestoreReadWriteTasks.add(Tasks.forResult(null));
+                            DocumentReference docRef = categoriesRef.document(category.getFirestoreId());
+                            batch.set(docRef, category);
+                            Log.d(TAG, "SyncUnsynced: BATCH SET for existing category: " + category.getCategoryName() + ", ID: " + category.getFirestoreId());
                         } else {
-                            Log.d(TAG, "syncUnsyncedCategoriesToFirestore: Checking for existing category by name for Room ID: " + category.getId());
                             individualFirestoreReadWriteTasks.add(categoriesRef.whereEqualTo("categoryName", category.getCategoryName())
                                     .get()
                                     .continueWithTask(queryTask -> {
                                         if (!queryTask.isSuccessful()) {
-                                            Log.e(TAG, "syncUnsyncedCategoriesToFirestore: Failed to check existing category by name: " + category.getCategoryName(), queryTask.getException());
+                                            Log.e(TAG, "SyncUnsynced: Failed to check existing category by name: " + category.getCategoryName(), queryTask.getException());
                                             return Tasks.forException(queryTask.getException());
                                         }
 
@@ -365,7 +291,7 @@ public class CategoryRepository {
                                             return Tasks.call(databaseWriteExecutor, (Callable<Void>) () -> {
                                                 daoCategories.update(category);
                                                 batch.set(docRef, category);
-                                                Log.d(TAG, "syncUnsyncedCategoriesToFirestore: MERGED existing Firestore category: " + category.getCategoryName() + ", Room ID: " + category.getId() + ", Firestore ID: " + existingDoc.getId());
+                                                Log.d(TAG, "SyncUnsynced: MERGED existing Firestore category: " + category.getCategoryName() + ", New Room ID: " + category.getId() + ", Firestore ID: " + existingDoc.getId());
                                                 return null;
                                             });
 
@@ -376,7 +302,7 @@ public class CategoryRepository {
                                             return Tasks.call(databaseWriteExecutor, (Callable<Void>) () -> {
                                                 daoCategories.update(category);
                                                 batch.set(newDocRef, category);
-                                                Log.d(TAG, "syncUnsyncedCategoriesToFirestore: ADDING new Firestore category: " + category.getCategoryName() + ", Room ID: " + category.getId() + ", Firestore ID: " + newDocRef.getId());
+                                                Log.d(TAG, "SyncUnsynced: ADDING new Firestore category: " + category.getCategoryName() + ", New Room ID: " + category.getId() + ", Firestore ID: " + newDocRef.getId());
                                                 return null;
                                             });
                                         }
@@ -386,15 +312,15 @@ public class CategoryRepository {
 
                     return Tasks.whenAll(individualFirestoreReadWriteTasks).continueWithTask(allOpsCompletedTask -> {
                         if (!allOpsCompletedTask.isSuccessful()) {
-                            Log.e(TAG, "syncUnsyncedCategoriesToFirestore: One or more individual push tasks failed before batch commit: " + allOpsCompletedTask.getException().getMessage());
+                            Log.e(TAG, "SyncUnsynced: One or more individual push tasks failed before batch commit: " + allOpsCompletedTask.getException().getMessage());
                             return Tasks.forException(allOpsCompletedTask.getException());
                         }
                         Task<Void> commitResultTask = batch.commit();
 
                         commitResultTask.addOnSuccessListener(aVoid -> {
-                            Log.d(TAG, "syncUnsyncedCategoriesToFirestore: Firestore batch commit for unsynced categories successful.");
+                            Log.d(TAG, "SyncUnsynced: Firestore batch commit for unsynced categories successful.");
                         }).addOnFailureListener(e -> {
-                            Log.e(TAG, "syncUnsyncedCategoriesToFirestore: Firestore batch commit failed: " + e.getMessage(), e);
+                            Log.e(TAG, "SyncUnsynced: Firestore batch commit failed: " + e.getMessage(), e);
                         });
 
                         return commitResultTask;
@@ -402,11 +328,6 @@ public class CategoryRepository {
                 });
     }
 
-    /**
-     * Получение всех категорий из Firestore через .get()
-     *
-     * @return
-     */
     public Task<Void> syncCategoriesFromFirestore() {
         FirebaseUser user = auth.getCurrentUser();
         CollectionReference categoriesRef = getUserCategoriesCollection();
@@ -416,11 +337,12 @@ public class CategoryRepository {
             return Tasks.forResult(null);
         }
 
+        Log.d(TAG, "SyncFromFirestore: Starting PULL operation.");
         return categoriesRef.get()
                 .continueWithTask(task -> {
                     if (!task.isSuccessful()) {
                         Log.e(TAG, "SyncFromFirestore: Failed to fetch categories from Firestore: " + task.getException().getMessage());
-                        return Tasks.forException(task.getException());
+                        throw task.getException();
                     }
 
                     return Tasks.call(databaseWriteExecutor, (Callable<Void>) () -> {
@@ -431,6 +353,7 @@ public class CategoryRepository {
                             firestoreCategory.setSynced(true);
                             firestoreCategories.add(firestoreCategory);
                         }
+                        Log.d(TAG, "SyncFromFirestore: Fetched " + firestoreCategories.size() + " categories from Firestore.");
 
                         List<Categories> localAllCategories = daoCategories.getAllCategoriesBlocking();
                         if (localAllCategories == null) {
@@ -439,31 +362,34 @@ public class CategoryRepository {
 
                         List<Categories> localSyncedCategoriesForDeletion = new ArrayList<>();
                         for (Categories cat : localAllCategories) {
-                            if (cat.isSynced() && cat.getFirestoreId() != null) {
+                            if (cat.getFirestoreId() != null && !cat.getFirestoreId().isEmpty()) {
                                 localSyncedCategoriesForDeletion.add(cat);
                             }
                         }
+                        Log.d(TAG, "SyncFromFirestore: Found " + localSyncedCategoriesForDeletion.size() + " synced local categories for potential deletion check.");
 
                         for (Categories firestoreCategory : firestoreCategories) {
                             Categories existingLocalCategory = null;
 
-                            if (firestoreCategory.getFirestoreId() != null) {
+                            if (firestoreCategory.getFirestoreId() != null && !firestoreCategory.getFirestoreId().isEmpty()) {
                                 existingLocalCategory = daoCategories.getCategoryByFirestoreId(firestoreCategory.getFirestoreId());
                             }
 
                             if (existingLocalCategory != null) {
                                 firestoreCategory.setId(existingLocalCategory.getId());
                                 daoCategories.update(firestoreCategory);
+                                Log.d(TAG, "SyncFromFirestore: MERGE - Updated local category by firestoreId: " + firestoreCategory.getCategoryName() + ", Room ID: " + firestoreCategory.getId());
                             } else {
                                 Categories existingLocalCategoryByName = daoCategories.getSingleCategoryByNameBlocking(firestoreCategory.getCategoryName());
 
                                 if (existingLocalCategoryByName != null) {
                                     firestoreCategory.setId(existingLocalCategoryByName.getId());
-                                    firestoreCategory.setSynced(true);
                                     daoCategories.update(firestoreCategory);
+                                    Log.d(TAG, "SyncFromFirestore: MERGE - Merged local category by name, assigned firestoreId: " + firestoreCategory.getCategoryName() + ", Room ID: " + firestoreCategory.getId());
                                 } else {
                                     firestoreCategory.setId(0);
                                     daoCategories.insert(firestoreCategory);
+                                    Log.d(TAG, "SyncFromFirestore: ADD - New category added from Firestore to Room: " + firestoreCategory.getCategoryName() + ", Firestore ID: " + firestoreCategory.getFirestoreId());
                                 }
                             }
                         }
@@ -478,9 +404,11 @@ public class CategoryRepository {
                             }
                             if (!foundInFirestore) {
                                 daoCategories.delete(localCategory);
+                                Log.d(TAG, "SyncFromFirestore: DELETE - Category deleted from Room (removed from Firestore): " + localCategory.getCategoryName() + ", Room ID: " + localCategory.getId());
                             }
                         }
 
+                        Log.d(TAG, "SyncFromFirestore: Full categories sync from Firestore completed.");
                         return null;
                     });
                 })
@@ -489,27 +417,32 @@ public class CategoryRepository {
                 });
     }
 
-    /**
-     * Инициализация дефолтных категорий в Room
-     */
     public void initializeDefaultCategories() {
+        Log.d(TAG, "initializeDefaultCategories: Starting default category check.");
         databaseWriteExecutor.execute(() -> {
             try {
                 int roomCount = daoCategories.getCategoryCount();
+                Log.d(TAG, "initializeDefaultCategories: Room category count = " + roomCount);
+
                 if (roomCount == 0) {
                     CollectionReference categoriesRef = getUserCategoriesCollection();
                     if (categoriesRef != null) {
+                        Log.d(TAG, "initializeDefaultCategories: Room is empty, checking Firestore.");
                         categoriesRef.get().addOnSuccessListener(queryDocumentSnapshots -> {
+                            Log.d(TAG, "initializeDefaultCategories: Firestore category count = " + queryDocumentSnapshots.size());
                             if (queryDocumentSnapshots.isEmpty()) {
+                                Log.d(TAG, "initializeDefaultCategories: Room and Firestore are empty. Adding default categories.");
                                 addDefaultCategories();
                             } else {
-                                Log.d(TAG, "initializeDefaultCategories: Room empty but Firestore not empty. Relying on AuthStateListener to pull categories.");
+                                Log.d(TAG, "initializeDefaultCategories: Room empty but Firestore not empty. Relying on auth sync to pull (already happened or will happen).");
                             }
                         }).addOnFailureListener(e -> {
+                            Log.e(TAG, "Error checking Firestore for categories during initialization: " + e.getMessage());
+                            Log.d(TAG, "initializeDefaultCategories: Failed to check Firestore. Adding default categories locally as fallback.");
                             addDefaultCategories();
                         });
                     } else {
-                        Log.d(TAG, "initializeDefaultCategories: User not authenticated, adding default categories locally.");
+                        Log.d(TAG, "initializeDefaultCategories: User not authenticated, adding default categories locally as initial state.");
                         addDefaultCategories();
                     }
                 } else {
@@ -521,16 +454,32 @@ public class CategoryRepository {
         });
     }
 
-    /**
-     * Добавление дефолтных категорий в Room и Firestore
-     */
     private void addDefaultCategories() {
+        Log.d(TAG, "addDefaultCategories: Attempting to add default categories locally.");
         databaseWriteExecutor.execute(() -> {
             try {
+                List<Categories> defaultCategoriesToAdd = new ArrayList<>();
                 if (daoCategories.getSingleCategoryByNameBlocking("Другое") == null) {
-                    Categories defaultCategory = new Categories("Другое", 0.0);
-                    insert(defaultCategory);
+                    defaultCategoriesToAdd.add(new Categories("Другое", 0));
                 }
+                if (daoCategories.getSingleCategoryByNameBlocking("Доход") == null) {
+                    defaultCategoriesToAdd.add(new Categories("Доход", 0));
+                }
+                if (daoCategories.getSingleCategoryByNameBlocking("Расход") == null) {
+                    defaultCategoriesToAdd.add(new Categories("Расход", 0));
+                }
+
+                for (Categories category : defaultCategoriesToAdd) {
+                    insert(category);
+                    Log.d(TAG, "addDefaultCategories: Default category '" + category.getCategoryName() + "' added locally.");
+                }
+                if (auth.getCurrentUser() != null && !defaultCategoriesToAdd.isEmpty()) {
+                    Log.d(TAG, "addDefaultCategories: Default categories added, triggering unsynced push.");
+                    syncUnsyncedCategoriesToFirestore();
+                } else {
+                    Log.d(TAG, "addDefaultCategories: No new default categories to push or user not logged in.");
+                }
+                Log.d(TAG, "addDefaultCategories: Finished processing default categories.");
             } catch (Exception e) {
                 Log.e(TAG, "addDefaultCategories: Error during adding default categories.", e);
             }

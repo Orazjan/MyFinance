@@ -24,6 +24,7 @@ public abstract class CategoryDataBase extends RoomDatabase {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                                     CategoryDataBase.class, "category_database")
+                            .fallbackToDestructiveMigration()
                             .build();
                 }
             }

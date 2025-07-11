@@ -74,6 +74,7 @@
         android:id="@+id/textViewForLogin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="5sp"
         android:alpha="1"
         android:textColor="?android:attr/textColorPrimary"
         android:text="Уже есть аккаунт? Нажмите для входа" />
@@ -82,7 +83,7 @@
         android:id="@+id/reg_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="8dp"
         android:text="Зарегестрироваться" />
 
 </LinearLayout>
