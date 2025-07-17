@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -47,6 +48,7 @@ public class PatternFragment extends Fragment {
     private String reason;
     private RecyclerView RecyclerForCategory;
     private Spinner spinnerForChooseActiveOrPassive;
+    private String selectedOperationType;
 
     private CategoryViewModel categoryViewModel;
     private CategoryViewAdapter CategoryAdapter;
@@ -77,9 +79,9 @@ public class PatternFragment extends Fragment {
     /**
      * Загружает и отображает все категории из базы данных Room.
      * Использует LiveData из CategoryViewModel для реактивного обновления UI.
+     * Также настраивает Spinner для выбора типа операции и его слушатель.
      */
     private void loadAndDisplay() {
-
         List<String> ActiveAndPassive = new ArrayList<>();
         ActiveAndPassive.add("Доход");
         ActiveAndPassive.add("Расход");
@@ -88,10 +90,32 @@ public class PatternFragment extends Fragment {
         adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         spinnerForChooseActiveOrPassive.setAdapter(adapter);
 
+        if (!ActiveAndPassive.isEmpty()) {
+            spinnerForChooseActiveOrPassive.setSelection(0);
+            selectedOperationType = ActiveAndPassive.get(0);
+        }
+
+        spinnerForChooseActiveOrPassive.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                selectedOperationType = parent.getItemAtPosition(position).toString(); // Correctly updates the variable
+                Log.d(TAG, "PatternFragment Spinner selected: " + selectedOperationType);
+                updateAddButtonState();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                selectedOperationType = null;
+                updateAddButtonState();
+            }
+        });
+
         categoryViewModel.getAllCategories().observe(getViewLifecycleOwner(), categories -> {
             List<CategoryItem> categoryItems = new ArrayList<>();
-            for (Categories category : categories) {
-                categoryItems.add(new CategoryItem(category.getCategoryName(), category.getSum()));
+            if (categories != null) {
+                for (Categories category : categories) {
+                    categoryItems.add(new CategoryItem(category.getCategoryName(), category.getSum(), category.getOperationType()));
+                }
             }
 
             if (CategoryAdapter == null) {
@@ -115,9 +139,9 @@ public class PatternFragment extends Fragment {
         if (CategoryAdapter != null) {
             CategoryAdapter.setOnItemClickListener(item -> {
                 // Используем getCategoryByNameAsync для одноразового получения категории
-                categoryViewModel.getCategoryByNameAsync(item.getCategoryName()).addOnSuccessListener(categories -> {
-                    if (categories != null) {
-                        showCategoryActionsDialog(categories);
+                categoryViewModel.getCategoryByNameAsync(item.getCategoryName()).addOnSuccessListener(category -> {
+                    if (category != null) {
+                        showCategoryActionsDialog(category);
                     } else {
                         Log.e(TAG, "onClickAdapter: Category " + item.getCategoryName() + " not found for dialog (might have been deleted concurrently).");
                         Toast.makeText(requireContext(), "Категория не найдена или была удалена.", Toast.LENGTH_SHORT).show();
@@ -193,6 +217,7 @@ public class PatternFragment extends Fragment {
                 Log.w(TAG, "Add button clicked: Reason is empty.");
                 return;
             }
+
             if (sumInDouble <= 0) {
                 sumInputLayout.setError("Сумма должна быть больше нуля");
                 Toast.makeText(requireContext(), "Сумма должна быть больше нуля.", Toast.LENGTH_SHORT).show();
@@ -200,8 +225,8 @@ public class PatternFragment extends Fragment {
                 return;
             }
 
-            Categories newCategory = new Categories(reason, sumInDouble);
-            Log.d(TAG, "btnAddPattern: Attempting to insert new category via ViewModel: " + newCategory.getCategoryName() + ", Sum: " + newCategory.getSum());
+            Categories newCategory = new Categories(reason, sumInDouble, selectedOperationType);
+            Log.d(TAG, "btnAddPattern: Attempting to insert new category via ViewModel: " + newCategory.getCategoryName() + ", Sum: " + newCategory.getSum() + ", Operation Type: " + newCategory.getOperationType());
             categoryViewModel.insert(newCategory);
 
             Toast.makeText(requireContext(), "Шаблон добавлен!", Toast.LENGTH_SHORT).show();
@@ -221,6 +246,10 @@ public class PatternFragment extends Fragment {
         sumEditText.setText("");
         reasonInputLayout.setError(null);
         sumInputLayout.setError(null);
+        if (spinnerForChooseActiveOrPassive.getAdapter() != null && spinnerForChooseActiveOrPassive.getAdapter().getCount() > 0) {
+            spinnerForChooseActiveOrPassive.setSelection(0);
+            selectedOperationType = spinnerForChooseActiveOrPassive.getItemAtPosition(0).toString();
+        }
     }
 
     /**
@@ -231,7 +260,8 @@ public class PatternFragment extends Fragment {
     private void updateAddButtonState() {
         boolean isReasonValid = reason != null && !reason.isEmpty();
         boolean isSumValid = sumInDouble > 0;
-        btnAddPattern.setEnabled(isReasonValid && isSumValid);
+        boolean isOperationTypeSelected = selectedOperationType != null;
+        btnAddPattern.setEnabled(isReasonValid && isSumValid && isOperationTypeSelected);
     }
 
     /**
@@ -280,7 +310,11 @@ public class PatternFragment extends Fragment {
                 return;
             }
 
-            Categories updatedCategory = new Categories(category.getCategoryName(), newSum, category.getFirestoreId(), false);
+            // --- IMPORTANT: Use the original category's operation type here ---
+            // If you want to allow changing the operation type in this dialog,
+            // you would need to add a Spinner to dialog_change_or_delete.xml
+            // and get its selected value from there.
+            Categories updatedCategory = new Categories(category.getCategoryName(), newSum, category.getOperationType(), category.getFirestoreId(), false);
             updatedCategory.setId(category.getId());
             categoryViewModel.update(updatedCategory);
 

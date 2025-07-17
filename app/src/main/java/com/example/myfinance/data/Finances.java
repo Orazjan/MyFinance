@@ -19,6 +19,9 @@ public class Finances {
     @ColumnInfo(name = "comments")
     private String comments;
 
+    @ColumnInfo(name = "operationType")
+    private String operationType;
+
     @ColumnInfo(name = "date")
     private String date;
 
@@ -32,21 +35,29 @@ public class Finances {
         this.firestoreId = null;
     }
 
-    public Finances(String financeResult, double summa, String comments, String date) {
+    public Finances(String financeResult, double summa, String operationType, String comments, String date) {
         this.date = date;
         this.FinanceResult = financeResult;
         this.summa = summa;
         this.comments = comments;
+        this.operationType = operationType;
         this.isSynced = false;
     }
 
-    public Finances(String firestoreId, String financeResult, double summa, String comments, String date) {
-        this.firestoreId = firestoreId;
+    public Finances(String newCategory, double newSum, String newComments, String date) {
         this.date = date;
-        this.FinanceResult = financeResult;
-        this.summa = summa;
-        this.comments = comments;
-        this.isSynced = true;
+        this.FinanceResult = newCategory;
+        this.summa = newSum;
+        this.comments = newComments;
+        this.isSynced = false;
+    }
+
+    public String getOperationType() {
+        return operationType;
+    }
+
+    public void setOperationType(String operationType) {
+        this.operationType = operationType;
     }
 
     public String getFinanceResult() {
@@ -113,7 +124,9 @@ public class Finances {
                 ", id=" + id +
                 ", FinanceResult='" + FinanceResult + '\'' +
                 ", summa=" + summa +
+                ", operationType='" + operationType + '\'' +
                 ", date='" + date + '\'' +
+                ", isSynced=" + isSynced +
                 ", firestoreId='" + firestoreId + '\'' +
                 '}';
     }

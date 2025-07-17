@@ -16,6 +16,9 @@ public class Categories {
     @ColumnInfo(name = "sum")
     private double sum;
 
+    @ColumnInfo(name = "operationType")
+    private String operationType;
+
     @ColumnInfo(name = "isSynced")
     private boolean isSynced;
 
@@ -32,10 +35,26 @@ public class Categories {
         this.sum = sum;
     }
 
-    public Categories(String categoryName, double sum, String firestoreId, boolean isSynced) {
+    public Categories(String categoryName, double sum, String operationType) {
+        this(categoryName, sum);
+        this.categoryName = categoryName;
+        this.sum = sum;
+        this.operationType = operationType;
+    }
+
+    public Categories(String categoryName, double sum, String operationType, String firestoreId, boolean isSynced) {
         this(categoryName, sum);
         this.firestoreId = firestoreId;
         this.isSynced = isSynced;
+        this.operationType = operationType;
+    }
+
+    public String getOperationType() {
+        return operationType;
+    }
+
+    public void setOperationType(String operationType) {
+        this.operationType = operationType;
     }
 
     public String getCategoryName() {
@@ -82,9 +101,10 @@ public class Categories {
     @Override
     public String toString() {
         return "Categories{" +
-                "id=" + id +
-                ", categoryName='" + categoryName + '\'' +
+                "categoryName='" + categoryName + '\'' +
+                ", id=" + id +
                 ", sum=" + sum +
+                ", operationType='" + operationType + '\'' +
                 ", isSynced=" + isSynced +
                 ", firestoreId='" + firestoreId + '\'' +
                 '}';

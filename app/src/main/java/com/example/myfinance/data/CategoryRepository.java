@@ -460,13 +460,7 @@ public class CategoryRepository {
             try {
                 List<Categories> defaultCategoriesToAdd = new ArrayList<>();
                 if (daoCategories.getSingleCategoryByNameBlocking("Другое") == null) {
-                    defaultCategoriesToAdd.add(new Categories("Другое", 0));
-                }
-                if (daoCategories.getSingleCategoryByNameBlocking("Доход") == null) {
-                    defaultCategoriesToAdd.add(new Categories("Доход", 0));
-                }
-                if (daoCategories.getSingleCategoryByNameBlocking("Расход") == null) {
-                    defaultCategoriesToAdd.add(new Categories("Расход", 0));
+                    defaultCategoriesToAdd.add(new Categories("Другое", 0, "Расход"));
                 }
 
                 for (Categories category : defaultCategoriesToAdd) {

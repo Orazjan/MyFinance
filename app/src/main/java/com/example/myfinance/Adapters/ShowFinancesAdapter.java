@@ -77,6 +77,7 @@ public class ShowFinancesAdapter extends BaseAdapter {
             holder.textViewId = convertView.findViewById(R.id.id);
             holder.textViewSum = convertView.findViewById(R.id.summa);
             holder.textViewName = convertView.findViewById(R.id.name);
+            holder.textOperationType = convertView.findViewById(R.id.operation);
 
             convertView.setTag(holder);
             Log.d(TAG, "Created new view for position: " + position);
@@ -106,6 +107,12 @@ public class ShowFinancesAdapter extends BaseAdapter {
         } else {
             Log.e(TAG, "textViewName is null for position " + position);
         }
+        if (holder.textOperationType != null) {
+            holder.textOperationType.setText(item.getOperationType() != null ? item.getOperationType() : "N/A");
+        } else {
+            Log.e(TAG, "textOperationType is null for position " + position);
+        }
+
         return convertView;
     }
 
@@ -113,5 +120,6 @@ public class ShowFinancesAdapter extends BaseAdapter {
         TextView textViewId;
         TextView textViewSum;
         TextView textViewName;
+        TextView textOperationType;
     }
 }

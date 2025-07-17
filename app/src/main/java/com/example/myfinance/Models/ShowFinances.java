@@ -9,17 +9,43 @@ public class ShowFinances {
     private String comments;
     private String date;
     private String firestoreId;
+    private String operationType;
 
     public ShowFinances() {
     }
 
-    public ShowFinances(int id, double sum, String name, String comments, String date, String firestoreId) {
+    public ShowFinances(int id, double sum, String name, String operationType, String comments, String date, String firestoreId) {
         this.id = id;
         this.sum = sum;
         this.name = name;
         this.comments = comments;
         this.date = date;
+        this.operationType = operationType;
         this.firestoreId = firestoreId;
+    }
+
+    public void setFirestoreId(String firestoreId) {
+        this.firestoreId = firestoreId;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getOperationType() {
+        return operationType;
+    }
+
+    public void setOperationType(String operationType) {
+        this.operationType = operationType;
+    }
+
+    public void setSum(double sum) {
+        this.sum = sum;
     }
 
     public String getFirestoreId() {
@@ -59,9 +85,12 @@ public class ShowFinances {
     public String toString() {
         return "ShowFinances{" +
                 "comments='" + comments + '\'' +
+                ", date='" + date + '\'' +
+                ", firestoreId='" + firestoreId + '\'' +
                 ", id=" + id +
-                ", sum=" + sum +
                 ", name='" + name + '\'' +
+                ", operationType='" + operationType + '\'' +
+                ", sum=" + sum +
                 '}';
     }
 }

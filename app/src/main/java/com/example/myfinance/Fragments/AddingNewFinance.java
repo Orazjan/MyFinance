@@ -47,6 +47,8 @@ public class AddingNewFinance extends Fragment {
     private TextInputEditText sumEditText, reasonEditText, commentsEditText;
     private TextInputLayout sumInputLayout, reasonInputLayout, commentsInputLayout;
     private String selectedCategory;
+    private String selectedOperationType;
+    private Spinner SpinnerForChooseActiveOrPassive;
 
     private CategoryViewModel categoryViewModel;
     private FinanceViewModel financeViewModel;
@@ -71,6 +73,7 @@ public class AddingNewFinance extends Fragment {
         reasonInputLayout = view.findViewById(R.id.reasonInputLayout);
         commentsEditText = view.findViewById(R.id.commentsEditText);
         commentsInputLayout = view.findViewById(R.id.commentsInputLayout);
+        SpinnerForChooseActiveOrPassive = view.findViewById(R.id.SpinnerForChooseActiveOrPassive);
 
         categoryViewModel = new ViewModelProvider(
                 requireActivity(),
@@ -80,6 +83,7 @@ public class AddingNewFinance extends Fragment {
         FinanceRepository financeRepository = ((MyApplication) requireActivity().getApplication()).getFinanceRepository();
         FinanceViewModel.TaskViewModelFactory finViewModelTaskFactory = new FinanceViewModel.TaskViewModelFactory(financeRepository);
         financeViewModel = new ViewModelProvider(requireActivity(), finViewModelTaskFactory).get(FinanceViewModel.class);
+
 
         btnAdd.setEnabled(false);
 
@@ -103,7 +107,12 @@ public class AddingNewFinance extends Fragment {
                 }
             }
 
-            Log.d(TAG, "loadAndDisplay: Categories received from ViewModel: " + categoryNames.size() + " items. Content: " + categoryNames.toString());
+            List<String> operationType = new ArrayList<>();
+            operationType.add("Доход");
+            operationType.add("Расход");
+            ArrayAdapter adapter = new ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, operationType);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            SpinnerForChooseActiveOrPassive.setAdapter(adapter);
 
             if (categorySpinnerAdapter == null) {
                 categorySpinnerAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, categoryNames);
@@ -144,6 +153,7 @@ public class AddingNewFinance extends Fragment {
         String sumStr = Objects.requireNonNull(sumEditText.getText()).toString().trim();
         String reason = Objects.requireNonNull(reasonEditText.getText()).toString().trim();
         String comments = Objects.requireNonNull(commentsEditText.getText()).toString().trim();
+        String operationType = selectedOperationType;
         boolean isValid = true;
 
         if (TextUtils.isEmpty(selectedCategory) || "Категория не выбрана".equals(selectedCategory)) {
@@ -174,7 +184,7 @@ public class AddingNewFinance extends Fragment {
         if (!isValid) return;
 
         double sum = Double.parseDouble(sumStr);
-        addingToDb(reason, sum, comments);
+        addingToDb(reason, sum, operationType, comments);
         clearFields();
         popBackAndPassData(sum);
     }
@@ -228,6 +238,18 @@ public class AddingNewFinance extends Fragment {
                 Log.d(TAG, "Spinner: Nothing selected.");
             }
         });
+
+        SpinnerForChooseActiveOrPassive.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                selectedOperationType = adapterView.getItemAtPosition(i).toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
     }
 
     /**
@@ -266,8 +288,8 @@ public class AddingNewFinance extends Fragment {
      * @param sum      Сумма операции.
      * @param comments Комментарии к операции.
      */
-    private void addingToDb(String reason, double sum, String comments) {
-        Finances newFinance = new Finances(reason, sum, comments, getCurrentDate());
+    private void addingToDb(String reason, double sum, String operationType, String comments) {
+        Finances newFinance = new Finances(reason, sum, operationType, comments, getCurrentDate());
         financeViewModel.insert(newFinance);
         Toast.makeText(requireContext(), "Данные добавлены!", Toast.LENGTH_SHORT).show();
     }
@@ -287,35 +309,60 @@ public class AddingNewFinance extends Fragment {
         }, 100);
     }
 
+
     /**
-     * Устанавливает значение суммы и причины в текстовых полях на основе выбранной категории.
+     * Устанавливает значение суммы, причины и типа операции в текстовых полях и Spinner на основе выбранной категории.
      *
      * @param categoryName Имя выбранной категории.
      */
     private void setToReasonAndSum(String categoryName) {
         if (categoryName != null) {
-            // Используем getTotalSumByCategory, так как getSumForCategory был удален/консолидирован
-            categoryViewModel.getSumForCategory(categoryName).observe(getViewLifecycleOwner(), sum -> {
-                if (sum != null) {
-                    reasonEditText.setText(categoryName);
-                    if (sum == 0.0) {
+            // Используем getCategoryByNameAsync для получения всей информации о категории
+            categoryViewModel.getCategoryByNameAsync(categoryName).addOnSuccessListener(category -> {
+                if (category != null) {
+                    reasonEditText.setText(category.getCategoryName());
+                    if (category.getSum() == 0.0) {
                         sumEditText.setText("");
                         focusAndOpenKeyboard(sumEditText);
                     } else {
-                        sumEditText.setText(String.valueOf(sum)); // Устанавливаем сумму, если она не 0
+                        sumEditText.setText(String.valueOf(category.getSum()));
                     }
-                    Log.d(TAG, "setToReasonAndSum: Reason and sum set for category: " + categoryName + ", sum: " + sum);
+
+                    selectedOperationType = category.getOperationType(); // Сохраняем тип операции
+
+                    ArrayAdapter<String> operationTypeAdapter = (ArrayAdapter<String>) SpinnerForChooseActiveOrPassive.getAdapter();
+                    if (operationTypeAdapter != null) {
+                        int position = operationTypeAdapter.getPosition(selectedOperationType);
+                        if (position >= 0) {
+                            SpinnerForChooseActiveOrPassive.setSelection(position);
+                            Log.d(TAG, "setToReasonAndSum: Operation type set to: " + selectedOperationType + " at position: " + position);
+                        } else {
+                            Log.w(TAG, "setToReasonAndSum: Operation type '" + selectedOperationType + "' not found in spinner adapter.");
+                        }
+                    }
+                    Log.d(TAG, "setToReasonAndSum: Reason, sum, and operation type set for category: " + categoryName + ", sum: " + category.getSum() + ", operationType: " + selectedOperationType);
                 } else {
                     sumEditText.setText("");
                     focusAndOpenKeyboard(sumEditText);
-                    Log.d(TAG, "setToReasonAndSum: Sum is null for category: " + categoryName + ". Clearing sum field.");
+                    Log.d(TAG, "setToReasonAndSum: Category not found for: " + categoryName + ". Clearing sum field.");
                 }
+                validateFieldsForButton();
+            }).addOnFailureListener(e -> {
+                Log.e(TAG, "setToReasonAndSum: Failed to retrieve category asynchronously for " + categoryName + ": " + e.getMessage(), e);
+                Toast.makeText(requireContext(), "Ошибка при загрузке категории.", Toast.LENGTH_SHORT).show();
+                sumEditText.setText("");
+                reasonEditText.setText("");
+                validateFieldsForButton();
             });
         } else {
             reasonEditText.setText("");
             sumEditText.setText("");
+            SpinnerForChooseActiveOrPassive.setSelection(0);
+            selectedOperationType = ((ArrayAdapter<String>) SpinnerForChooseActiveOrPassive.getAdapter()).getItem(0);
+
             focusAndOpenKeyboard(reasonEditText);
             Log.d(TAG, "setToReasonAndSum: categoryName is null. Clearing fields.");
+            validateFieldsForButton();
         }
     }
 

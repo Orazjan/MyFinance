@@ -398,7 +398,7 @@ public class MainFragment extends Fragment {
 
                 if (finances != null) {
                     for (Finances finance : finances) {
-                        financeList.add(new ShowFinances(finance.getId(), finance.getSumma(), finance.getFinanceResult(), finance.getComments(), finance.getDate(), finance.getFirestoreId()));
+                        financeList.add(new ShowFinances(finance.getId(), finance.getSumma(), finance.getFinanceResult(), finance.getOperationType(), finance.getComments(), finance.getDate(), finance.getFirestoreId()));
                     }
                 }
                 Collections.reverse(financeList);

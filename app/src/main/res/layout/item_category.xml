@@ -7,18 +7,25 @@
 
     <TextView
         android:id="@+id/categoryName"
-        android:layout_width="wrap_content"
+        android:layout_width="200sp"
         android:layout_height="wrap_content"
-        android:layout_weight="2"
         android:paddingStart="5sp"
         android:textColor="?attr/colorPrimary"
         android:textSize="20sp" />
 
     <TextView
-        android:id="@+id/categorySum"
-        android:layout_width="wrap_content"
+        android:id="@+id/categoryOperation"
+        android:layout_width="100sp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
+        android:paddingStart="5sp"
+        android:textAlignment="textEnd"
+        android:textColor="?attr/colorPrimary"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/categorySum"
+        android:layout_width="100sp"
+        android:layout_height="wrap_content"
         android:paddingEnd="5sp"
         android:textAlignment="textEnd"
         android:textColor="?attr/colorPrimary"
