@@ -52,6 +52,6 @@ public class AddSettingToDataStoreManager {
      * @return Строка типа валюты. По умолчанию "USD", если не установлен.
      */
     public String getCurrencyType() {
-        return sharedPreferences.getString(KEY_CURRENCY_TYPE, "TMT");
+        return sharedPreferences.getString(KEY_CURRENCY_TYPE, "USD");
     }
 }

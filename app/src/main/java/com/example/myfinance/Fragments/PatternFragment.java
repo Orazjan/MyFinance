@@ -10,9 +10,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,6 +46,7 @@ public class PatternFragment extends Fragment {
     private double sumInDouble;
     private String reason;
     private RecyclerView RecyclerForCategory;
+    private Spinner spinnerForChooseActiveOrPassive;
 
     private CategoryViewModel categoryViewModel;
     private CategoryViewAdapter CategoryAdapter;
@@ -63,6 +66,7 @@ public class PatternFragment extends Fragment {
         sumEditText = view.findViewById(R.id.sumEditText);
         btnAddPattern = view.findViewById(R.id.btnaddPattern);
         RecyclerForCategory = view.findViewById(R.id.RecyclerForCategory);
+        spinnerForChooseActiveOrPassive = view.findViewById(R.id.SpinnerForChooseActiveOrPassive);
 
         categoryViewModel = new ViewModelProvider(requireActivity(), new CategoryViewModel.TaskViewModelFactory(requireActivity().getApplication())).get(CategoryViewModel.class);
 
@@ -75,6 +79,15 @@ public class PatternFragment extends Fragment {
      * Использует LiveData из CategoryViewModel для реактивного обновления UI.
      */
     private void loadAndDisplay() {
+
+        List<String> ActiveAndPassive = new ArrayList<>();
+        ActiveAndPassive.add("Доход");
+        ActiveAndPassive.add("Расход");
+
+        ArrayAdapter adapter = new ArrayAdapter(requireContext(), R.layout.spinner_selected_item, ActiveAndPassive);
+        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        spinnerForChooseActiveOrPassive.setAdapter(adapter);
+
         categoryViewModel.getAllCategories().observe(getViewLifecycleOwner(), categories -> {
             List<CategoryItem> categoryItems = new ArrayList<>();
             for (Categories category : categories) {
