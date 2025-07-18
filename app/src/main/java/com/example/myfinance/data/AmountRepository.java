@@ -39,6 +39,10 @@ public class AmountRepository {
         this.db = FirebaseFirestore.getInstance();
         this.auth = FirebaseAuth.getInstance();
 
+        // Добавлена логика для инициализации Room при запуске, независимо от аутентификации
+        // Это гарантирует, что TotalAmount с ID 1 всегда существует в Room
+        initializeRoomTotalAmount();
+
         auth.addAuthStateListener(firebaseAuth -> {
             FirebaseUser user = firebaseAuth.getCurrentUser();
             if (user != null) {
@@ -46,6 +50,23 @@ public class AmountRepository {
                 syncTotalAmountFromFirestore();
             } else {
                 Log.d(TAG, "Состояние аутентификации изменилось: Пользователь вышел. Синхронизация TotalAmount пропущена.");
+            }
+        });
+    }
+
+    /**
+     * Инициализирует запись TotalAmount в Room, если она не существует.
+     * Это гарантирует, что всегда есть запись с ID=1 для Room.
+     */
+    private void initializeRoomTotalAmount() {
+        databaseWriteExecutor.execute(() -> {
+            TotalAmount existingTotalAmount = DAOtotalAmount.getSingleTotalAmountById(1);
+            if (existingTotalAmount == null) {
+                Log.d(TAG, "initializeRoomTotalAmount: TotalAmount record with ID 1 not found. Creating new one with 0.0.");
+                TotalAmount newZeroAmount = new TotalAmount(0.0, 0.0);
+                DAOtotalAmount.insert(newZeroAmount);
+            } else {
+                Log.d(TAG, "initializeRoomTotalAmount: TotalAmount record with ID 1 already exists. Amount=" + existingTotalAmount.getAmount() + ", Summa=" + existingTotalAmount.getSumma());
             }
         });
     }
@@ -76,9 +97,15 @@ public class AmountRepository {
             totalAmount.setId(1);
             totalAmount.setSynced(false);
 
+            Log.d(TAG, "Inserting/Updating TotalAmount in Room: Amount=" + totalAmount.getAmount() + ", Summa=" + totalAmount.getSumma() + ", Synced=" + totalAmount.isSynced());
             DAOtotalAmount.insert(totalAmount);
 
-            upsertTotalAmountToFirestore(totalAmount);
+            // Отправляем в Firestore только если пользователь аутентифицирован ---
+            if (auth.getCurrentUser() != null) {
+                upsertTotalAmountToFirestore(totalAmount);
+            } else {
+                Log.d(TAG, "Skipping Firestore upsert: User not authenticated.");
+            }
         });
     }
 
@@ -88,42 +115,50 @@ public class AmountRepository {
      */
     public void update(TotalAmount totalAmount) {
         totalAmount.setId(1);
-        totalAmount.setSynced(false);
+        totalAmount.setSynced(false); // Сбрасываем флаг синхронизации перед обновлением
 
         databaseWriteExecutor.execute(() -> {
+            Log.d(TAG, "Updating TotalAmount in Room: Amount=" + totalAmount.getAmount() + ", Summa=" + totalAmount.getSumma() + ", Synced=" + totalAmount.isSynced());
             DAOtotalAmount.update(totalAmount);
 
-            upsertTotalAmountToFirestore(totalAmount);
+            // Отправляем в Firestore только если пользователь аутентифицирован ---
+            if (auth.getCurrentUser() != null) {
+                upsertTotalAmountToFirestore(totalAmount);
+            } else {
+                Log.d(TAG, "Skipping Firestore upsert: User not authenticated.");
+            }
         });
     }
 
     /**
-     * Handles pushing the TotalAmount to Firestore.
-     * Always uses .set() as it's a single document.
+     * Обновление записи в Firestore и Room
+     * @param totalAmount
      */
     private void upsertTotalAmountToFirestore(TotalAmount totalAmount) {
         DocumentReference totalAmountRef = getTotalAmountDocumentRef();
         if (totalAmountRef == null) {
-            Log.d(TAG, "Cannot upsert TotalAmount to Firestore: User not authenticated.");
+            Log.d(TAG, "Cannot upsert TotalAmount to Firestore: User not authenticated (getTotalAmountDocumentRef returned null).");
             return;
         }
 
+        // Получаем текущую локальную запись, чтобы сохранить firestoreId, если он уже есть
+        // Это нужно делать здесь, так как totalAmount, переданный в метод, может быть новым объектом
         TotalAmount roomTotalAmount = DAOtotalAmount.getSingleTotalAmountById(1);
-        if (roomTotalAmount != null) {
-            String currentFirestoreId = roomTotalAmount.getFirestoreId();
-            if (currentFirestoreId != null && !currentFirestoreId.isEmpty()) {
-                totalAmount.setFirestoreId(currentFirestoreId);
-            }
+        if (roomTotalAmount != null && roomTotalAmount.getFirestoreId() != null && !roomTotalAmount.getFirestoreId().isEmpty()) {
+            totalAmount.setFirestoreId(roomTotalAmount.getFirestoreId());
         } else {
-            Log.e(TAG, "TotalAmount record with ID 1 not found in Room for upserting to Firestore. This should not happen.");
-
+            // Если firestoreId нет, он будет сгенерирован Firestore при первом set()
+            // Для фиксированного документа мы устанавливаем его ID вручную
+            totalAmount.setFirestoreId(FIRESTORE_TOTAL_AMOUNT_DOCUMENT_ID);
+            Log.d(TAG, "upsertTotalAmountToFirestore: Setting fixed Firestore ID for new document: " + FIRESTORE_TOTAL_AMOUNT_DOCUMENT_ID);
         }
+
+        Log.d(TAG, "Attempting to upsert TotalAmount to Firestore: Amount=" + totalAmount.getAmount() + ", Summa=" + totalAmount.getSumma() + ", FirestoreId=" + totalAmount.getFirestoreId());
         performFirestoreSetOperation(totalAmount, totalAmountRef);
     }
 
     /**
-     * Performs the Firestore set operation for TotalAmount.
-     *
+     * Обновление записи в Firestore и Room (вспомогательный метод)
      * @param totalAmount
      * @param totalAmountRef
      */
@@ -131,55 +166,68 @@ public class AmountRepository {
         totalAmountRef.set(totalAmount)
                 .addOnSuccessListener(aVoid -> {
                     databaseWriteExecutor.execute(() -> {
+                        // После успешной записи в Firestore, обновляем локальную запись как синхронизированную
+                        // totalAmountRef.getId() для фиксированного документа будет FIRESTORE_TOTAL_AMOUNT_DOCUMENT_ID
                         totalAmount.setFirestoreId(totalAmountRef.getId());
                         totalAmount.setSynced(true);
-                        DAOtotalAmount.update(totalAmount);
+                        DAOtotalAmount.update(totalAmount); // Обновляем локальную запись
+                        Log.d(TAG, "TotalAmount successfully upserted to Firestore. Local record updated as synced. Amount=" + totalAmount.getAmount() + ", Summa=" + totalAmount.getSumma());
                     });
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Ошибка обновления TotalAmount в Firestore: " + e.getMessage(), e);
+                    // Оставляем isSynced=false, чтобы повторить попытку позже
                 });
     }
 
     /**
-     * Syncs the single TotalAmount record from Firestore to Room.
-     * This is triggered upon user login.
+     * Синхронизация TotalAmount из Firestore в Room (вспомогательный метод)
      */
     private void syncTotalAmountFromFirestore() {
-        DocumentReference totalAmountRef = getTotalAmountDocumentRef();
-        if (totalAmountRef == null) {
+        FirebaseUser user = auth.getCurrentUser();
+        if (user == null) {
             Log.d(TAG, "Cannot sync TotalAmount from Firestore: User not authenticated.");
+            return;
+        }
+
+        DocumentReference totalAmountRef = getTotalAmountDocumentRef();
+        if (totalAmountRef == null) { // Дополнительная проверка, хотя выше уже есть
+            Log.d(TAG, "Cannot sync TotalAmount from Firestore: Document reference is null.");
             return;
         }
 
         totalAmountRef.get()
                 .addOnSuccessListener(documentSnapshot -> {
                     databaseWriteExecutor.execute(() -> {
-                        TotalAmount localTotalAmount = DAOtotalAmount.getSingleTotalAmountById(1);
-                        if (localTotalAmount == null) {
-                            localTotalAmount = new TotalAmount();
-                            localTotalAmount.setId(1);
-                        }
+                        TotalAmount localTotalAmount = DAOtotalAmount.getSingleTotalAmountById(1); // Получаем текущую локальную запись
 
                         if (documentSnapshot.exists()) {
                             TotalAmount firestoreTotalAmount = documentSnapshot.toObject(TotalAmount.class);
                             if (firestoreTotalAmount != null) {
-                                firestoreTotalAmount.setId(1);
+                                firestoreTotalAmount.setId(1); // Убеждаемся, что ID для Room всегда 1
                                 firestoreTotalAmount.setFirestoreId(documentSnapshot.getId());
                                 firestoreTotalAmount.setSynced(true);
 
-                                DAOtotalAmount.insert(firestoreTotalAmount);
+                                Log.d(TAG, "Firestore document exists. Syncing from Firestore to Room: Amount=" + firestoreTotalAmount.getAmount() + ", Summa=" + firestoreTotalAmount.getSumma());
+                                DAOtotalAmount.insert(firestoreTotalAmount); // REPLACE с ID 1
                                 Log.d(TAG, "TotalAmount синхронизирован из Firestore в Room. Суммы: " +
                                         firestoreTotalAmount.getAmount() + "/" + firestoreTotalAmount.getSumma());
                             }
                         } else {
-                            Log.d(TAG, "Документ TotalAmount не найден в Firestore. Отправляем текущее локальное состояние, если оно несинхронизировано.");
-                            if (localTotalAmount != null && !localTotalAmount.isSynced()) {
-                                upsertTotalAmountToFirestore(localTotalAmount);
-                            } else if (localTotalAmount.getAmount() == 0.0 && localTotalAmount.getSumma() == 0.0 && localTotalAmount.getFirestoreId() == null) {
-                                localTotalAmount.setAmount(0.0);
-                                localTotalAmount.setSumma(0.0);
-                                insert(localTotalAmount);
+                            Log.d(TAG, "Документ TotalAmount не найден в Firestore.");
+                            if (localTotalAmount != null) {
+                                // Если локальная запись не синхронизирована, пытаемся отправить ее в Firestore
+                                if (!localTotalAmount.isSynced()) {
+                                    upsertTotalAmountToFirestore(localTotalAmount);
+                                } else {
+                                    Log.d(TAG, "Local TotalAmount is synced and Firestore document is missing. This might indicate an issue. No action needed for missing Firestore document.");
+                                }
+                            } else {
+                                // Если нет локальной записи и нет в Firestore, создаем новую с 0.0
+                                Log.d(TAG, "No local TotalAmount record. Creating new one with 0.0 and pushing to Firestore.");
+                                TotalAmount newZeroAmount = new TotalAmount(0.0, 0.0);
+                                // Используем insert(), который уже содержит логику upsertTotalAmountToFirestore
+                                insert(newZeroAmount);
                             }
                         }
                     });

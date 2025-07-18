@@ -84,7 +84,6 @@ public class AddingNewFinance extends Fragment {
         FinanceViewModel.TaskViewModelFactory finViewModelTaskFactory = new FinanceViewModel.TaskViewModelFactory(financeRepository);
         financeViewModel = new ViewModelProvider(requireActivity(), finViewModelTaskFactory).get(FinanceViewModel.class);
 
-
         btnAdd.setEnabled(false);
 
         loadAndDisplay();
@@ -98,7 +97,6 @@ public class AddingNewFinance extends Fragment {
      * Использует categoryViewModel (поле класса).
      */
     private void loadAndDisplay() {
-        Log.d(TAG, "loadAndDisplay: Called. Observing all categories from ViewModel.");
         categoryViewModel.getAllCategories().observe(getViewLifecycleOwner(), categories -> {
             List<String> categoryNames = new ArrayList<>();
             if (categories != null) {
@@ -186,7 +184,7 @@ public class AddingNewFinance extends Fragment {
         double sum = Double.parseDouble(sumStr);
         addingToDb(reason, sum, operationType, comments);
         clearFields();
-        popBackAndPassData(sum);
+        popBackAndPassData(sum, operationType);
     }
 
     /**
@@ -243,11 +241,16 @@ public class AddingNewFinance extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 selectedOperationType = adapterView.getItemAtPosition(i).toString();
+                Log.d(TAG, "Operation type spinner selected: " + selectedOperationType);
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
-
+                if (adapterView.getAdapter() != null && adapterView.getAdapter().getCount() > 0) {
+                    selectedOperationType = adapterView.getItemAtPosition(0).toString();
+                } else {
+                    selectedOperationType = null;
+                }
             }
         });
     }
@@ -262,22 +265,24 @@ public class AddingNewFinance extends Fragment {
         boolean isValid = !sum.isEmpty() &&
                 !reason.isEmpty() &&
                 selectedCategory != null &&
-                !selectedCategory.equals("Категория не выбрана");
+                !selectedCategory.equals("Категория не выбрана") &&
+                selectedOperationType != null;
 
         btnAdd.setEnabled(isValid);
-        Log.d(TAG, "validateFieldsForButton: isValid=" + isValid + ", current selectedCategory=" + selectedCategory);
     }
 
     /**
      * Возвращает данные в родительский фрагмент и закрывает текущий.
      *
      * @param sum Сумма, которую нужно передать.
+     * @param operationType Тип операции ("Доход" или "Расход").
      */
-    private void popBackAndPassData(double sum) {
+    private void popBackAndPassData(double sum, String operationType) {
         Bundle result = new Bundle();
-        result.putDouble("ValueSum", sum);
+        result.putDouble("Sum", sum); // Используем ключ "Sum"
+        result.putString("OperationType", operationType); // Добавляем тип операции с ключом "OperationType"
 
-        getParentFragmentManager().setFragmentResult("ValueSum", result);
+        getParentFragmentManager().setFragmentResult("ValueSumAndType", result); // Используем ключ "ValueSumAndType"
         getParentFragmentManager().popBackStack();
     }
 
@@ -287,11 +292,13 @@ public class AddingNewFinance extends Fragment {
      * @param reason   Причина операции.
      * @param sum      Сумма операции.
      * @param comments Комментарии к операции.
+     * @param operationType Тип операции (доход/расход).
      */
     private void addingToDb(String reason, double sum, String operationType, String comments) {
         Finances newFinance = new Finances(reason, sum, operationType, comments, getCurrentDate());
         financeViewModel.insert(newFinance);
         Toast.makeText(requireContext(), "Данные добавлены!", Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "addingToDb: New finance added: Reason=" + reason + ", Sum=" + sum + ", Type=" + operationType);
     }
 
     /**
@@ -335,12 +342,10 @@ public class AddingNewFinance extends Fragment {
                         int position = operationTypeAdapter.getPosition(selectedOperationType);
                         if (position >= 0) {
                             SpinnerForChooseActiveOrPassive.setSelection(position);
-                            Log.d(TAG, "setToReasonAndSum: Operation type set to: " + selectedOperationType + " at position: " + position);
                         } else {
                             Log.w(TAG, "setToReasonAndSum: Operation type '" + selectedOperationType + "' not found in spinner adapter.");
                         }
                     }
-                    Log.d(TAG, "setToReasonAndSum: Reason, sum, and operation type set for category: " + categoryName + ", sum: " + category.getSum() + ", operationType: " + selectedOperationType);
                 } else {
                     sumEditText.setText("");
                     focusAndOpenKeyboard(sumEditText);
@@ -357,8 +362,12 @@ public class AddingNewFinance extends Fragment {
         } else {
             reasonEditText.setText("");
             sumEditText.setText("");
-            SpinnerForChooseActiveOrPassive.setSelection(0);
-            selectedOperationType = ((ArrayAdapter<String>) SpinnerForChooseActiveOrPassive.getAdapter()).getItem(0);
+            if (SpinnerForChooseActiveOrPassive.getAdapter() != null && SpinnerForChooseActiveOrPassive.getAdapter().getCount() > 0) {
+                SpinnerForChooseActiveOrPassive.setSelection(0);
+                selectedOperationType = ((ArrayAdapter<String>) SpinnerForChooseActiveOrPassive.getAdapter()).getItem(0);
+            } else {
+                selectedOperationType = null;
+            }
 
             focusAndOpenKeyboard(reasonEditText);
             Log.d(TAG, "setToReasonAndSum: categoryName is null. Clearing fields.");
