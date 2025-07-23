@@ -3,10 +3,9 @@ package com.example.myfinance.data;
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MediatorLiveData;
+import androidx.lifecycle.Transformations;
 
 import com.example.myfinance.DAO.DAOFinances;
-import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieEntry;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
@@ -34,6 +33,11 @@ public class FinanceRepository {
     private static final int NUMBER_OF_THREADS = 4;
     public static final ExecutorService databaseWriteExeutor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
+    /**
+     * Конструктор репозитория.
+     *
+     * @param financesDao
+     */
     public FinanceRepository(DAOFinances financesDao) {
         this.db = FirebaseFirestore.getInstance();
         this.auth = FirebaseAuth.getInstance();
@@ -155,8 +159,6 @@ public class FinanceRepository {
     public void update(Finances finances) {
         finances.setSynced(false);
 
-        Log.d(TAG, "Update (pre-Room): RoomID=" + finances.getId() + ", FirestoreID=" + finances.getFirestoreId() + ", isSynced=" + finances.isSynced());
-
         databaseWriteExeutor.execute(() -> {
             daoFinances.update(finances);
             Log.d(TAG, "Update (post-Room): RoomID=" + finances.getId() + ", FirestoreID=" + finances.getFirestoreId() + ", isSynced=" + finances.isSynced());
@@ -207,77 +209,70 @@ public class FinanceRepository {
     }
 
     /**
-     * Для кругового графика
-     * Теперь получает List<CategorySum>
+     * Вспомогательный метод для преобразования List<CategorySum> в List<PieEntry>.
      *
-     * @return LiveData с данными для PieChart
+     * @param categorySums Список CategorySum, где category - это категория, а total - сумма.
+     * @return Список PieEntry для кругового графика.
      */
-    public LiveData<List<PieEntry>> getExpensesForPieChart() {
-        MediatorLiveData<List<PieEntry>> result = new MediatorLiveData<>();
-        result.addSource(daoFinances.getExpensesByCategory(), categorySums -> {
-            List<PieEntry> entries = new ArrayList<>();
-            if (categorySums != null) {
-                for (CategorySum item : categorySums) {
-                    if (item.getTotal() > 0) {
-                        entries.add(new PieEntry(
-                                (float) item.getTotal(),
-                                item.getCategory()
-                        ));
-                    }
+    private List<PieEntry> mapCategorySumsToPieEntries(List<CategorySum> categorySums) {
+        List<PieEntry> entries = new ArrayList<>();
+        if (categorySums != null) {
+            for (CategorySum item : categorySums) {
+                if (item.getTotal() > 0) { // Исключаем нулевые или отрицательные значения
+                    entries.add(new PieEntry(
+                            (float) item.getTotal(),
+                            item.getCategory()
+                    ));
                 }
             }
-            result.setValue(entries);
-        });
-        return result;
+        }
+        return entries;
     }
 
     /**
-     * Для линейного графика
-     * Теперь получает List<DateSum>
+     * Для кругового графика (расходы по категориям).
      *
-     * @return LiveData с данными для LineChart
+     * @return LiveData с данными для PieChart.
      */
-    public LiveData<List<Entry>> getExpensesForLineChart() {
-        MediatorLiveData<List<Entry>> result = new MediatorLiveData<>();
-        result.addSource(daoFinances.getExpensesByDate(), dateSums -> {
-            List<Entry> entries = new ArrayList<>();
-
-        });
-        return null;
+    public LiveData<List<PieEntry>> getExpensesForPieChart() {
+        return Transformations.map(daoFinances.getExpensesByCategory(), this::mapCategorySumsToPieEntries);
     }
 
     /**
-     * Для линейного графика
-     * @return
+     * Для кругового графика (доходы по категориям).
+     *
+     * @return LiveData с данными для PieChart.
+     */
+    public LiveData<List<PieEntry>> getIncomesForPieChart() {
+        return Transformations.map(daoFinances.getIncomesByCategory(), this::mapCategorySumsToPieEntries);
+    }
+
+    /**
+     * Для кругового графика (все транзакции по категориям).
+     *
+     * @return LiveData с данными для PieChart.
+     */
+    public LiveData<List<PieEntry>> getAllTransactionsForPieChart() {
+        return Transformations.map(daoFinances.getAllTransactionsByCategory(), this::mapCategorySumsToPieEntries);
+    }
+
+    /**
+     * Для линейного графика (расходы по датам).
+     *
+     * @return LiveData с данными для LineChart.
      */
     public LiveData<List<DateSum>> getExpensesDateSums() {
         return daoFinances.getExpensesByDate();
     }
 
+    // Получение общей суммы доходов
 
     /**
-     * Для кругового графика (доходы по категориям)
-     * Теперь получает List<CategorySum>
-     *
-     * @return LiveData с данными для PieChart
+     * Получает общую сумму всех доходов.
+     * @return LiveData с общей суммой доходов.
      */
-    public LiveData<List<PieEntry>> getIncomeForPieChart() {
-        MediatorLiveData<List<PieEntry>> result = new MediatorLiveData<>();
-        result.addSource(daoFinances.getIncomeByCategory(), categorySums -> {
-            List<PieEntry> entries = new ArrayList<>();
-            if (categorySums != null) {
-                for (CategorySum item : categorySums) {
-                    if (item.getTotal() > 0) {
-                        entries.add(new PieEntry(
-                                (float) item.getTotal(),
-                                item.getCategory()
-                        ));
-                    }
-                }
-            }
-            result.setValue(entries);
-        });
-        return result;
+    public LiveData<Double> getTotalIncomesSum() {
+        return daoFinances.getTotalIncomesSum();
     }
 
     /**
@@ -328,8 +323,6 @@ public class FinanceRepository {
     public Task<Void> syncUnsyncedDataToFirestore() {
         FirebaseUser user = auth.getCurrentUser();
         CollectionReference userFinancesRef = getUserFinancesCollection();
-
-        Log.d(TAG, "syncUnsyncedDataToFirestore called. Current Firebase User: " + (user != null ? user.getEmail() : "null"));
 
         if (user == null || userFinancesRef == null) {
             Log.d(TAG, "syncUnsyncedDataToFirestore SKIPPED. User not authenticated or Firestore ref null.");

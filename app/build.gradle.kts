@@ -8,6 +8,7 @@ android {
     compileSdk = 35
     buildFeatures {
         buildConfig = true
+        viewBinding = true
     }
     defaultConfig {
         applicationId = "com.example.myfinance"
@@ -34,12 +35,16 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    buildFeatures {
-        viewBinding = true
-    }
 }
 
 dependencies {
+    implementation(libs.room.runtime)
+
+    annotationProcessor(libs.room.compiler)
+    implementation(libs.room.ktx)
+    implementation(libs.room.paging)
+    testImplementation(libs.room.testing)
+
     implementation (libs.mpandroidchart)
 
     implementation (libs.facebook.android.sdk)
@@ -48,17 +53,6 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation (libs.facebook.login)
     implementation(libs.firebase.firestore)
-
-    implementation(libs.room.runtime)
-    implementation(libs.annotation)
-    implementation(libs.credentials)
-    implementation(libs.credentials.play.services.auth)
-    implementation(libs.googleid)
-    implementation(libs.constraintlayout.core)
-    annotationProcessor(libs.room.compiler)
-    implementation(libs.room.paging)
-    testImplementation(libs.room.testing)
-    implementation(libs.room.ktx)
 
     implementation(libs.material)
     implementation (libs.viewpager2)

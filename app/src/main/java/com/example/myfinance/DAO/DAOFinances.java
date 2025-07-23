@@ -43,23 +43,24 @@ public interface DAOFinances {
     @Query("SELECT date FROM finances WHERE id = :id")
     LiveData<List<String>> getDateById(int id);
 
-    @Query("SELECT `Finance result` AS category, SUM(suma) AS total " +
-            "FROM Finances " +
-            "WHERE suma > 0 " +
-            "GROUP BY `Finance result`")
+    // Для расходов по категориям
+    @Query("SELECT financeResult AS category, SUM(summa) AS total FROM Finances WHERE operationType = 'Расход' GROUP BY financeResult")
     LiveData<List<CategorySum>> getExpensesByCategory();
 
-    @Query("SELECT `Finance result` AS category, SUM(suma) AS total " +
-            "FROM Finances " +
-            "WHERE `Finance result` = 'Доход' " +
-            "GROUP BY `Finance result`")
-    LiveData<List<CategorySum>> getIncomeByCategory();
+    // Для доходов по категориям
+    @Query("SELECT financeResult AS category, SUM(summa) AS total FROM Finances WHERE operationType = 'Доход' GROUP BY financeResult")
+    LiveData<List<CategorySum>> getIncomesByCategory();
 
-    @Query("SELECT date, SUM(suma) AS total " +
-            "FROM Finances " +
-            "WHERE suma > 0 " +
-            "GROUP BY date ORDER BY date ASC")
+    // Для всех транзакций по категориям
+    @Query("SELECT financeResult AS category, SUM(summa) AS total FROM Finances GROUP BY financeResult")
+    LiveData<List<CategorySum>> getAllTransactionsByCategory();
+
+    @Query("SELECT date, SUM(summa) AS total FROM Finances WHERE operationType = 'Расход' GROUP BY date ORDER BY date ASC")
     LiveData<List<DateSum>> getExpensesByDate();
+
+    // Получение общей суммы доходов
+    @Query("SELECT SUM(summa) FROM Finances WHERE operationType = 'Доход'")
+    LiveData<Double> getTotalIncomesSum();
 
     @Query("SELECT * FROM Finances WHERE isSynced = 0")
     List<Finances> getUnsyncedFinances();

@@ -10,10 +10,10 @@ public class Finances {
     @PrimaryKey(autoGenerate = true)
     private int id;
 
-    @ColumnInfo(name = "Finance result")
-    private String FinanceResult;
+    @ColumnInfo(name = "financeResult")
+    private String financeResult;
 
-    @ColumnInfo(name = "suma")
+    @ColumnInfo(name = "summa")
     private double summa;
 
     @ColumnInfo(name = "comments")
@@ -37,18 +37,10 @@ public class Finances {
 
     public Finances(String financeResult, double summa, String operationType, String comments, String date) {
         this.date = date;
-        this.FinanceResult = financeResult;
+        this.financeResult = financeResult;
         this.summa = summa;
         this.comments = comments;
         this.operationType = operationType;
-        this.isSynced = false;
-    }
-
-    public Finances(String newCategory, double newSum, String newComments, String date) {
-        this.date = date;
-        this.FinanceResult = newCategory;
-        this.summa = newSum;
-        this.comments = newComments;
         this.isSynced = false;
     }
 
@@ -61,11 +53,11 @@ public class Finances {
     }
 
     public String getFinanceResult() {
-        return FinanceResult;
+        return financeResult;
     }
 
     public void setFinanceResult(String financeResult) {
-        FinanceResult = financeResult;
+        this.financeResult = financeResult;
     }
 
     public int getId() {
@@ -122,7 +114,7 @@ public class Finances {
         return "Finances{" +
                 "comments='" + comments + '\'' +
                 ", id=" + id +
-                ", FinanceResult='" + FinanceResult + '\'' +
+                ", financeResult='" + financeResult + '\'' + // Используем новое имя поля
                 ", summa=" + summa +
                 ", operationType='" + operationType + '\'' +
                 ", date='" + date + '\'' +
