@@ -4,13 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?android:attr/windowBackground"
-    android:padding="16dp"> <!-- Общий отступ для контента -->
+    android:padding="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center_horizontal"
-        android:orientation="vertical"> <!-- Центрирование содержимого по горизонтали -->
+        android:orientation="vertical">
 
         <!-- Поле ввода для Имени -->
         <com.google.android.material.textfield.TextInputLayout
@@ -93,7 +93,7 @@
         <!-- Кнопка "Зарегистрироваться" -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnForAutentification"
-            android:layout_width="wrap_content"
+            android:layout_width="250sp"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:text="Зарегистрироваться"
@@ -103,7 +103,7 @@
         <!-- Кнопка "Сохранить" -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnForSave"
-            android:layout_width="wrap_content"
+            android:layout_width="250sp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="Сохранить"

@@ -16,12 +16,17 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.myfinance.Models.AmountViewModel;
 import com.example.myfinance.Models.FinanceChartViewModel;
+import com.example.myfinance.Prevalent.DateLabelFormatter;
 import com.example.myfinance.R;
 import com.example.myfinance.data.AmountDatabase;
 import com.example.myfinance.data.AmountRepository;
+import com.example.myfinance.data.DateSum;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
@@ -43,83 +48,89 @@ public class AnalizFragment extends Fragment {
 
     private static final String TAG = "AnalizFragment";
 
-    private List<String> operationTypeOptions;
-    private ArrayAdapter<String> spinnerAdapter;
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.analiz_fragment, container, false);
     }
 
+    /**
+     * Вызывается после создания View.
+     *
+     * @param view               The View, возвращенный {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState Если не null, этот фрагмент восстанавливается
+     *                           из предыдущего сохраненного состояния.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         pieChart = view.findViewById(R.id.pieChart);
+        lineChart = view.findViewById(R.id.lineChart);
         variant_for_display = view.findViewById(R.id.variant_for_display);
 
+        // Инициализация ViewModels
         financeChartViewModel = new ViewModelProvider(this).get(FinanceChartViewModel.class);
         AmountDatabase amdb = AmountDatabase.getDatabase(requireActivity().getApplication());
         AmountRepository amrepo = new AmountRepository(amdb.daoTotalAmount());
         AmountViewModel.TaskViewModelFactory amViewModelTaskFactory = new AmountViewModel.TaskViewModelFactory(amrepo);
         amountViewModel = new ViewModelProvider(requireActivity(), amViewModelTaskFactory).get(AmountViewModel.class);
 
-        // Инициализируем список опций один раз
-        operationTypeOptions = new ArrayList<>();
-        operationTypeOptions.add("Общее");
-        operationTypeOptions.add("Доход");
-        operationTypeOptions.add("Расход");
+        // Настройка AutoCompleteTextView и обзерверов
+        setupAutoCompleteTextViewAndObservers();
+    }
 
-        // Создаем адаптер здесь, но будем повторно устанавливать его в onResume
-        spinnerAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, operationTypeOptions);
+    /**
+     * Настраивает AutoCompleteTextView для выбора типа отображения и соответствующие LiveData обзерверы.
+     */
+    private void setupAutoCompleteTextViewAndObservers() {
+        List<String> operationTypeOptions = new ArrayList<>();
+        operationTypeOptions.add("Общее"); // Общий баланс
+        operationTypeOptions.add("Доход"); // Только доходы
+        operationTypeOptions.add("Расход"); // Только расходы
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, operationTypeOptions);
+        variant_for_display.setAdapter(adapter);
 
-        // Настраиваем слушатели один раз в onViewCreated
-        variant_for_display.setOnItemClickListener((parent, v, position, id) -> {
-            String selectedOption = (String) parent.getItemAtPosition(position);
-            Log.d(TAG, "AutoCompleteTextView selected: " + selectedOption);
-            updateChartData(selectedOption);
-        });
-
-        variant_for_display.setOnClickListener(v -> {
-            variant_for_display.showDropDown();
-        });
-
-        // Обзерверы настраиваются один раз
         amountViewModel.getSumma().observe(getViewLifecycleOwner(), totalExpensesFromDb -> {
             currentTotalExpenses = (totalExpensesFromDb != null) ? totalExpensesFromDb : 0.0;
             Log.d(TAG, "AmountViewModel Observer: currentTotalExpenses updated to " + currentTotalExpenses);
             updatePieChartCenterText();
         });
 
+        // Общий баланс (amount)
         amountViewModel.getLastAmount().observe(getViewLifecycleOwner(), totalBalanceFromDb -> {
             currentTotalBalance = (totalBalanceFromDb != null) ? totalBalanceFromDb : 0.0;
             Log.d(TAG, "AmountViewModel Observer: currentTotalBalance updated to " + currentTotalBalance);
-            updatePieChartCenterText();
+            updatePieChartCenterText(); // Обновляем центральный текст круговой диаграммы
         });
 
+        // --- Наблюдаем за общей суммой доходов из FinanceChartViewModel ---
         financeChartViewModel.getTotalIncomesSum().observe(getViewLifecycleOwner(), totalIncomesFromDb -> {
             currentTotalIncomes = (totalIncomesFromDb != null) ? totalIncomesFromDb : 0.0;
             Log.d(TAG, "FinanceChartViewModel Observer: currentTotalIncomes updated to " + currentTotalIncomes);
-            updatePieChartCenterText();
+            updatePieChartCenterText(); // Обновляем центральный текст круговой диаграммы
         });
-    }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        Log.d(TAG, "onResume: Re-setting adapter and initial selection for variant_for_display.");
-        // Повторно устанавливаем адаптер и начальный текст, чтобы убедиться, что он обновлен после смены темы
-        if (spinnerAdapter != null) {
-            variant_for_display.setAdapter(spinnerAdapter); // Повторно устанавливаем адаптер
-        }
+        // Добавлен OnClickListener для отображения выпадающего списка при клике на поле
+        variant_for_display.setOnClickListener(v -> variant_for_display.showDropDown());
+
+        // Слушатель для AutoCompleteTextView variant_for_display
+        variant_for_display.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedOption = (String) parent.getItemAtPosition(position);
+            Log.d(TAG, "AutoCompleteTextView selected: " + selectedOption);
+            // Обновляем данные графика в зависимости от выбранной опции
+            updateChartData(selectedOption);
+        });
+
+        // Устанавливаем начальный выбор и обновляем графики
         if (!operationTypeOptions.isEmpty()) {
-            variant_for_display.setText(operationTypeOptions.get(0), false); // Повторно устанавливаем начальный текст
-            updateChartData(operationTypeOptions.get(0)); // Повторно обновляем данные графика
+            // Установка текста для AutoCompleteTextView
+            variant_for_display.setText(operationTypeOptions.get(0), false); // Выбираем "Общее" по умолчанию, false предотвращает фильтрацию
+            updateChartData(operationTypeOptions.get(0)); // Обновляем графики для "Общее"
         }
     }
 
     /**
-     * Обновляет данные круговой диаграммы на основе выбранного типа операции.
+     * Обновляет данные круговой и линейной диаграмм на основе выбранного типа операции.
      *
      * @param selectedOption Выбранная опция ("Общее", "Доход", "Расход").
      */
@@ -128,41 +139,69 @@ public class AnalizFragment extends Fragment {
             case "Общее":
                 financeChartViewModel.getPieChartDataForAll().observe(getViewLifecycleOwner(), pieEntries -> {
                     if (pieEntries != null && !pieEntries.isEmpty()) {
-                        setupPieChart(pieEntries, currentTotalBalance);
+                        setupPieChart(pieEntries, currentTotalBalance); // Используем общий баланс
                     } else {
-                        clearPieChart("Нет данных для общего графика");
+                        clearPieChart("Нет данных для общего кругового графика");
+                    }
+                });
+                // Обновление LineChart для "Общее"
+                financeChartViewModel.getAllTransactionsLineChartDateSums().observe(getViewLifecycleOwner(), dateSums -> {
+                    if (dateSums != null && !dateSums.isEmpty()) {
+                        setupLineChart(dateSums, "Все транзакции по дням");
+                    } else {
+                        clearLineChart("Нет данных для общего линейного графика");
                     }
                 });
                 break;
             case "Доход":
                 financeChartViewModel.getPieChartDataForIncomes().observe(getViewLifecycleOwner(), pieEntries -> {
                     if (pieEntries != null && !pieEntries.isEmpty()) {
-                        setupPieChart(pieEntries, currentTotalIncomes);
+                        setupPieChart(pieEntries, currentTotalIncomes); // Используем общую сумму доходов
                     } else {
-                        clearPieChart("Нет данных для графика доходов");
+                        clearPieChart("Нет данных для кругового графика доходов");
+                    }
+                });
+                // Обновление LineChart для "Доход"
+                financeChartViewModel.getIncomesLineChartDateSums().observe(getViewLifecycleOwner(), dateSums -> {
+                    if (dateSums != null && !dateSums.isEmpty()) {
+                        setupLineChart(dateSums, "Доходы по дням");
+                    } else {
+                        clearLineChart("Нет данных для линейного графика доходов");
                     }
                 });
                 break;
             case "Расход":
                 financeChartViewModel.getPieChartDataForExpenses().observe(getViewLifecycleOwner(), pieEntries -> {
                     if (pieEntries != null && !pieEntries.isEmpty()) {
-                        setupPieChart(pieEntries, currentTotalExpenses);
+                        setupPieChart(pieEntries, currentTotalExpenses); // Используем общую сумму расходов
                     } else {
-                        clearPieChart("Нет данных для графика расходов");
+                        clearPieChart("Нет данных для кругового графика расходов");
+                    }
+                });
+                // Обновление LineChart для "Расход"
+                financeChartViewModel.getExpensesLineChartDateSums().observe(getViewLifecycleOwner(), dateSums -> {
+                    if (dateSums != null && !dateSums.isEmpty()) {
+                        setupLineChart(dateSums, "Расходы по дням");
+                    } else {
+                        clearLineChart("Нет данных для линейного графика расходов");
                     }
                 });
                 break;
             default:
                 clearPieChart("Выберите тип отображения");
+                clearLineChart("Выберите тип отображения");
                 break;
         }
     }
 
     /**
-     * Обновляет центральный текст круговой диаграммы на основе выбранного типа.
+     * Обновляет центральный текст круговой диаграммы на основе текущего выбранного типа.
      */
     private void updatePieChartCenterText() {
         String selectedOption = variant_for_display.getText().toString();
+        if (selectedOption == null || selectedOption.isEmpty()) { // Добавлена проверка на пустоту
+            selectedOption = "Общее"; // Значение по умолчанию
+        }
 
         Double valueToDisplay = 0.0;
         switch (selectedOption) {
@@ -180,7 +219,7 @@ public class AnalizFragment extends Fragment {
         if (pieChart.getData() != null) {
             pieChart.setCenterText(String.valueOf(valueToDisplay));
             pieChart.invalidate();
-            Log.d(TAG, "updatePieChartCenterText: Center text updated to " + valueToDisplay + " for option " + selectedOption);
+            Log.d(TAG, "updatePieChartCenterText: Центральный текст обновлен до " + valueToDisplay + " для опции " + selectedOption);
         }
     }
 
@@ -194,12 +233,11 @@ public class AnalizFragment extends Fragment {
         pieChart.invalidate();
         pieChart.setNoDataText(noDataMessage);
         pieChart.setNoDataTextColor(Color.BLACK);
-        pieChart.setCenterText("");
-        Log.d(TAG, "PieChart cleared with message: " + noDataMessage);
+        pieChart.setCenterText(""); // Очищаем центральный текст при отсутствии данных
     }
 
     /**
-     * Для круговой диаграммы
+     * Настраивает круговую диаграмму.
      *
      * @param entries Список PieEntry для диаграммы.
      * @param centerValue Общая сумма для отображения в центре диаграммы (может быть общим балансом, доходом или расходами).
@@ -226,23 +264,44 @@ public class AnalizFragment extends Fragment {
         pieChart.setEntryLabelTextSize(10f);
         pieChart.setDrawEntryLabels(true);
         pieChart.setUsePercentValues(true);
-        pieChart.setCenterText(String.valueOf(centerValue));
+        pieChart.setCenterText(String.valueOf(centerValue)); // Используем переданное значение
         pieChart.setCenterTextSize(16f);
         pieChart.setHoleRadius(58f);
         pieChart.setTransparentCircleRadius(61f);
         pieChart.animateY(1400);
         pieChart.invalidate();
-        Log.d(TAG, "setupPieChart: Pie chart drawn with center text: " + centerValue);
     }
 
     /**
-     * Для линейной диаграммы (для будущего использования)
+     * Очищает линейную диаграмму и устанавливает текст "нет данных".
      *
-     * @param entries
+     * @param noDataMessage Сообщение для отображения, когда данные недоступны.
      */
-    private void setupLineChart(List<Entry> entries) {
-        /*
-        LineDataSet dataSet = new LineDataSet(entries, "Расходы по дням");
+    private void clearLineChart(String noDataMessage) {
+        lineChart.clear();
+        lineChart.invalidate();
+        lineChart.setNoDataText(noDataMessage);
+        lineChart.setNoDataTextColor(Color.BLACK);
+    }
+
+    /**
+     * Настраивает линейную диаграмму на основе списка DateSum.
+     *
+     * @param dateSums Список DateSum (дата и сумма) для диаграммы.
+     * @param label Метка для набора данных (например, "Расходы по дням", "Доходы по дням").
+     */
+    private void setupLineChart(List<DateSum> dateSums, String label) {
+        List<Entry> entries = new ArrayList<>();
+        xAxisLabels.clear(); // Очищаем старые метки оси X
+
+        // Преобразуем DateSum в Entry и собираем метки оси X
+        for (int i = 0; i < dateSums.size(); i++) {
+            DateSum dateSum = dateSums.get(i);
+            entries.add(new Entry(i, (float) dateSum.getTotal()));
+            xAxisLabels.add(dateSum.getDate()); // Добавляем дату как метку оси X
+        }
+
+        LineDataSet dataSet = new LineDataSet(entries, label);
         dataSet.setColor(Color.BLUE);
         dataSet.setCircleColor(Color.BLUE);
         dataSet.setLineWidth(2f);
@@ -254,6 +313,7 @@ public class AnalizFragment extends Fragment {
         LineData lineData = new LineData(dataSet);
         lineChart.setData(lineData);
 
+        // Настройка оси X
         XAxis xAxis = lineChart.getXAxis();
         xAxis.setValueFormatter(new DateLabelFormatter(xAxisLabels));
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
@@ -265,7 +325,5 @@ public class AnalizFragment extends Fragment {
         lineChart.getDescription().setEnabled(false);
         lineChart.animateX(1500);
         lineChart.invalidate();
-        Log.d(TAG, "setupLineChart: Line chart drawn.");
-        */
     }
 }

@@ -71,7 +71,7 @@ public class VersionInfoFragment extends Fragment {
         versionDescriptions = new LinkedHashMap<>();
         versionDescriptions.put(
                 "V 0.9",
-                "\nДобавлено:\n\nИсправлено:\n\nИзменено: Полностью пересмотрен дизайн\n"
+                "\nДобавлено:\n- Новый тип графика (линейный)\nИсправлено:\n\nИзменено: Полностью пересмотрен дизайн\n"
         );
         versionDescriptions.put(
                 "V 0.8",

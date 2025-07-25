@@ -3,9 +3,11 @@ package com.example.myfinance.data;
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.Transformations;
+import androidx.lifecycle.MediatorLiveData;
+import androidx.lifecycle.Transformations; // Добавлено для Transformations.map
 
 import com.example.myfinance.DAO.DAOFinances;
+import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieEntry;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
@@ -17,6 +19,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map; // Map больше не используется для PieEntries, но может быть нужен для других целей
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,11 +36,6 @@ public class FinanceRepository {
     private static final int NUMBER_OF_THREADS = 4;
     public static final ExecutorService databaseWriteExeutor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
-    /**
-     * Конструктор репозитория.
-     *
-     * @param financesDao
-     */
     public FinanceRepository(DAOFinances financesDao) {
         this.db = FirebaseFirestore.getInstance();
         this.auth = FirebaseAuth.getInstance();
@@ -159,6 +157,8 @@ public class FinanceRepository {
     public void update(Finances finances) {
         finances.setSynced(false);
 
+        Log.d(TAG, "Update (pre-Room): RoomID=" + finances.getId() + ", FirestoreID=" + finances.getFirestoreId() + ", isSynced=" + finances.isSynced());
+
         databaseWriteExeutor.execute(() -> {
             daoFinances.update(finances);
             Log.d(TAG, "Update (post-Room): RoomID=" + finances.getId() + ", FirestoreID=" + finances.getFirestoreId() + ", isSynced=" + finances.isSynced());
@@ -265,7 +265,24 @@ public class FinanceRepository {
         return daoFinances.getExpensesByDate();
     }
 
-    // Получение общей суммы доходов
+    /**
+     * Для линейного графика (доходы по датам).
+     *
+     * @return LiveData с данными для LineChart.
+     */
+    public LiveData<List<DateSum>> getIncomesDateSums() {
+        return daoFinances.getIncomesByDate();
+    }
+
+    /**
+     * Для линейного графика (все транзакции по датам).
+     *
+     * @return LiveData с данными для LineChart.
+     */
+    public LiveData<List<DateSum>> getAllTransactionsDateSums() {
+        return daoFinances.getAllTransactionsByDate();
+    }
+
 
     /**
      * Получает общую сумму всех доходов.
@@ -323,6 +340,8 @@ public class FinanceRepository {
     public Task<Void> syncUnsyncedDataToFirestore() {
         FirebaseUser user = auth.getCurrentUser();
         CollectionReference userFinancesRef = getUserFinancesCollection();
+
+        Log.d(TAG, "syncUnsyncedDataToFirestore called. Current Firebase User: " + (user != null ? user.getEmail() : "null"));
 
         if (user == null || userFinancesRef == null) {
             Log.d(TAG, "syncUnsyncedDataToFirestore SKIPPED. User not authenticated or Firestore ref null.");

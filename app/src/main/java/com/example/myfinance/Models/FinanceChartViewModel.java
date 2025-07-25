@@ -17,11 +17,15 @@ public class FinanceChartViewModel extends AndroidViewModel {
     private final FinanceRepository repository;
 
     // LiveData для различных типов PieChart данных
-    private final LiveData<List<PieEntry>> expensesPieChartData; // Данные для расходов
-    private final LiveData<List<PieEntry>> incomesPieChartData;  // Данные для доходов
-    private final LiveData<List<PieEntry>> allTransactionsPieChartData; // Данные для всех транзакций (общее)
+    private final LiveData<List<PieEntry>> expensesPieChartData;
+    private final LiveData<List<PieEntry>> incomesPieChartData;
+    private final LiveData<List<PieEntry>> allTransactionsPieChartData;
 
-    private final LiveData<List<DateSum>> lineChartDateSums;
+    // LiveData для различных типов LineChart данных
+    private final LiveData<List<DateSum>> expensesLineChartDateSums;
+    private final LiveData<List<DateSum>> incomesLineChartDateSums;
+    private final LiveData<List<DateSum>> allTransactionsLineChartDateSums;
+
 
     private final LiveData<Double> totalIncomesSum;
 
@@ -34,7 +38,10 @@ public class FinanceChartViewModel extends AndroidViewModel {
         incomesPieChartData = repository.getIncomesForPieChart();
         allTransactionsPieChartData = repository.getAllTransactionsForPieChart();
 
-        lineChartDateSums = repository.getExpensesDateSums();
+        // Инициализация LiveData для линейных графиков
+        expensesLineChartDateSums = repository.getExpensesDateSums();
+        incomesLineChartDateSums = repository.getIncomesDateSums();
+        allTransactionsLineChartDateSums = repository.getAllTransactionsDateSums();
 
         totalIncomesSum = repository.getTotalIncomesSum();
     }
@@ -60,8 +67,25 @@ public class FinanceChartViewModel extends AndroidViewModel {
         return allTransactionsPieChartData;
     }
 
-    public LiveData<List<DateSum>> getLineChartDateSums() {
-        return lineChartDateSums;
+    /**
+     * Возвращает LiveData с данными для линейного графика расходов по датам.
+     */
+    public LiveData<List<DateSum>> getExpensesLineChartDateSums() {
+        return expensesLineChartDateSums;
+    }
+
+    /**
+     * НОВОЕ: Возвращает LiveData с данными для линейного графика доходов по датам.
+     */
+    public LiveData<List<DateSum>> getIncomesLineChartDateSums() {
+        return incomesLineChartDateSums;
+    }
+
+    /**
+     * НОВОЕ: Возвращает LiveData с данными для линейного графика всех транзакций по датам.
+     */
+    public LiveData<List<DateSum>> getAllTransactionsLineChartDateSums() {
+        return allTransactionsLineChartDateSums;
     }
 
     /**
