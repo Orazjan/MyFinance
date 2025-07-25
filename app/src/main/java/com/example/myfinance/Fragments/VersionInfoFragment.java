@@ -1,12 +1,12 @@
 package com.example.myfinance.Fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Spinner;
+import android.widget.AutoCompleteTextView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -23,14 +23,18 @@ import java.util.Map;
 public class VersionInfoFragment extends Fragment {
 
     private TextView infoText;
-    private Spinner versionSpinner;
+    // ИЗМЕНЕНО: Тип переменной на AutoCompleteTextView
+    private AutoCompleteTextView versionSpinner;
     private List<String> versionNames;
     private Map<String, String> versionDescriptions;
+
+    private static final String TAG = "VersionInfoFragment";
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.version_info_fragment, container, false);
+        // Убедитесь, что здесь загружается правильный макет
+        return inflater.inflate(R.layout.version_info_fragment, container, false); // Предполагаем, что это R.layout.some_new_fragment
     }
 
     @Override
@@ -42,8 +46,11 @@ public class VersionInfoFragment extends Fragment {
         setupSpinner();
         setupSpinnerListener();
 
+        // Устанавливаем начальный текст для InfoText и AutoCompleteTextView
         if (!versionNames.isEmpty()) {
-            infoText.setText(versionDescriptions.get(versionNames.get(0)));
+            String initialVersionName = versionNames.get(0);
+            infoText.setText(versionDescriptions.get(initialVersionName));
+            versionSpinner.setText(initialVersionName, false); // Устанавливаем текст и не фильтруем
         }
     }
 
@@ -52,34 +59,39 @@ public class VersionInfoFragment extends Fragment {
      */
     private void initUI(@NonNull View view) {
         infoText = view.findViewById(R.id.InfoText);
+        // ИЗМЕНЕНО: findViewById для AutoCompleteTextView
         versionSpinner = view.findViewById(R.id.mySpinner);
     }
 
     /**
-     * Подготавливает названия версий для Spinner'а
+     * Подготавливает названия версий для AutoCompleteTextView
      * и их подробные описания.
      */
     private void setupVersionData() {
         versionDescriptions = new LinkedHashMap<>();
         versionDescriptions.put(
-                "V 0.8", "\n" +
+                "V 0.9",
+                "\nДобавлено:\n\nИсправлено:\n\nИзменено: Полностью пересмотрен дизайн\n"
+        );
+        versionDescriptions.put(
+                "V 0.8",
                 "\nДобавлено: \n- Страница анализа. Теперь можно посмотреть на что Вы тратите" +
                         "\n- Синхронизация с помощью базы данных\n- Выбор данных для анализа по типу операций\n- Тип операции Расход и доход" +
                         "\n-Исправлено: \n- Вкладки расходы и остатки\n -Шаблоны по умолчанию не работали\n- Страница профиль" +
                         "\nИзменено:\n- Логика синхронизации. \n- Дизайн в фрагменте шаблоны"
         );
 
-        versionDescriptions.put("V 0.7", "\n" +
+        versionDescriptions.put("V 0.7",
                 "\nДобавлено: \n-Кнопка Сохранить в профиле сохраняет и выходит\n-Расходы\n-Изменения имени и фамилии\n-Регистрация и авторизация\n-Время добавления записи в список\n-Страница Профиль изменена\n-Вход в учётную запись через логин и пароль\n" +
                 "\n-Исправлено:\n-Кнопка Выход. При нажатии на неё выходит из аккаунта\n-Ориентация экрана зафиксирована на Портретной\n-Выход из приложение когда несколько раз перезаходишь в шаблоны\n-После выхода из второстепенных фрагментов Список финансов снова работает");
 
-        versionDescriptions.put("V 0.6", "\n" +
+        versionDescriptions.put("V 0.6",
                 "Исправлено: \n-Фикс багов.\n-Ориентация экрана теперь только портретная\n" +
                 "-Страница настройки\n-Работа над темой\n" +
                 "\nДобавлено: \n-Уведомление при нажатии на финанс\n-Долгое нажатие выводит окно для изменения\n-Комментарии к записям.\n-Возможность изменять категории, сумму и комментарий\n-При выборе варианта темы и вида валюты, данные добавляются в память устройства\n" +
                 "\nИзменено: \n-Работа с вычислением основнойо суммы");
 
-        versionDescriptions.put("V 0.5", "\n" +
+        versionDescriptions.put("V 0.5",
                 "Исправлено:  \n-Фикс багов.\n" +
                 "-При выборе категории если сумма равна 0.0 то открывается клавиатура\n" +
                 "-В диалоговом окне можно устонавливать новую сумму и она загружается в ROOM\n" +
@@ -89,60 +101,58 @@ public class VersionInfoFragment extends Fragment {
                 "-Удалено работа с Internal Storage\n" +
                 "-Изменение суммы в категориях");
 
-        versionDescriptions.put("V 0.4", "\n" +
+        versionDescriptions.put("V 0.4",
                 "Исправлено: Фикс багов. При нажатии на сумму открывается диалог по изменению её. Это исправлено и в шаблонах и в добавлении в список\n" +
                 "\nДобавлено: Добавлена локальная БД Room. " +
                 "Загрузка данных производится из ROOM. " +
                 "Общая сумма загружается и выводится на экран из ROOM\n" +
                 "\nИзменено: Удалена передача данных из SharedViewModel");
 
-        versionDescriptions.put("V 0.3", "V 0.3\n" +
+        versionDescriptions.put("V 0.3",
                 "Добавлено: Фикс багов. Фрагменты исправлены и работают между собой.\n" +
                 "Экран расчёта и вывода финансовых расходов исправлен");
 
-        versionDescriptions.put("V 0.2", "\n" +
+        versionDescriptions.put("V 0.2",
                 "Добавлено: Свайп между страницами");
 
-        versionDescriptions.put("V 0.1", "\n" +
+        versionDescriptions.put("V 0.1",
                 "Добавлено: Категории внутри Профиль");
 
         versionNames = new ArrayList<>(versionDescriptions.keySet());
     }
 
     /**
-     * Настраивает ArrayAdapter и устанавливает его для Spinner'а.
+     * Настраивает ArrayAdapter и устанавливает его для AutoCompleteTextView.
      */
     private void setupSpinner() {
+        // ИЗМЕНЕНО: Использование android.R.layout.simple_dropdown_item_1line для AutoCompleteTextView
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 requireContext(),
-                android.R.layout.simple_spinner_item,
+                android.R.layout.simple_dropdown_item_1line,
                 versionNames
         );
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         versionSpinner.setAdapter(adapter);
     }
 
     /**
-     * Устанавливает слушатель для Spinner'а, который обновляет текст
+     * Устанавливает слушатель для AutoCompleteTextView, который обновляет текст
      * при выборе новой версии.
      */
     private void setupSpinnerListener() {
-        versionSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedVersion = versionNames.get(position);
-                String description = versionDescriptions.get(selectedVersion);
+        // ИЗМЕНЕНО: Использование setOnItemClickListener для AutoCompleteTextView
+        versionSpinner.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedVersion = versionNames.get(position);
+            String description = versionDescriptions.get(selectedVersion);
 
-                if (description != null) {
-                    infoText.setText(description);
-                } else {
-                    infoText.setText(selectedVersion + ". Информация отсутствует.");
-                }
+            if (description != null) {
+                infoText.setText(description);
+            } else {
+                infoText.setText(selectedVersion + ". Информация отсутствует.");
             }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
+            Log.d(TAG, "Version selected: " + selectedVersion);
         });
+
+        // НОВОЕ: Добавлен OnClickListener для отображения выпадающего списка при клике на поле
+        versionSpinner.setOnClickListener(v -> versionSpinner.showDropDown());
     }
 }

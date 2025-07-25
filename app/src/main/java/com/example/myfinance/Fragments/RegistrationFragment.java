@@ -10,9 +10,6 @@ import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -24,6 +21,9 @@ import com.example.myfinance.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -38,15 +38,12 @@ import java.util.Map;
 public class RegistrationFragment extends Fragment {
     private static final String TAG = "RegistrationFragment";
 
-    private TextView textViewForLogin;
-    private EditText usernameEditText, emailEditText, surnameEditText, passwordEditText;
+    private MaterialButton textViewForLogin;
+    private TextInputEditText usernameEditText, emailEditText, surnameEditText, passwordEditText;
 
-    private Button regButton;
+    private MaterialButton regButton;
 
-    private TextView emailErrorTextView;
-    private TextView passwordErrorTextView;
-    private TextView surnameErrorTextView;
-    private TextView usernameErrorTextView;
+    private TextInputLayout usernameInputLayout, emailInputLayout, surnameInputLayout, passwordInputLayout;
 
     private boolean isUsernameValid = false;
     private boolean isEmailValid = false;
@@ -88,7 +85,7 @@ public class RegistrationFragment extends Fragment {
      *
      * @param view               The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
      * @param savedInstanceState If non-null, this fragment is being re-constructed
-     *                           from a previous saved state as given here.
+     * from a previous saved state as given here.
      */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -98,21 +95,26 @@ public class RegistrationFragment extends Fragment {
         fb = FirebaseFirestore.getInstance();
 
         textViewForLogin = view.findViewById(R.id.textViewForLogin);
-        emailEditText = view.findViewById(R.id.email_edit_text);
-        passwordEditText = view.findViewById(R.id.password_edit_text);
-        regButton = view.findViewById(R.id.reg_button);
-        emailErrorTextView = view.findViewById(R.id.email_error_text_view);
-        passwordErrorTextView = view.findViewById(R.id.password_error_text_view);
+        usernameInputLayout = view.findViewById(R.id.usernameInputLayout);
         usernameEditText = view.findViewById(R.id.username_edit_text);
+        surnameInputLayout = view.findViewById(R.id.surnameInputLayout);
         surnameEditText = view.findViewById(R.id.surname_edit_text);
-        usernameErrorTextView = view.findViewById(R.id.username_error_text_view);
-        surnameErrorTextView = view.findViewById(R.id.surname_error_text_view);
+        emailInputLayout = view.findViewById(R.id.emailInputLayout);
+        emailEditText = view.findViewById(R.id.email_edit_text);
+        passwordInputLayout = view.findViewById(R.id.passwordInputLayout);
+        passwordEditText = view.findViewById(R.id.password_edit_text);
+        regButton = view.findViewById(R.id.reg_button); // MaterialButton
 
         regButton.setEnabled(false);
 
         setupTextWatchers();
 
         regButton.setOnClickListener(v -> {
+            validateUserName(usernameEditText.getText().toString());
+            validateSurname(surnameEditText.getText().toString());
+            validateEmail(emailEditText.getText().toString());
+            validatePassword(passwordEditText.getText().toString());
+
             if (isEmailValid && isPasswordValid && isUsernameValid && isSurnameValid) {
                 String email = emailEditText.getText().toString();
                 String password = passwordEditText.getText().toString();
@@ -147,12 +149,10 @@ public class RegistrationFragment extends Fragment {
         usernameEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
             }
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
             }
 
             @Override
@@ -165,12 +165,10 @@ public class RegistrationFragment extends Fragment {
         surnameEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
             }
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
             }
 
             @Override
@@ -221,14 +219,12 @@ public class RegistrationFragment extends Fragment {
     private void validateUserName(String username) {
         if (username.trim().isEmpty()) {
             isUsernameValid = false;
-            usernameErrorTextView.setText("Имя пользователя не может быть пустым");
-            usernameErrorTextView.setVisibility(View.VISIBLE);
+            usernameInputLayout.setError("Имя пользователя не может быть пустым");
         } else if (username.length() < 2) {
             isUsernameValid = false;
-            usernameErrorTextView.setText("Имя пользователя должно быть больше 2х букв");
-            usernameErrorTextView.setVisibility(View.VISIBLE);
+            usernameInputLayout.setError("Имя пользователя должно быть больше 2х букв");
         } else {
-            usernameErrorTextView.setVisibility(View.GONE);
+            usernameInputLayout.setError(null); // Очищаем ошибку
             isUsernameValid = true;
         }
     }
@@ -241,14 +237,12 @@ public class RegistrationFragment extends Fragment {
     private void validateSurname(String surname) {
         if (surname.trim().isEmpty()) {
             isSurnameValid = false;
-            surnameErrorTextView.setText("Имя пользователя не может быть пустым");
-            surnameErrorTextView.setVisibility(View.VISIBLE);
+            surnameInputLayout.setError("Фамилия не может быть пустой"); // Изменено сообщение
         } else if (surname.length() < 2) {
             isSurnameValid = false;
-            surnameErrorTextView.setText("Фамилия пользователя должно быть больше 2х букв");
-            surnameErrorTextView.setVisibility(View.VISIBLE);
+            surnameInputLayout.setError("Фамилия пользователя должна быть больше 2х букв");
         } else {
-            surnameErrorTextView.setVisibility(View.GONE);
+            surnameInputLayout.setError(null); // Очищаем ошибку
             isSurnameValid = true;
         }
     }
@@ -262,15 +256,13 @@ public class RegistrationFragment extends Fragment {
     private void validateEmail(String email) {
         if (email.trim().isEmpty()) {
             isEmailValid = false;
-            emailErrorTextView.setText("Email не может быть пустым");
-            emailErrorTextView.setVisibility(View.VISIBLE);
+            emailInputLayout.setError("Email не может быть пустым");
         } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             isEmailValid = false;
-            emailErrorTextView.setText("Введите корректный Email адрес");
-            emailErrorTextView.setVisibility(View.VISIBLE);
+            emailInputLayout.setError("Введите корректный Email адрес");
         } else {
             isEmailValid = true;
-            emailErrorTextView.setVisibility(View.GONE);
+            emailInputLayout.setError(null); // Очищаем ошибку
         }
     }
 
@@ -282,20 +274,18 @@ public class RegistrationFragment extends Fragment {
     private void validatePassword(String password) {
         if (password.trim().isEmpty()) {
             isPasswordValid = false;
-            passwordErrorTextView.setText("Пароль не может быть пустым");
-            passwordErrorTextView.setVisibility(View.VISIBLE);
+            passwordInputLayout.setError("Пароль не может быть пустым");
         } else if (password.length() < 6) {
             isPasswordValid = false;
-            passwordErrorTextView.setText("Пароль должен быть не менее 6 символов");
-            passwordErrorTextView.setVisibility(View.VISIBLE);
+            passwordInputLayout.setError("Пароль должен быть не менее 6 символов");
         } else {
             isPasswordValid = true;
-            passwordErrorTextView.setVisibility(View.GONE);
+            passwordInputLayout.setError(null); // Очищаем ошибку
         }
     }
 
     /**
-     * Обновление состояния кнопки регистрации (активна, если оба поля валидны)
+     * Обновление состояния кнопки регистрации (активна, если все поля валидны)
      */
     private void updateRegistrationButtonState() {
         regButton.setEnabled(isEmailValid && isPasswordValid && isUsernameValid && isSurnameValid);
@@ -320,7 +310,7 @@ public class RegistrationFragment extends Fragment {
                             saveToFirebase(email, username, surname);
                         } else {
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                            Toast.makeText(getContext(), "Ошибка при регистрации", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Ошибка при регистрации: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show(); // Добавлено сообщение об ошибке
                         }
                     }
 
@@ -343,13 +333,18 @@ public class RegistrationFragment extends Fragment {
         userRef.set(userData).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-
+                if (task.isSuccessful()) {
+                    Log.d(TAG, "User data saved to Firebase successfully.");
+                } else {
+                    Log.e(TAG, "Error saving user data to Firebase: " + task.getException().getMessage());
+                    Toast.makeText(getContext(), "Ошибка при сохранении данных пользователя: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                }
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Log.e(TAG, "Error saving user data to Firebase: " + e.getMessage());
-                Toast.makeText(getContext(), "Ошибка при сохранении данных пользователя", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Error saving user data to Firebase (failure listener): " + e.getMessage());
+                Toast.makeText(getContext(), "Ошибка при сохранении данных пользователя: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -360,6 +355,17 @@ public class RegistrationFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        // Очищаем ссылки на TextInputLayout и TextInputEditText
+        usernameInputLayout = null;
+        usernameEditText = null;
+        surnameInputLayout = null;
+        surnameEditText = null;
+        emailInputLayout = null;
+        emailEditText = null;
+        passwordInputLayout = null;
+        passwordEditText = null;
+        textViewForLogin = null;
+        regButton = null;
     }
 
     /**

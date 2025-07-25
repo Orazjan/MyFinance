@@ -3,66 +3,100 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="5sp"
-    android:background="?android:attr/windowBackground">
+    android:background="?android:attr/windowBackground"
+    android:padding="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10sp"
         android:orientation="vertical"
-        android:paddingStart="5sp"
-        android:paddingEnd="5sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <LinearLayout
+        <!-- Карточка для выбора Валюты -->
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10sp"
-            android:background="@drawable/border"
-            android:padding="7sp"
-            android:orientation="horizontal">
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="?attr/cardBackgroundColor"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:text="Валюта"
-                android:paddingStart="5sp"
-                android:textSize="18sp" />
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
-            <Spinner
-                android:id="@+id/currencySpinner"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/border" />
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/currencyInputLayout"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:hint="Выберите валюту">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/currencySpinner"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="none"
+                        android:textColor="?android:attr/textColorPrimary" />
+
+                </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Карточка для выбора Темы -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="?attr/cardBackgroundColor"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10sp"
-            android:padding="7sp"
-            android:background="@drawable/border"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:padding="16dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:text="Тема"
-                android:paddingStart="5sp"
-                android:textSize="18sp" />
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
-            <Spinner
-                android:id="@+id/themeSpinner"
-                android:layout_width="wrap_content"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/themeInputLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/border" />
-        </LinearLayout>
-    </LinearLayout>
+                android:layout_marginTop="8dp"
+                android:hint="Выберите тему">
 
+                <AutoCompleteTextView
+                    android:id="@+id/themeSpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none"
+                    android:textColor="?android:attr/textColorPrimary" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,89 +1,134 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center_vertical"
-    android:orientation="vertical"
+    android:background="?android:attr/windowBackground"
     android:padding="16dp">
 
-    <EditText
-        android:id="@+id/username_edit_text"
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Имя"
-        android:inputType="textCapSentences" />
+        app:cardBackgroundColor="?attr/cardBackgroundColor"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
+        <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <!-- Заголовок страницы регистрации -->
     <TextView
-        android:id="@+id/username_error_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@android:color/holo_red_dark"
-        android:textSize="12sp"
-        android:visibility="gone" />
+        android:layout_marginBottom="24dp"
+        android:text="Регистрация"
+        android:textColor="?android:attr/textColorPrimary"
+        android:textSize="24sp"
+        android:textStyle="bold" />
 
-    <EditText
-        android:id="@+id/surname_edit_text"
+            <!-- Поле ввода для Имени -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/usernameInputLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Имя">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/username_edit_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textCapSentences"
+                    android:textColor="?android:attr/textColorPrimary" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Поле ввода для Фамилии -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/surnameInputLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
+                android:hint="Фамилия">
 
-        android:hint="Фамилия"
-        android:inputType="textCapSentences" />
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/surname_edit_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textCapSentences"
+                    android:textColor="?android:attr/textColorPrimary" />
 
-    <TextView
-        android:id="@+id/surname_error_text_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@android:color/holo_red_dark"
-        android:textSize="12sp"
-        android:visibility="gone" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-    <EditText
-        android:id="@+id/email_edit_text"
+            <!-- Поле ввода для Email -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/emailInputLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:hint="Email"
-        android:inputType="textEmailAddress" />
+                android:hint="Email">
 
-    <TextView
-        android:id="@+id/email_error_text_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@android:color/holo_red_dark"
-        android:textSize="12sp"
-        android:visibility="gone" />
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/email_edit_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textEmailAddress"
+                    android:textColor="?android:attr/textColorPrimary" />
 
-    <EditText
-        android:id="@+id/password_edit_text"
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Поле ввода для Пароля -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/passwordInputLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:hint="Пароль"
-        android:inputType="textPassword" />
+                app:endIconMode="password_toggle">
 
-    <TextView
-        android:id="@+id/password_error_text_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@android:color/holo_red_dark"
-        android:textSize="12sp"
-        android:visibility="gone" />
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/password_edit_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPassword"
+                    android:textColor="?android:attr/textColorPrimary" />
 
-    <TextView
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Кнопка "Уже есть аккаунт? Нажмите для входа" -->
+            <com.google.android.material.button.MaterialButton
         android:id="@+id/textViewForLogin"
-        android:layout_width="match_parent"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5sp"
-        android:alpha="1"
-        android:textColor="?android:attr/textColorPrimary"
-        android:text="Уже есть аккаунт? Нажмите для входа" />
+                android:layout_marginTop="16dp"
+                android:text="Уже есть аккаунт? Нажмите для входа"
+                android:textColor="?attr/colorPrimary" />
 
-    <Button
+            <!-- Кнопка "Зарегистрироваться" -->
+            <com.google.android.material.button.MaterialButton
         android:id="@+id/reg_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="Зарегестрироваться" />
+                android:text="Зарегистрироваться"
+                android:textColor="?attr/colorOnPrimary"
+                app:backgroundTint="?attr/colorPrimary"
+                app:cornerRadius="8dp"
+                app:elevation="2dp" />
 
 </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

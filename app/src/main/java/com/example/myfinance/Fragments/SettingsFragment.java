@@ -5,9 +5,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Spinner;
+import android.widget.AutoCompleteTextView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -25,10 +24,12 @@ import java.util.List;
 public class SettingsFragment extends Fragment {
 
     private AddSettingToDataStoreManager appSettingsManager;
-    private Spinner currencySpinner;
-    private Spinner themeSpinner;
+    private AutoCompleteTextView currencySpinner;
+    private AutoCompleteTextView themeSpinner;
     private List<String> currencyOptions;
     private List<String> themeOptions;
+
+    private static final String TAG = "SettingsFragment";
 
     @Nullable
     @Override
@@ -45,7 +46,7 @@ public class SettingsFragment extends Fragment {
 
         initUI(view);
         setupSpinnerData();
-        setupSpinners();
+        setupAdapters();
         loadSettingsIntoSpinners();
         setupSpinnerListeners();
     }
@@ -57,7 +58,6 @@ public class SettingsFragment extends Fragment {
         @Override
         public void handleOnBackPressed() {
             requireActivity().getSupportFragmentManager().popBackStack();
-
             this.setEnabled(false);
         }
     };
@@ -68,12 +68,13 @@ public class SettingsFragment extends Fragment {
      * @param view Корневой View фрагмента.
      */
     private void initUI(@NonNull View view) {
+        // ИЗМЕНЕНО: findViewById для AutoCompleteTextView
         currencySpinner = view.findViewById(R.id.currencySpinner);
         themeSpinner = view.findViewById(R.id.themeSpinner);
     }
 
     /**
-     * Подготавливает данные (списки опций) для Spinner'ов.
+     * Подготавливает данные (списки опций) для AutoCompleteTextView.
      */
     private void setupSpinnerData() {
         currencyOptions = new ArrayList<>(Arrays.asList("СОМ", "TMT", "RUB", "USD", "EUR"));
@@ -81,14 +82,12 @@ public class SettingsFragment extends Fragment {
     }
 
     /**
-     * Создает и устанавливает адаптеры для Spinner'ов.
+     * Создает и устанавливает адаптеры для AutoCompleteTextView.
      */
-    private void setupSpinners() {
-        ArrayAdapter<String> currencyAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, currencyOptions);
-        ArrayAdapter<String> themeAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, themeOptions);
-
-        currencyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        themeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+    private void setupAdapters() { // Переименован метод
+        // ИЗМЕНЕНО: Использование android.R.layout.simple_dropdown_item_1line для AutoCompleteTextView
+        ArrayAdapter<String> currencyAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, currencyOptions);
+        ArrayAdapter<String> themeAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, themeOptions);
 
         currencySpinner.setAdapter(currencyAdapter);
         themeSpinner.setAdapter(themeAdapter);
@@ -96,13 +95,15 @@ public class SettingsFragment extends Fragment {
 
     /**
      * Загружает текущие сохраненные настройки из SharedPreferences
-     * и устанавливает выбранные элементы в Spinner'ах.
+     * и устанавливает выбранные элементы в AutoCompleteTextView.
      */
     private void loadSettingsIntoSpinners() {
         String currentCurrency = appSettingsManager.getCurrencyType();
         int currencyPosition = currencyOptions.indexOf(currentCurrency);
         if (currencyPosition >= 0) {
-            currencySpinner.setSelection(currencyPosition);
+            currencySpinner.setText(currencyOptions.get(currencyPosition), false);
+        } else if (!currencyOptions.isEmpty()) {
+            currencySpinner.setText(currencyOptions.get(0), false); // Устанавливаем первый элемент по умолчанию
         }
 
         String currentThemeKey = appSettingsManager.getTheme();
@@ -118,7 +119,9 @@ public class SettingsFragment extends Fragment {
 
         int themePosition = themeOptions.indexOf(currentThemeDisplayName);
         if (themePosition >= 0) {
-            themeSpinner.setSelection(themePosition);
+            themeSpinner.setText(themeOptions.get(themePosition), false);
+        } else if (!themeOptions.isEmpty()) {
+            themeSpinner.setText(themeOptions.get(0), false);
         }
     }
 
@@ -131,58 +134,48 @@ public class SettingsFragment extends Fragment {
         switch (themeKey) {
             case "light":
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                Log.d("ThemeApply", "Applying Light Theme.");
+                Log.d(TAG, "Applying Light Theme.");
                 break;
             case "dark":
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                Log.d("ThemeApply", "Applying Dark Theme.");
+                Log.d(TAG, "Applying Dark Theme.");
                 break;
             case "system_default":
             default:
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-                Log.d("ThemeApply", "Applying System Default Theme.");
+                Log.d(TAG, "Applying System Default Theme.");
                 break;
         }
     }
 
     /**
-     * Устанавливает слушателей выбора элементов для Spinner'ов,
+     * Устанавливает слушателей выбора элементов для AutoCompleteTextView,
      * чтобы сохранять изменения в настройках.
      */
     private void setupSpinnerListeners() {
-        currencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
-                String selectedCurrency = currencyOptions.get(position);
-                appSettingsManager.saveCurrencyType(selectedCurrency);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-            }
+        currencySpinner.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedCurrency = currencyOptions.get(position);
+            appSettingsManager.saveCurrencyType(selectedCurrency);
+            Log.d(TAG, "Currency selected: " + selectedCurrency);
         });
 
-        themeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
-                String selectedThemeDisplayName = themeOptions.get(position);
-                String themeKeyToSave = "";
-                if ("Системная".equals(selectedThemeDisplayName)) {
-                    themeKeyToSave = "system_default";
-                } else if ("Тёмная".equals(selectedThemeDisplayName)) {
-                    themeKeyToSave = "dark";
-                } else if ("Светлая".equals(selectedThemeDisplayName)) {
-                    themeKeyToSave = "light";
-                }
+        currencySpinner.setOnClickListener(v -> currencySpinner.showDropDown());
 
-                appSettingsManager.saveTheme(themeKeyToSave);
-
-                applySavedTheme(themeKeyToSave);
+        themeSpinner.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedThemeDisplayName = themeOptions.get(position);
+            String themeKeyToSave = "";
+            if ("Системная".equals(selectedThemeDisplayName)) {
+                themeKeyToSave = "system_default";
+            } else if ("Тёмная".equals(selectedThemeDisplayName)) {
+                themeKeyToSave = "dark";
+            } else if ("Светлая".equals(selectedThemeDisplayName)) {
+                themeKeyToSave = "light";
             }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-            }
+            appSettingsManager.saveTheme(themeKeyToSave);
+            applySavedTheme(themeKeyToSave);
+            Log.d(TAG, "Theme selected: " + selectedThemeDisplayName + " (key: " + themeKeyToSave + ")");
         });
+        themeSpinner.setOnClickListener(v -> themeSpinner.showDropDown());
     }
 }

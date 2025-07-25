@@ -31,6 +31,7 @@ public class ProfileFragment extends Fragment {
     private int clickCount = 0;
     private static final long RESET_CLICK_COUNT_DELAY = 1000;
     private FirebaseUser cuurentUser;
+    private String AppVersion = "Версия приложения: V 0.9";
     private FinanceChartViewModel financeChartViewModel;
 
     @Override
@@ -56,7 +57,7 @@ public class ProfileFragment extends Fragment {
         btnEsc = view.findViewById(R.id.btnEsc);
         VERSIONOFAPP = view.findViewById(R.id.VERSIONOFAPP);
 
-        VERSIONOFAPP.setText("VERSION 0.8");
+        VERSIONOFAPP.setText(AppVersion);
 
         if (getActivity() instanceof MainActivity) {
             MainActivity mainActivity = (MainActivity) getActivity();

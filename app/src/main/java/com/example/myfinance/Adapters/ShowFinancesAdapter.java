@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import androidx.core.content.ContextCompat;
+
 import com.example.myfinance.Models.ShowFinances;
 import com.example.myfinance.R;
 
@@ -19,8 +21,10 @@ public class ShowFinancesAdapter extends BaseAdapter {
     private static final String TAG = "FinancesAdapter"; // Тэг для логов
     private List<ShowFinances> finances;
     private LayoutInflater inflater;
+    private Context context; // Добавлен контекст для ContextCompat
 
     public ShowFinancesAdapter(Context context, List<ShowFinances> initialFinances) {
+        this.context = context; // Инициализируем контекст
         this.finances = new ArrayList<>(initialFinances);
         this.inflater = LayoutInflater.from(context);
         Log.d(TAG, "Adapter initialized with " + initialFinances.size() + " items.");
@@ -71,7 +75,7 @@ public class ShowFinancesAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
         if (convertView == null) {
-            convertView = inflater.inflate(R.layout.main_finance_item, parent, false);
+            convertView = inflater.inflate(R.layout.main_finance_item, parent, false); // ИСПОЛЬЗУЕМ item_finance
             holder = new ViewHolder();
 
             holder.textViewId = convertView.findViewById(R.id.id);
@@ -88,7 +92,7 @@ public class ShowFinancesAdapter extends BaseAdapter {
 
         ShowFinances item = (ShowFinances) getItem(position);
 
-        Log.d(TAG, "Item at position " + position + ": ID=" + item.getId() + ", Sum=" + item.getSum() + ", Name=" + item.getName());
+        Log.d(TAG, "Item at position " + position + ": ID=" + item.getId() + ", Sum=" + item.getSum() + ", Name=" + item.getName() + ", OperationType=" + item.getOperationType());
 
         if (holder.textViewId != null) {
             holder.textViewId.setText(String.valueOf(item.getId()));
@@ -98,12 +102,22 @@ public class ShowFinancesAdapter extends BaseAdapter {
 
         if (holder.textViewSum != null) {
             holder.textViewSum.setText(String.valueOf(item.getSum()));
+            if ("Доход".equals(item.getOperationType())) {
+
+                holder.textViewSum.setTextColor(ContextCompat.getColor(context, R.color.accent_green));
+            } else if ("Расход".equals(item.getOperationType())) {
+
+                holder.textViewSum.setTextColor(ContextCompat.getColor(context, R.color.alert_red));
+            } else {
+
+                holder.textViewSum.setTextColor(ContextCompat.getColor(context, R.color.text_dark_primary));
+            }
         } else {
             Log.e(TAG, "textViewSum is null for position " + position);
         }
 
         if (holder.textViewName != null) {
-            holder.textViewName.setText(item.getName() != null ? item.getName() : "N/A"); // Обработка null для имени
+            holder.textViewName.setText(item.getName() != null ? item.getName() : "N/A");
         } else {
             Log.e(TAG, "textViewName is null for position " + position);
         }

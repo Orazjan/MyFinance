@@ -6,9 +6,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Spinner;
+import android.widget.AutoCompleteTextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,16 +16,12 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.myfinance.Models.AmountViewModel;
 import com.example.myfinance.Models.FinanceChartViewModel;
-import com.example.myfinance.Prevalent.DateLabelFormatter;
 import com.example.myfinance.R;
 import com.example.myfinance.data.AmountDatabase;
 import com.example.myfinance.data.AmountRepository;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
@@ -43,10 +38,13 @@ public class AnalizFragment extends Fragment {
     private Double currentTotalExpenses = 0.0;
     private Double currentTotalIncomes = 0.0;
     private Double currentTotalBalance = 0.0;
-    private List<String> xAxisLabels = new ArrayList<>(); // Для line chart
-    private Spinner variant_for_display;
+    private List<String> xAxisLabels = new ArrayList<>();
+    private AutoCompleteTextView variant_for_display;
 
     private static final String TAG = "AnalizFragment";
+
+    private List<String> operationTypeOptions;
+    private ArrayAdapter<String> spinnerAdapter;
 
     @Nullable
     @Override
@@ -54,18 +52,10 @@ public class AnalizFragment extends Fragment {
         return inflater.inflate(R.layout.analiz_fragment, container, false);
     }
 
-    /**
-     * Called after the View is created.
-     *
-     * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
-     * @param savedInstanceState If non-null, this fragment is being re-constructed
-     * from a previous saved state as given here.
-     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         pieChart = view.findViewById(R.id.pieChart);
-//        lineChart = view.findViewById(R.id.lineChart); // Initialize LineChart
         variant_for_display = view.findViewById(R.id.variant_for_display);
 
         financeChartViewModel = new ViewModelProvider(this).get(FinanceChartViewModel.class);
@@ -74,21 +64,27 @@ public class AnalizFragment extends Fragment {
         AmountViewModel.TaskViewModelFactory amViewModelTaskFactory = new AmountViewModel.TaskViewModelFactory(amrepo);
         amountViewModel = new ViewModelProvider(requireActivity(), amViewModelTaskFactory).get(AmountViewModel.class);
 
-        setupSpinnersAndObservers();
-    }
+        // Инициализируем список опций один раз
+        operationTypeOptions = new ArrayList<>();
+        operationTypeOptions.add("Общее");
+        operationTypeOptions.add("Доход");
+        operationTypeOptions.add("Расход");
 
-    /**
-     * Sets up the Spinner for display type selection and corresponding LiveData observers.
-     */
-    private void setupSpinnersAndObservers() {
-        List<String> operationTypeOptions = new ArrayList<>();
-        operationTypeOptions.add("Общее"); // Overall balance
-        operationTypeOptions.add("Доход"); // Income only
-        operationTypeOptions.add("Расход"); // Expense only
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, operationTypeOptions);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        variant_for_display.setAdapter(adapter);
+        // Создаем адаптер здесь, но будем повторно устанавливать его в onResume
+        spinnerAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, operationTypeOptions);
 
+        // Настраиваем слушатели один раз в onViewCreated
+        variant_for_display.setOnItemClickListener((parent, v, position, id) -> {
+            String selectedOption = (String) parent.getItemAtPosition(position);
+            Log.d(TAG, "AutoCompleteTextView selected: " + selectedOption);
+            updateChartData(selectedOption);
+        });
+
+        variant_for_display.setOnClickListener(v -> {
+            variant_for_display.showDropDown();
+        });
+
+        // Обзерверы настраиваются один раз
         amountViewModel.getSumma().observe(getViewLifecycleOwner(), totalExpensesFromDb -> {
             currentTotalExpenses = (totalExpensesFromDb != null) ? totalExpensesFromDb : 0.0;
             Log.d(TAG, "AmountViewModel Observer: currentTotalExpenses updated to " + currentTotalExpenses);
@@ -106,26 +102,26 @@ public class AnalizFragment extends Fragment {
             Log.d(TAG, "FinanceChartViewModel Observer: currentTotalIncomes updated to " + currentTotalIncomes);
             updatePieChartCenterText();
         });
+    }
 
-        variant_for_display.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedOption = parent.getItemAtPosition(position).toString();
-                Log.d(TAG, "Spinner selected: " + selectedOption);
-                updateChartData(selectedOption);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                updateChartData("Общее");
-            }
-        });
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume: Re-setting adapter and initial selection for variant_for_display.");
+        // Повторно устанавливаем адаптер и начальный текст, чтобы убедиться, что он обновлен после смены темы
+        if (spinnerAdapter != null) {
+            variant_for_display.setAdapter(spinnerAdapter); // Повторно устанавливаем адаптер
+        }
+        if (!operationTypeOptions.isEmpty()) {
+            variant_for_display.setText(operationTypeOptions.get(0), false); // Повторно устанавливаем начальный текст
+            updateChartData(operationTypeOptions.get(0)); // Повторно обновляем данные графика
+        }
     }
 
     /**
-     * Updates PieChart data based on the selected operation type.
+     * Обновляет данные круговой диаграммы на основе выбранного типа операции.
      *
-     * @param selectedOption Selected option ("Overall", "Income", "Expense").
+     * @param selectedOption Выбранная опция ("Общее", "Доход", "Расход").
      */
     private void updateChartData(String selectedOption) {
         switch (selectedOption) {
@@ -163,13 +159,10 @@ public class AnalizFragment extends Fragment {
     }
 
     /**
-     * Updates the center text of the pie chart based on the currently selected type.
+     * Обновляет центральный текст круговой диаграммы на основе выбранного типа.
      */
     private void updatePieChartCenterText() {
-        String selectedOption = (String) variant_for_display.getSelectedItem();
-        if (selectedOption == null) {
-            selectedOption = "Общее";
-        }
+        String selectedOption = variant_for_display.getText().toString();
 
         Double valueToDisplay = 0.0;
         switch (selectedOption) {
@@ -192,9 +185,9 @@ public class AnalizFragment extends Fragment {
     }
 
     /**
-     * Clears the PieChart and sets "no data" text.
+     * Очищает круговую диаграмму и устанавливает текст "нет данных".
      *
-     * @param noDataMessage Message to display when no data is available.
+     * @param noDataMessage Сообщение для отображения, когда данные недоступны.
      */
     private void clearPieChart(String noDataMessage) {
         pieChart.clear();
@@ -206,10 +199,10 @@ public class AnalizFragment extends Fragment {
     }
 
     /**
-     * For the pie chart
+     * Для круговой диаграммы
      *
-     * @param entries List of PieEntry for the chart.
-     * @param centerValue Total sum to display in the center of the chart (can be overall balance, income, or expenses).
+     * @param entries Список PieEntry для диаграммы.
+     * @param centerValue Общая сумма для отображения в центре диаграммы (может быть общим балансом, доходом или расходами).
      */
     private void setupPieChart(List<PieEntry> entries, Double centerValue) {
         PieDataSet dataSet = new PieDataSet(entries, "Категории");
@@ -243,11 +236,12 @@ public class AnalizFragment extends Fragment {
     }
 
     /**
-     * For the line chart (for future use)
+     * Для линейной диаграммы (для будущего использования)
      *
      * @param entries
      */
     private void setupLineChart(List<Entry> entries) {
+        /*
         LineDataSet dataSet = new LineDataSet(entries, "Расходы по дням");
         dataSet.setColor(Color.BLUE);
         dataSet.setCircleColor(Color.BLUE);
@@ -260,7 +254,6 @@ public class AnalizFragment extends Fragment {
         LineData lineData = new LineData(dataSet);
         lineChart.setData(lineData);
 
-        // X-axis setup
         XAxis xAxis = lineChart.getXAxis();
         xAxis.setValueFormatter(new DateLabelFormatter(xAxisLabels));
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
@@ -273,5 +266,6 @@ public class AnalizFragment extends Fragment {
         lineChart.animateX(1500);
         lineChart.invalidate();
         Log.d(TAG, "setupLineChart: Line chart drawn.");
+        */
     }
 }

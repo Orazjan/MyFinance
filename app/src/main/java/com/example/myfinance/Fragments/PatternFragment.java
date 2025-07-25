@@ -10,12 +10,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
+import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,6 +29,7 @@ import com.example.myfinance.Models.CategoryViewModel;
 import com.example.myfinance.Prevalent.CategoryItem;
 import com.example.myfinance.R;
 import com.example.myfinance.data.Categories;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -41,13 +39,13 @@ import java.util.List;
 public class PatternFragment extends Fragment {
     private final String TAG = "PatternFragment";
 
-    private TextInputLayout reasonInputLayout, sumInputLayout;
+    private TextInputLayout reasonInputLayout, sumInputLayout, operationTypeInputLayout;
     private TextInputEditText reasonEditText, sumEditText;
-    private Button btnAddPattern;
+    private MaterialButton btnAddPattern;
     private double sumInDouble;
     private String reason;
     private RecyclerView RecyclerForCategory;
-    private Spinner spinnerForChooseActiveOrPassive;
+    private AutoCompleteTextView spinnerForChooseActiveOrPassive;
     private String selectedOperationType;
 
     private CategoryViewModel categoryViewModel;
@@ -69,6 +67,7 @@ public class PatternFragment extends Fragment {
         btnAddPattern = view.findViewById(R.id.btnaddPattern);
         RecyclerForCategory = view.findViewById(R.id.RecyclerForCategory);
         spinnerForChooseActiveOrPassive = view.findViewById(R.id.SpinnerForChooseActiveOrPassive);
+        operationTypeInputLayout = view.findViewById(R.id.operationTypeInputLayout);
 
         categoryViewModel = new ViewModelProvider(requireActivity(), new CategoryViewModel.TaskViewModelFactory(requireActivity().getApplication())).get(CategoryViewModel.class);
 
@@ -79,35 +78,27 @@ public class PatternFragment extends Fragment {
     /**
      * Загружает и отображает все категории из базы данных Room.
      * Использует LiveData из CategoryViewModel для реактивного обновления UI.
-     * Также настраивает Spinner для выбора типа операции и его слушатель.
+     * Также настраивает AutoCompleteTextView для выбора типа операции и его слушатель.
      */
     private void loadAndDisplay() {
+
         List<String> ActiveAndPassive = new ArrayList<>();
         ActiveAndPassive.add("Доход");
         ActiveAndPassive.add("Расход");
 
-        ArrayAdapter adapter = new ArrayAdapter(requireContext(), R.layout.spinner_selected_item, ActiveAndPassive);
-        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, ActiveAndPassive);
         spinnerForChooseActiveOrPassive.setAdapter(adapter);
 
         if (!ActiveAndPassive.isEmpty()) {
-            spinnerForChooseActiveOrPassive.setSelection(0);
+            spinnerForChooseActiveOrPassive.setText(ActiveAndPassive.get(0), false);
             selectedOperationType = ActiveAndPassive.get(0);
         }
 
-        spinnerForChooseActiveOrPassive.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                selectedOperationType = parent.getItemAtPosition(position).toString(); // Correctly updates the variable
-                Log.d(TAG, "PatternFragment Spinner selected: " + selectedOperationType);
-                updateAddButtonState();
-            }
+        spinnerForChooseActiveOrPassive.setOnClickListener(v -> spinnerForChooseActiveOrPassive.showDropDown());
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                selectedOperationType = null;
-                updateAddButtonState();
-            }
+        spinnerForChooseActiveOrPassive.setOnItemClickListener((parent, view, position, id) -> {
+            selectedOperationType = parent.getItemAtPosition(position).toString();
+            updateAddButtonState();
         });
 
         categoryViewModel.getAllCategories().observe(getViewLifecycleOwner(), categories -> {
@@ -138,12 +129,10 @@ public class PatternFragment extends Fragment {
     private void onClickAdapter() {
         if (CategoryAdapter != null) {
             CategoryAdapter.setOnItemClickListener(item -> {
-                // Используем getCategoryByNameAsync для одноразового получения категории
                 categoryViewModel.getCategoryByNameAsync(item.getCategoryName()).addOnSuccessListener(category -> {
                     if (category != null) {
                         showCategoryActionsDialog(category);
                     } else {
-                        Log.e(TAG, "onClickAdapter: Category " + item.getCategoryName() + " not found for dialog (might have been deleted concurrently).");
                         Toast.makeText(requireContext(), "Категория не найдена или была удалена.", Toast.LENGTH_SHORT).show();
                     }
                 }).addOnFailureListener(e -> {
@@ -247,8 +236,8 @@ public class PatternFragment extends Fragment {
         reasonInputLayout.setError(null);
         sumInputLayout.setError(null);
         if (spinnerForChooseActiveOrPassive.getAdapter() != null && spinnerForChooseActiveOrPassive.getAdapter().getCount() > 0) {
-            spinnerForChooseActiveOrPassive.setSelection(0);
-            selectedOperationType = spinnerForChooseActiveOrPassive.getItemAtPosition(0).toString();
+            spinnerForChooseActiveOrPassive.setText(spinnerForChooseActiveOrPassive.getAdapter().getItem(0).toString(), false);
+            selectedOperationType = spinnerForChooseActiveOrPassive.getAdapter().getItem(0).toString();
         }
     }
 
@@ -276,7 +265,7 @@ public class PatternFragment extends Fragment {
 
         View dialogView = inflater.inflate(R.layout.dialog_change_or_delete, null);
         TextView instructionTextView = dialogView.findViewById(R.id.categoryNameTextView);
-        EditText editTextSum = dialogView.findViewById(R.id.sum_edit_text);
+        TextInputEditText editTextSum = dialogView.findViewById(R.id.sum_edit_text); // ИЗМЕНЕНО: на TextInputEditText
         ImageView imgClose = dialogView.findViewById(R.id.imgClose);
 
         instructionTextView.setText("Изменить сумму для " + category.getCategoryName() + ":");
@@ -287,7 +276,6 @@ public class PatternFragment extends Fragment {
 
         final AlertDialog dialog = builder.create();
 
-        // Устанавливаем PositiveButton
         dialog.setButton(AlertDialog.BUTTON_POSITIVE, "Изменить", (dialogInterface, i) -> {
             String sumText = editTextSum.getText().toString().trim();
             double newSum;
@@ -303,17 +291,12 @@ public class PatternFragment extends Fragment {
                 }
             }
 
-            // Если сумма не изменилась, нет смысла обновлять
             if (newSum == category.getSum()) {
                 Toast.makeText(requireContext(), "Сумма не изменилась.", Toast.LENGTH_SHORT).show();
                 dialog.dismiss();
                 return;
             }
 
-            // --- IMPORTANT: Use the original category's operation type here ---
-            // If you want to allow changing the operation type in this dialog,
-            // you would need to add a Spinner to dialog_change_or_delete.xml
-            // and get its selected value from there.
             Categories updatedCategory = new Categories(category.getCategoryName(), newSum, category.getOperationType(), category.getFirestoreId(), false);
             updatedCategory.setId(category.getId());
             categoryViewModel.update(updatedCategory);
@@ -322,7 +305,6 @@ public class PatternFragment extends Fragment {
             dialog.dismiss();
         });
 
-        // Устанавливаем NegativeButton
         dialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Удалить", (dialogInterface, i) -> {
             categoryViewModel.delete(category);
             Toast.makeText(requireContext(), "Категория '" + category.getCategoryName() + "' удалена.", Toast.LENGTH_SHORT).show();
@@ -331,7 +313,7 @@ public class PatternFragment extends Fragment {
 
         dialog.setOnShowListener(dialogInterface -> focusAndOpenKeyboard(editTextSum));
         dialog.setCanceledOnTouchOutside(false);
-        imgClose.setOnClickListener(v -> dialog.dismiss()); // Явно закрываем диалог
+        imgClose.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
     }
 

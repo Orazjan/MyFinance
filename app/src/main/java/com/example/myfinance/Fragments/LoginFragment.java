@@ -10,9 +10,6 @@ import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -22,6 +19,9 @@ import androidx.fragment.app.Fragment;
 import com.example.myfinance.databinding.FragmentLoginBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
@@ -34,13 +34,15 @@ import com.google.firebase.auth.FirebaseUser;
 public class LoginFragment extends Fragment {
     private static final String TAG = "LoginFragment";
 
-    private EditText usernameEditText;
-    private EditText passwordEditText;
-    private Button loginButton;
+
+    private TextInputEditText usernameEditText;
+    private TextInputEditText passwordEditText;
+
+    private MaterialButton loginButton;
     private FragmentLoginBinding binding;
 
-    private TextView usernameErrorTextView;
-    private TextView passwordErrorTextView;
+    private TextInputLayout usernameInputLayout;
+    private TextInputLayout passwordInputLayout;
 
     private boolean isUsernameValid = false;
     private boolean isPasswordValid = false;
@@ -87,17 +89,21 @@ public class LoginFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         auth = FirebaseAuth.getInstance();
 
+        usernameInputLayout = binding.usernameInputLayout;
         usernameEditText = binding.usernameEditText;
+        passwordInputLayout = binding.passwordInputLayout;
         passwordEditText = binding.passwordEditText;
         loginButton = binding.loginButton;
-        usernameErrorTextView = binding.usernameErrorTextView;
-        passwordErrorTextView = binding.passwordErrorTextView;
 
         loginButton.setEnabled(false);
 
         setupTextWatchers();
 
         loginButton.setOnClickListener(v -> {
+            // Убеждаемся, что валидация запускается перед попыткой входа
+            validateUsername(usernameEditText.getText().toString());
+            validatePassword(passwordEditText.getText().toString());
+
             if (isUsernameValid && isPasswordValid) {
                 signInUser(usernameEditText.getText().toString(), passwordEditText.getText().toString());
             } else {
@@ -130,9 +136,19 @@ public class LoginFragment extends Fragment {
 
                     if (exception instanceof FirebaseAuthInvalidCredentialsException) {
                         errorMessage = "Неверный Email или пароль.";
+                        // Устанавливаем ошибку на соответствующее поле
+                        usernameInputLayout.setError(errorMessage);
+                        passwordInputLayout.setError(null); // Очищаем, если была
                     } else if (exception instanceof FirebaseAuthInvalidUserException) {
                         errorMessage = "Пользователь с таким Email не зарегистрирован.";
+                        // Устанавливаем ошибку на поле email
+                        usernameInputLayout.setError(errorMessage);
+                        passwordInputLayout.setError(null); // Очищаем, если была
+                    } else {
+                        usernameInputLayout.setError(errorMessage);
+                        passwordInputLayout.setError(null);
                     }
+                    Toast.makeText(getContext(), errorMessage, Toast.LENGTH_SHORT).show();
                     Log.e(TAG, "Sign-in failed: " + errorMessage, exception);
                 }
             }
@@ -185,15 +201,13 @@ public class LoginFragment extends Fragment {
     private void validateUsername(String username) {
         if (username.trim().isEmpty()) {
             isUsernameValid = false;
-            usernameErrorTextView.setText("Email не может быть пустым");
-            usernameErrorTextView.setVisibility(View.VISIBLE);
+            usernameInputLayout.setError("Email не может быть пустым");
         } else if (!Patterns.EMAIL_ADDRESS.matcher(username).matches()) {
             isUsernameValid = false;
-            usernameErrorTextView.setText("Введите корректный Email адрес");
-            usernameErrorTextView.setVisibility(View.VISIBLE);
+            usernameInputLayout.setError("Введите корректный Email адрес");
         } else {
             isUsernameValid = true;
-            usernameErrorTextView.setVisibility(View.GONE);
+            usernameInputLayout.setError(null); // Очищаем ошибку
         }
     }
 
@@ -205,15 +219,13 @@ public class LoginFragment extends Fragment {
     private void validatePassword(String password) {
         if (password.trim().isEmpty()) {
             isPasswordValid = false;
-            passwordErrorTextView.setText("Пароль не может быть пустым");
-            passwordErrorTextView.setVisibility(View.VISIBLE);
+            passwordInputLayout.setError("Пароль не может быть пустым");
         } else if (password.length() < 6) {
             isPasswordValid = false;
-            passwordErrorTextView.setText("Пароль должен быть не менее 6 символов");
-            passwordErrorTextView.setVisibility(View.VISIBLE);
+            passwordInputLayout.setError("Пароль должен быть не менее 6 символов");
         } else {
             isPasswordValid = true;
-            passwordErrorTextView.setVisibility(View.GONE);
+            passwordInputLayout.setError(null); // Очищаем ошибку
         }
     }
 
@@ -231,6 +243,11 @@ public class LoginFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+        usernameInputLayout = null;
+        usernameEditText = null;
+        passwordInputLayout = null;
+        passwordEditText = null;
+        loginButton = null;
     }
 
     /**

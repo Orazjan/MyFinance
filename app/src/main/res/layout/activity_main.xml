@@ -13,15 +13,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?android:attr/windowBackground"
-        android:theme="@style/Theme.Library.AppBarOverlay"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.appcompat.widget.Toolbar
+        <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            android:background="@color/appbar_background_light"
+            app:titleTextColor="@color/appbar_text_dark"
             app:popupTheme="?android:attr/windowBackground">
 
             <TextView
@@ -29,7 +30,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="Мои финансы"
-                android:textColor="?attr/colorOnPrimary"
+                android:textColor="@color/appbar_text_dark"
                 android:textSize="30sp"
                 android:textStyle="italic|bold" />
 
@@ -39,13 +40,13 @@
                 android:layout_height="30sp"
                 android:layout_gravity="end"
                 android:layout_marginEnd="10sp"
-                android:indeterminateTint="?attr/colorOnPrimary"
+                android:indeterminateTint="@color/appbar_text_dark"
                 android:visibility="visible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
-        </androidx.appcompat.widget.Toolbar>
+        </com.google.android.material.appbar.MaterialToolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.viewpager2.widget.ViewPager2

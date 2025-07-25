@@ -1,44 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="5sp">
+    android:background="?attr/cardBackgroundColor"
+    android:padding="16dp">
 
-    <LinearLayout
+    <!-- Заголовок диалога и кнопка закрытия -->
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingStart="5sp"
-        android:paddingEnd="5sp">
+        android:layout_marginBottom="16dp">
 
         <TextView
+            android:id="@+id/dialogHeaderTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:text="Редактирование"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="20sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/imgClose"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
             android:id="@+id/imgClose"
-            android:layout_width="25sp"
-            android:layout_height="25sp"
-            android:gravity="end"
-            android:src="@drawable/close_day" />
-    </LinearLayout>
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="Закрыть диалог"
+            android:focusable="true"
+            android:padding="4dp"
+            android:src="@drawable/close_day"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <!-- Динамическая текстовая метка над полем ввода -->
     <TextView
         android:id="@+id/NameTextView"
-        android:layout_marginStart="5sp"
-        android:layout_marginTop="5sp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <EditText
-        android:id="@+id/name_edit_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="textCapSentences" />
+        android:layout_marginBottom="8dp"
+        android:textColor="?android:attr/textColorSecondary"
+        android:textSize="14sp" />
+
+    <!-- Поле ввода для имени/фамилии (заменено на TextInputLayout) -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/nameInputLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/name_edit_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapSentences"
+            android:textColor="?android:attr/textColorPrimary" />
+
+    </com.google.android.material.textfield.TextInputLayout>
 
 </LinearLayout>

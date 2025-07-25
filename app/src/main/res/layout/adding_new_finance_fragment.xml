@@ -4,146 +4,121 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?android:attr/windowBackground"
-    android:padding="10sp">
+    android:padding="16dp">
 
-    <LinearLayout
-        android:id="@+id/linearLayoutSpinner"
+    <!-- Spinner для выбора категории -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/categorySpinnerLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5sp"
-        android:background="@drawable/border"
-        android:orientation="vertical"
-        android:padding="5sp"
+        android:layout_marginTop="8dp"
+        android:hint="Выберите категорию"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="5sp"
-            android:layout_marginBottom="5sp"
-            android:text="Выберите категорию" />
-
-        <Spinner
+        <AutoCompleteTextView
             android:id="@+id/standart_variant"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
+            android:layout_height="wrap_content"
+            android:inputType="none" />
 
-    <LinearLayout
-        android:id="@+id/linearLayoutContent"
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Spinner для выбора типа операции -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/operationTypeSpinnerLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="80sp"
-        android:layout_marginBottom="10sp"
-        android:background="@drawable/border"
-        android:orientation="vertical"
-        android:padding="5sp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="Тип операции"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/linearLayoutSpinner">
+        app:layout_constraintTop_toBottomOf="@id/categorySpinnerLayout">
 
-        <LinearLayout
-            android:layout_width="320sp"
+        <AutoCompleteTextView
+            android:id="@+id/SpinnerForChooseActiveOrPassive"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="5sp"
-            android:background="@drawable/border"
-            android:orientation="vertical"
-            android:padding="5sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            android:inputType="none" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="5sp"
-                android:layout_marginBottom="5sp"
-                android:text="Тип операции" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-            <Spinner
-                android:id="@+id/SpinnerForChooseActiveOrPassive"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
+    <!-- Поле ввода для значения (Значение) -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/reasonInputLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="Значение"
+        app:errorEnabled="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/operationTypeSpinnerLayout">
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/reasonInputLayout"
-            android:layout_width="wrap_content"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/reasonEditText"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="10sp"
-            android:background="@drawable/border"
-            android:hint="Значение"
-            app:errorEnabled="true">
+            android:inputType="textCapSentences" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/reasonEditText"
-                android:layout_width="300sp"
-                android:backgroundTint="?android:attr/windowBackground"
-                android:layout_height="wrap_content"
-                android:paddingTop="35sp"
-                android:inputType="textCapSentences" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-        </com.google.android.material.textfield.TextInputLayout>
+    <!-- Поле ввода для суммы (Сумма) -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/sumInputLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="Сумма"
+        app:errorEnabled="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/reasonInputLayout">
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/sumInputLayout"
-            android:layout_width="wrap_content"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/sumEditText"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="15sp"
-            android:background="@drawable/border"
-            android:hint="Сумма"
-            app:errorEnabled="true">
+            android:inputType="numberDecimal" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/sumEditText"
-                android:layout_width="300sp"
-                android:layout_height="wrap_content"
-                android:backgroundTint="?android:attr/windowBackground"
-                android:background="@drawable/border"
-                android:paddingTop="35sp"
-                android:inputType="numberDecimal" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-        </com.google.android.material.textfield.TextInputLayout>
+    <!-- Поле ввода для комментариев (Не обязательно) -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/commentsInputLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="Комментарий (Не обязательно)"
+        app:errorEnabled="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sumInputLayout">
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/commentsInputLayout"
-            android:layout_width="wrap_content"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/commentsEditText"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="15sp"
-            android:background="@drawable/border"
-            android:hint="Комметарий (Не обьязательно)"
-            app:errorEnabled="true">
+            android:inputType="textCapSentences" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/commentsEditText"
-                android:layout_width="300sp"
-                android:layout_height="wrap_content"
-                android:backgroundTint="?android:attr/windowBackground"
-                android:background="@drawable/border"
-                android:paddingTop="35sp"
-                android:inputType="textCapSentences" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <Button
-            android:id="@+id/btnAdd"
-            android:layout_width="145sp"
-            android:layout_height="55sp"
-            android:layout_gravity="center"
-            android:layout_marginTop="10sp"
-            android:layout_marginBottom="10sp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:padding="0dp"
-            android:state_selected="false"
-            android:text="Добавить"
-            android:textColor="?attr/colorOnPrimary" />
-
-    </LinearLayout>
+    <!-- Кнопка "Добавить" -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAdd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Добавить"
+        android:textColor="?attr/colorOnPrimary"
+        app:backgroundTint="?attr/colorPrimary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/commentsInputLayout" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
