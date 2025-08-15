@@ -1,38 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <style name="Theme.MyFinance" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Основной цвет бренда для темной темы -->
+        <!-- Основной цвет бренда -->
         <item name="colorPrimary">@color/primary_blue</item>
         <item name="colorPrimaryVariant">@color/primary_blue_variant</item>
         <item name="colorOnPrimary">@color/on_primary_color</item>
 
-        <!-- Вторичный цвет бренда для темной темы -->
+        <!-- Вторичный цвет бренда -->
         <item name="colorSecondary">@color/accent_green</item>
         <item name="colorSecondaryVariant">@color/accent_green_variant</item>
         <item name="colorOnSecondary">@color/on_secondary_color</item>
 
         <!-- Строка состояния и панель навигации -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
-        <item name="android:navigationBarColor">@color/appbar_background_dark</item> <!-- ИСПОЛЬЗУЕМ dark -->
+        <item name="android:navigationBarColor">@color/appbar_background_light</item>
 
-        <!-- Фоны для темной темы -->
-        <item name="android:windowBackground">@color/background_dark</item> <!-- ИСПОЛЬЗУЕМ dark -->
-        <item name="cardBackgroundColor">@color/card_background_dark</item> <!-- ИСПОЛЬЗУЕМ dark -->
-        <item name="colorSurface">@color/card_background_dark</item> <!-- ИСПОЛЬЗУЕМ dark -->
+        <!-- Фоны -->
+        <item name="android:windowBackground">@color/background_light</item>
+        <item name="cardBackgroundColor">@color/card_background_light</item>
+        <item name="colorSurface">@color/card_background_light</item>
 
-        <!-- Цвета текста для темной темы -->
-        <item name="android:textColorPrimary">@color/text_light_primary</item> <!-- ИСПОЛЬЗУЕМ light -->
-        <item name="android:textColorSecondary">@color/text_light_secondary</item> <!-- ИСПОЛЬЗУЕМ light -->
-        <item name="colorOnSurface">@color/text_light_primary</item> <!-- ИСПОЛЬЗУЕМ light -->
-        <item name="android:textColorLink">@color/accent_green</item>
+        <!-- Цвета текста -->
+        <item name="android:textColorPrimary">@color/text_dark_primary</item>
+        <item name="android:textColorSecondary">@color/text_dark_secondary</item>
+        <item name="colorOnSurface">@color/text_dark_primary</item>
+        <item name="android:textColorLink">@color/primary_blue</item> <!-- Ссылки могут быть основным синим -->
 
-        <!-- Кнопки для темной темы -->
+        <!-- Кнопки -->
         <item name="android:colorButtonNormal">@color/button_primary_background</item>
         <item name="buttonTint">@color/button_primary_text</item>
 
-        <!-- Разделители для темной темы -->
-        <item name="android:divider">@color/divider_dark</item> <!-- ИСПОЛЬЗУЕМ dark -->
-        <item name="android:listDivider">@color/divider_dark</item> <!-- ИСПОЛЬЗУЕМ dark -->
+        <!-- Разделители -->
+        <item name="android:divider">@color/divider_light</item>
+        <item name="android:listDivider">@color/divider_light</item>
 
     </style>
 
@@ -40,13 +41,13 @@
         <item name="android:background">@drawable/spinner_border</item>
         <item name="android:paddingStart">16dp</item>
         <item name="android:paddingEnd">16dp</item>
-        <item name="android:textColor">@color/spinner_text_color</item> <!-- ИСПОЛЬЗУЕМ text_light_primary -->
+        <item name="android:textColor">@color/spinner_text_color</item>
         <item name="android:textSize">16sp</item>
-        <item name="android:popupBackground">@color/spinner_background_color</item> <!-- ИСПОЛЬЗУЕМ dark -->
+        <item name="android:popupBackground">@color/spinner_background_color</item>
     </style>
 
     <style name="SpinnerItemStyle">
-        <item name="android:textColor">@color/spinner_text_color</item> <!-- ИСПОЛЬЗУЕМ text_light_primary -->
+        <item name="android:textColor">@color/spinner_text_color</item>
         <item name="android:textSize">16sp</item>
         <item name="android:paddingStart">16dp</item>
         <item name="android:paddingEnd">16dp</item>

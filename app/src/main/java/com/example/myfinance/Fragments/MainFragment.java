@@ -8,11 +8,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,6 +33,7 @@ import com.example.myfinance.Models.ShowFinances;
 import com.example.myfinance.MyApplication;
 import com.example.myfinance.Prevalent.AddSettingToDataStoreManager;
 import com.example.myfinance.Prevalent.DateFormatter;
+import com.example.myfinance.Prevalent.Months;
 import com.example.myfinance.R;
 import com.example.myfinance.data.AmountDatabase;
 import com.example.myfinance.data.AmountRepository;
@@ -40,6 +43,7 @@ import com.example.myfinance.data.TotalAmount;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -59,7 +63,7 @@ public class MainFragment extends Fragment {
     private AmountViewModel amountViewModel;
     private FinanceViewModel finViewModel;
     private FinanceRepository financeRepository;
-
+    private Spinner spinnerForMonth;
     private static final String TAG = "MainFragment";
 
     @Nullable
@@ -101,6 +105,7 @@ public class MainFragment extends Fragment {
         btnAddNewCheck = view.findViewById(R.id.btnAddNewCheck);
         mainCheck = view.findViewById(R.id.mainCheck);
         SecondvalutaTextView = view.findViewById(R.id.SecondvalutaTextView);
+        spinnerForMonth = view.findViewById(R.id.spinnerForMonth);
 
         appSettingsManager = new AddSettingToDataStoreManager(requireContext());
 
@@ -130,6 +135,7 @@ public class MainFragment extends Fragment {
                 updateBalanceAndExpensesOnNewFinance(newFinanceSum, operationType);
             }
         });
+        uploadAndShowMonth();
         updateCurrencyDisplay();
         getFinanceList();
 
@@ -161,6 +167,28 @@ public class MainFragment extends Fragment {
                 Toast.makeText(requireContext(), clickedItem.getComments(), Toast.LENGTH_SHORT).show();
         });
     }
+
+    private void uploadAndShowMonth() {
+        // Получаем индекс текущего месяца (0 = январь)
+        Calendar calendar = Calendar.getInstance();
+        int currentMonthIndex = calendar.get(Calendar.MONTH);
+
+        // Все месяцы
+        String[] items = Months.getMonthsRu();
+
+        // Адаптер
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_item,
+                items
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerForMonth.setAdapter(adapter);
+
+        // Устанавливаем текущий месяц как выбранный
+        spinnerForMonth.setSelection(currentMonthIndex);
+    }
+
 
     /**
      * Обновление отображения валюты и инициализация текущего баланса и общей суммы расходов из БД.

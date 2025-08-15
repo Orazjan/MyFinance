@@ -23,7 +23,6 @@ import java.util.Map;
 public class VersionInfoFragment extends Fragment {
 
     private TextView infoText;
-    // ИЗМЕНЕНО: Тип переменной на AutoCompleteTextView
     private AutoCompleteTextView versionSpinner;
     private List<String> versionNames;
     private Map<String, String> versionDescriptions;
@@ -33,7 +32,6 @@ public class VersionInfoFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Убедитесь, что здесь загружается правильный макет
         return inflater.inflate(R.layout.version_info_fragment, container, false); // Предполагаем, что это R.layout.some_new_fragment
     }
 
@@ -59,7 +57,6 @@ public class VersionInfoFragment extends Fragment {
      */
     private void initUI(@NonNull View view) {
         infoText = view.findViewById(R.id.InfoText);
-        // ИЗМЕНЕНО: findViewById для AutoCompleteTextView
         versionSpinner = view.findViewById(R.id.mySpinner);
     }
 
@@ -70,19 +67,16 @@ public class VersionInfoFragment extends Fragment {
     private void setupVersionData() {
         versionDescriptions = new LinkedHashMap<>();
         versionDescriptions.put(
-                "V 0.9",
-                "\nДобавлено:\n- Новый тип графика (линейный)\nИсправлено:\n\nИзменено: Полностью пересмотрен дизайн\n"
+                "V 0.9", "Добавлено:\n- Новый тип графика (линейный)\nИсправлено:\n\nИзменено: Полностью пересмотрен дизайн\n\n\n" + "0.9.1\n - Добавлено: В главной странице возможномть выбирать месяц"
         );
         versionDescriptions.put(
-                "V 0.8",
-                "\nДобавлено: \n- Страница анализа. Теперь можно посмотреть на что Вы тратите" +
+                "V 0.8", "Добавлено: \n- Страница анализа. Теперь можно посмотреть на что Вы тратите" +
                         "\n- Синхронизация с помощью базы данных\n- Выбор данных для анализа по типу операций\n- Тип операции Расход и доход" +
                         "\n-Исправлено: \n- Вкладки расходы и остатки\n -Шаблоны по умолчанию не работали\n- Страница профиль" +
                         "\nИзменено:\n- Логика синхронизации. \n- Дизайн в фрагменте шаблоны"
         );
 
-        versionDescriptions.put("V 0.7",
-                "\nДобавлено: \n-Кнопка Сохранить в профиле сохраняет и выходит\n-Расходы\n-Изменения имени и фамилии\n-Регистрация и авторизация\n-Время добавления записи в список\n-Страница Профиль изменена\n-Вход в учётную запись через логин и пароль\n" +
+        versionDescriptions.put("V 0.7", "Добавлено: \n-Кнопка Сохранить в профиле сохраняет и выходит\n-Расходы\n-Изменения имени и фамилии\n-Регистрация и авторизация\n-Время добавления записи в список\n-Страница Профиль изменена\n-Вход в учётную запись через логин и пароль\n" +
                 "\n-Исправлено:\n-Кнопка Выход. При нажатии на неё выходит из аккаунта\n-Ориентация экрана зафиксирована на Портретной\n-Выход из приложение когда несколько раз перезаходишь в шаблоны\n-После выхода из второстепенных фрагментов Список финансов снова работает");
 
         versionDescriptions.put("V 0.6",
@@ -125,7 +119,6 @@ public class VersionInfoFragment extends Fragment {
      * Настраивает ArrayAdapter и устанавливает его для AutoCompleteTextView.
      */
     private void setupSpinner() {
-        // ИЗМЕНЕНО: Использование android.R.layout.simple_dropdown_item_1line для AutoCompleteTextView
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_dropdown_item_1line,
@@ -139,7 +132,6 @@ public class VersionInfoFragment extends Fragment {
      * при выборе новой версии.
      */
     private void setupSpinnerListener() {
-        // ИЗМЕНЕНО: Использование setOnItemClickListener для AutoCompleteTextView
         versionSpinner.setOnItemClickListener((parent, view, position, id) -> {
             String selectedVersion = versionNames.get(position);
             String description = versionDescriptions.get(selectedVersion);
@@ -152,7 +144,6 @@ public class VersionInfoFragment extends Fragment {
             Log.d(TAG, "Version selected: " + selectedVersion);
         });
 
-        // НОВОЕ: Добавлен OnClickListener для отображения выпадающего списка при клике на поле
         versionSpinner.setOnClickListener(v -> versionSpinner.showDropDown());
     }
 }

@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="12dp">
 
         <!-- Блок "Остаток" -->
         <androidx.cardview.widget.CardView
@@ -126,14 +126,22 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginTop="15sp"
+            android:layout_marginBottom="10sp"
             android:text="История"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="22sp"
             android:textStyle="bold" />
 
         <!-- Список истории транзакций -->
+
+        <Spinner
+            android:id="@+id/spinnerForMonth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10sp"
+            android:paddingStart="10sp" />
+
         <ListView
             android:id="@+id/mainCheck"
             android:layout_width="match_parent"
@@ -143,6 +151,7 @@
             android:divider="@android:color/transparent"
             android:dividerHeight="0dp"
             android:paddingBottom="16dp"
+            android:layout_marginTop="10sp"
             android:scrollbarStyle="insideInset" />
 
     </LinearLayout>

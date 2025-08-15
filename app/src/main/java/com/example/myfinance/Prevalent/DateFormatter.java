@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
@@ -22,5 +23,19 @@ public class DateFormatter {
         } catch (ParseException e) {
             return new Date();
         }
+    }
+
+    @SuppressLint("ConstantLocale")
+    private static final SimpleDateFormat MONTH_FORMATTER =
+            new SimpleDateFormat("MM", Locale.getDefault()); // Полное имя месяца
+
+    public static String getMonthName(Date date) {
+        return MONTH_FORMATTER.format(date);
+    }
+
+    public static int getMonthIndex(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        return cal.get(Calendar.MONTH); // 0 - январь, 11 - декабрь
     }
 }

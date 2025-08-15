@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:shape="rectangle"
+    tools:ignore="MissingDefaultResource">
+    <!-- Цвет фона поля ввода, чтобы он не был полностью прозрачным на темном фоне -->
+    <solid android:color="@color/card_background_dark" />
+    <!-- Обводка: 1dp, чисто белый цвет -->
+    <stroke
+        android:width="1dp"
+        android:color="#FFFFFF" /> <!-- Явно устанавливаем чисто белый цвет -->
+    <!-- Закругленные углы -->
+    <corners android:radius="4dp" />
+</shape>

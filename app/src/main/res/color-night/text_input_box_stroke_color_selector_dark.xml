@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:tools="http://schemas.android.com/tools" xmlns:android="http://schemas.android.com/apk/res/android" tools:ignore="MissingDefaultResource">
+    <!-- Цвет обводки при фокусе (используем основной цвет темы) -->
+    <item android:state_focused="true" android:color="?attr/colorPrimary" />
+    <!-- Цвет обводки при наведении (используем основной цвет темы) -->
+    <item android:state_hovered="true" android:color="?attr/colorPrimary" />
+    <!-- Цвет обводки в выключенном состоянии (полупрозрачный цвет на поверхности) -->
+    <item android:state_enabled="false" android:color="?attr/colorOnSurface" android:alpha="0.38" />
+    <!-- Цвет обводки по умолчанию (не в фокусе, не ошибка, используем цвет разделителя) -->
+    <item android:color="@color/divider_light" />
+</selector>
