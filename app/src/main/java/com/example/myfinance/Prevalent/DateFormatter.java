@@ -13,6 +13,11 @@ public class DateFormatter {
     private static final SimpleDateFormat FORMATTER =
             new SimpleDateFormat("HH:mm dd.MM.yyyy", Locale.getDefault());
 
+    // Форматтер для извлечения только названия месяца (на английском)
+    @SuppressLint("ConstantLocale")
+    private static final SimpleDateFormat MONTH_NAME_FORMATTER =
+            new SimpleDateFormat("MMMM", Locale.ENGLISH);
+
     public static String formatDate(Date date) {
         return FORMATTER.format(date);
     }
@@ -26,16 +31,37 @@ public class DateFormatter {
     }
 
     @SuppressLint("ConstantLocale")
-    private static final SimpleDateFormat MONTH_FORMATTER =
-            new SimpleDateFormat("MM", Locale.getDefault()); // Полное имя месяца
+    private static final SimpleDateFormat MONTH_NUMBER_FORMATTER =
+            new SimpleDateFormat("MM", Locale.getDefault());
 
-    public static String getMonthName(Date date) {
-        return MONTH_FORMATTER.format(date);
+    public static String getMonthNumber(Date date) {
+        return MONTH_NUMBER_FORMATTER.format(date);
     }
 
     public static int getMonthIndex(Date date) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
-        return cal.get(Calendar.MONTH); // 0 - январь, 11 - декабрь
+        return cal.get(Calendar.MONTH);
+    }
+
+    public static String getMonthRu(Date date) {
+        return Months.getMonthsRu()[getMonthIndex(date)];
+    }
+
+    /**
+     * Извлекает название месяца (на английском) из строки даты.
+     * @param dateString Строка даты в формате "HH:mm dd.MM.yyyy".
+     * @return Название месяца на английском.
+     */
+    public static String getMonthName(String dateString) {
+        try {
+            Date date = FORMATTER.parse(dateString);
+            if (date != null) {
+                return MONTH_NAME_FORMATTER.format(date);
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

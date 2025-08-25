@@ -67,7 +67,6 @@ public interface DAOFinances {
     @Query("SELECT date, SUM(summa) AS total FROM Finances GROUP BY date ORDER BY date ASC")
     LiveData<List<DateSum>> getAllTransactionsByDate();
 
-
     // Получение общей суммы доходов ---
     @Query("SELECT SUM(summa) FROM Finances WHERE operationType = 'Доход'")
     LiveData<Double> getTotalIncomesSum();
@@ -80,4 +79,5 @@ public interface DAOFinances {
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
     void updateFinances(Finances finances);
+
 }

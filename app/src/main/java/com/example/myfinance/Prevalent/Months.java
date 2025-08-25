@@ -1,23 +1,26 @@
 package com.example.myfinance.Prevalent;
 
 public class Months {
-    private static String[] monthsRu = {"Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"};
+
+    private static final String[] MONTHS_RU = new String[]{"За всё время", "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"};
+
+    private static final String[] MONTHS_EN = new String[]{"All Time", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
     public static String[] getMonthsRu() {
-        return monthsRu;
+        return MONTHS_RU;
     }
 
-    public static String getMonthByIndex(int index) {
-        return monthsRu[index-1];
-    }
-
-    public static int getIndexByName(String month) {
-        int index = 0;
-        for (int i = 0; i < monthsRu.length; i++) {
-            if (monthsRu[i].equals(month)) {
-                index = i;
-            }
+    public static String getMonthRu(int index) {
+        if (index >= 0 && index < MONTHS_RU.length) {
+            return MONTHS_RU[index];
         }
-        return index;
+        return null;
+    }
+
+    public static String getMonthEn(int index) {
+        if (index >= 0 && index < MONTHS_EN.length) {
+            return MONTHS_EN[index];
+        }
+        return null;
     }
 }

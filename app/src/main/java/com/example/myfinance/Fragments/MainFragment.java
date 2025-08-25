@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -43,11 +44,11 @@ import com.example.myfinance.data.TotalAmount;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class MainFragment extends Fragment {
     private AddSettingToDataStoreManager appSettingsManager;
@@ -65,6 +66,9 @@ public class MainFragment extends Fragment {
     private FinanceRepository financeRepository;
     private Spinner spinnerForMonth;
     private static final String TAG = "MainFragment";
+
+    // Список для хранения всех финансовых операций, полученных из базы данных
+    private List<Finances> allFinances;
 
     @Nullable
     @Override
@@ -87,13 +91,6 @@ public class MainFragment extends Fragment {
         updateCurrencyDisplay();
     }
 
-    /**
-     * Вызывается после создания View.
-     *
-     * @param view               The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
-     * @param savedInstanceState If non-null, this fragment is being re-constructed
-     * from a previous saved state as given here.
-     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -135,9 +132,20 @@ public class MainFragment extends Fragment {
                 updateBalanceAndExpensesOnNewFinance(newFinanceSum, operationType);
             }
         });
+
+        // Загружаем все финансы один раз и наблюдаем за изменениями
+        finViewModel.getAllFinances().observe(getViewLifecycleOwner(), new Observer<List<Finances>>() {
+            @Override
+            public void onChanged(@Nullable List<Finances> finances) {
+                // Сохраняем весь список финансов
+                allFinances = finances;
+                // При каждом изменении данных, обновляем отображение с учетом текущего выбранного месяца
+                updateFinancesListForMonth(spinnerForMonth.getSelectedItemPosition());
+            }
+        });
+
         uploadAndShowMonth();
         updateCurrencyDisplay();
-        getFinanceList();
 
         changeSumButton.setOnClickListener(v -> {
             showAlertDialogForAddingSum(currentBalance);
@@ -168,15 +176,12 @@ public class MainFragment extends Fragment {
         });
     }
 
+    /**
+     * Загрузка и отображение текущего месяца.
+     */
     private void uploadAndShowMonth() {
-        // Получаем индекс текущего месяца (0 = январь)
-        Calendar calendar = Calendar.getInstance();
-        int currentMonthIndex = calendar.get(Calendar.MONTH);
-
-        // Все месяцы
         String[] items = Months.getMonthsRu();
 
-        // Адаптер
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_spinner_item,
@@ -185,10 +190,63 @@ public class MainFragment extends Fragment {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerForMonth.setAdapter(adapter);
 
-        // Устанавливаем текущий месяц как выбранный
-        spinnerForMonth.setSelection(currentMonthIndex);
+        spinnerForMonth.setSelection(0);
+
+        // Добавляем слушатель для выбора месяца
+        spinnerForMonth.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                updateFinancesListForMonth(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Ничего не делаем
+            }
+        });
     }
 
+    /**
+     * Обновляет отображаемый список финансовых операций в зависимости от выбранного месяца.
+     *
+     * @param monthIndex Индекс выбранного месяца (0-12).
+     */
+    private void updateFinancesListForMonth(int monthIndex) {
+        if (allFinances == null) {
+            return; // Если данные еще не загружены, выходим
+        }
+
+        financeList.clear();
+
+        // Если выбран "За всё время" (индекс 0), показываем все операции
+        if (monthIndex == 0) {
+            for (Finances finance : allFinances) {
+                financeList.add(new ShowFinances(finance.getId(), finance.getSumma(), finance.getFinanceResult(), finance.getOperationType(), finance.getComments(), finance.getDate(), finance.getFirestoreId()));
+            }
+        } else {
+            // Иначе, фильтруем по выбранному месяцу (смещенный индекс)
+            String selectedMonth = Months.getMonthEn(monthIndex);
+
+            // Фильтруем список по месяцу
+            List<Finances> filteredFinances = allFinances.stream().filter(finance -> {
+                // Парсим дату и проверяем, совпадает ли месяц
+                String financeMonth = DateFormatter.getMonthName(finance.getDate());
+                return financeMonth != null && financeMonth.equalsIgnoreCase(selectedMonth);
+            }).collect(Collectors.toList());
+
+            // Преобразуем отфильтрованный список Finances в ShowFinances
+            for (Finances finance : filteredFinances) {
+                financeList.add(new ShowFinances(finance.getId(), finance.getSumma(), finance.getFinanceResult(), finance.getOperationType(), finance.getComments(), finance.getDate(), finance.getFirestoreId()));
+            }
+        }
+
+        // Обновляем адаптер
+        Collections.reverse(financeList);
+        financeAdapter.setItems(financeList);
+        financeAdapter.notifyDataSetChanged();
+        mainCheck.requestLayout();
+        mainCheck.invalidate();
+    }
 
     /**
      * Обновление отображения валюты и инициализация текущего баланса и общей суммы расходов из БД.
@@ -202,11 +260,9 @@ public class MainFragment extends Fragment {
             if (lastAmount == null) {
                 currentBalance = 0.0;
                 sumTextView.setText("0.0");
-                Log.d(TAG, "updateCurrencyDisplay: Initial currentBalance set to 0.0 (lastAmount is null)");
             } else {
                 currentBalance = lastAmount;
                 sumTextView.setText(String.valueOf(currentBalance));
-                Log.d(TAG, "updateCurrencyDisplay: currentBalance updated to " + currentBalance + " from lastAmount observer");
             }
         });
 
@@ -214,11 +270,9 @@ public class MainFragment extends Fragment {
             if (totalExpensesFromDb == null) {
                 totalExpenses = 0.0;
                 summaTextView.setText("0.0");
-                Log.d(TAG, "updateCurrencyDisplay: Initial totalExpenses set to 0.0 (totalExpensesFromDb is null)");
             } else {
                 totalExpenses = totalExpensesFromDb;
                 summaTextView.setText(String.valueOf(totalExpenses));
-                Log.d(TAG, "updateCurrencyDisplay: totalExpenses updated to " + totalExpenses + " from summa observer");
             }
         });
     }
@@ -240,7 +294,7 @@ public class MainFragment extends Fragment {
         EditText dateChangeEditText = view.findViewById(R.id.date_edit_text);
 
         // Устанавливаем текущие значения
-        categoryChangeEditText.setText(clickedItem.getName()); // Имя категории
+        categoryChangeEditText.setText(clickedItem.getName());
         sumChangeEditText.setText(String.valueOf(clickedItem.getSum()));
         commentsChangeEditText.setText(clickedItem.getComments());
         dateChangeEditText.setHint(clickedItem.getDate());
@@ -272,7 +326,7 @@ public class MainFragment extends Fragment {
                 return;
             }
 
-            // --- ИЗМЕНЕНИЕ: Создаем объект Finances для обновления с сохранением operationType ---
+            // Создаем объект Finances для обновления с сохранением operationType
             Finances updatedFinance = new Finances(newCategoryName, newSum, clickedItem.getOperationType(), newComments, date);
             updatedFinance.setId(clickedItem.getId());
             updatedFinance.setFirestoreId(clickedItem.getFirestoreId());
@@ -290,7 +344,7 @@ public class MainFragment extends Fragment {
                 newCalculatedBalance -= clickedItem.getSum();
             } else if ("Расход".equals(clickedItem.getOperationType())) {
                 newCalculatedBalance += clickedItem.getSum();
-                newCalculatedExpenses -= clickedItem.getSum(); // Отменяем старый расход
+                newCalculatedExpenses -= clickedItem.getSum();
             }
 
             // Применяем эффект новой записи
@@ -318,7 +372,7 @@ public class MainFragment extends Fragment {
 
             finViewModel.delete(financeToDelete); // Удаляем запись из базы данных
 
-            // --- ИЗМЕНЕНИЕ: Корректное изменение баланса и расходов при удалении ---
+            // Корректное изменение баланса и расходов при удалении
             // Получаем текущие значения баланса и расходов из LiveData перед расчетом
             double currentBalanceBeforeDelete = amountViewModel.getLastAmount().getValue() != null ? amountViewModel.getLastAmount().getValue() : 0.0;
             double totalExpensesBeforeDelete = amountViewModel.getSumma().getValue() != null ? amountViewModel.getSumma().getValue() : 0.0;
@@ -335,8 +389,6 @@ public class MainFragment extends Fragment {
 
             // Сохраняем новые значения в базу данных через AmountViewModel
             amountViewModel.insert(new TotalAmount(newCalculatedBalance, newCalculatedExpenses));
-            Log.d(TAG, "showDialogForChangingData (Delete): Updated TotalAmount to Balance=" + newCalculatedBalance + ", Expenses=" + newCalculatedExpenses);
-            // --- КОНЕЦ ИЗМЕНЕНИЯ ---
 
             Toast.makeText(requireContext(), "Запись удалена", Toast.LENGTH_SHORT).show();
             dialogInterface.dismiss();
@@ -376,7 +428,6 @@ public class MainFragment extends Fragment {
 
         // Сохраняем новые значения в базу данных через AmountViewModel
         amountViewModel.insert(new TotalAmount(newCalculatedBalance, newCalculatedExpenses));
-        Log.d(TAG, "updateBalanceAndExpensesOnNewFinance: Updated TotalAmount to Balance=" + newCalculatedBalance + ", Expenses=" + newCalculatedExpenses);
     }
 
     /**
@@ -415,12 +466,9 @@ public class MainFragment extends Fragment {
 
                         // Сохраняем новые значения в базу данных через AmountViewModel
                         amountViewModel.insert(new TotalAmount(newSum, currentTotalExpenses));
-                        Log.d(TAG, "showAlertDialogForAddingSum: Set initial balance to " + newSum + ", Total Expenses remain " + currentTotalExpenses);
-
                         dialogInterface.dismiss();
                     } catch (NumberFormatException e) {
                         Toast.makeText(requireContext(), "Введите корректное числовое значение", Toast.LENGTH_SHORT).show();
-                        Log.e(TAG, "Ошибка парсинга суммы: " + sumText, e);
                     }
                 }
             });
@@ -442,33 +490,6 @@ public class MainFragment extends Fragment {
         });
         dialog.setCanceledOnTouchOutside(false);
         dialog.show();
-    }
-
-    /**
-     * Получение списка транзакций из базы данных.
-     * Этот метод теперь только загружает список финансов для отображения.
-     * Баланс и общие расходы управляются инкрементально через AmountViewModel.
-     */
-    private void getFinanceList() {
-        finViewModel.getAllFinances().observe(getViewLifecycleOwner(), new Observer<List<Finances>>() {
-            @Override
-            public void onChanged(@Nullable List<Finances> finances) {
-                financeList.clear();
-
-                if (finances != null) {
-                    for (Finances finance : finances) {
-                        financeList.add(new ShowFinances(finance.getId(), finance.getSumma(), finance.getFinanceResult(), finance.getOperationType(), finance.getComments(), finance.getDate(), finance.getFirestoreId()));
-                    }
-                }
-                Collections.reverse(financeList);
-
-                financeAdapter.setItems(financeList);
-                financeAdapter.notifyDataSetChanged();
-                mainCheck.requestLayout();
-                mainCheck.invalidate();
-                Log.d(TAG, "getFinanceList: Finance list updated for display.");
-            }
-        });
     }
 
     /**
