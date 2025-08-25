@@ -31,7 +31,7 @@ public class ProfileFragment extends Fragment {
     private int clickCount = 0;
     private static final long RESET_CLICK_COUNT_DELAY = 1000;
     private FirebaseUser cuurentUser;
-    private String AppVersion = "Версия приложения: V 0.9";
+    private String AppVersion = "Ver: 0.9.2";
     private FinanceChartViewModel financeChartViewModel;
 
     @Override
@@ -99,7 +99,6 @@ public class ProfileFragment extends Fragment {
                 });
             }
         } else {
-            Log.e("ProfileFragment", "Родительская Activity не является MainActivity!");
         }
 
         btnSync.setOnClickListener(v -> {

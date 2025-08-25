@@ -13,11 +13,13 @@
 
         <!-- Блок "Остаток" -->
         <androidx.cardview.widget.CardView
+            android:id="@+id/cardViewOstatok"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             app:cardBackgroundColor="?attr/cardBackgroundColor"
             app:cardCornerRadius="8dp"
+            android:transitionName="ostatok_card_transition"
             app:cardElevation="2dp">
 
             <LinearLayout
@@ -49,15 +51,6 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1" />
-
-                <ImageButton
-                    android:id="@+id/changeSum"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginEnd="8dp"
-                    android:background="@android:color/transparent"
-                    android:src="@drawable/pen"
-                    app:tint="?attr/colorSecondary" />
 
                 <TextView
                     android:id="@+id/sum"

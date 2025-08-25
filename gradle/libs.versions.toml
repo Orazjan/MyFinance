@@ -12,6 +12,7 @@ activity = "1.10.1"
 constraintlayout = "2.2.1"
 mpandroidchart = "v3.1.0"
 room = "2.7.2"
+transition = "1.6.0"
 viewpager2 = "1.1.0"
 firebaseAuth = "24.0.0"
 
@@ -35,6 +36,7 @@ room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-paging = { module = "androidx.room:room-paging", version.ref = "room" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-testing = { module = "androidx.room:room-testing", version.ref = "room" }
+transition = { module = "androidx.transition:transition", version.ref = "transition" }
 viewpager2 = { module = "androidx.viewpager2:viewpager2", version.ref = "viewpager2" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 

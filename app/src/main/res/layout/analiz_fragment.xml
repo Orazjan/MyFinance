@@ -1,69 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:attr/windowBackground">
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="16dp"
+        tools:context=".Fragments.AnalizFragment">
 
-        <!-- Spinner для выбора типа отображения -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/variantForDisplayLayout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        <!-- Заголовок страницы -->
+        <TextView
+            android:id="@+id/titleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="16dp"
+            android:text="Анализ финансов"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <AutoCompleteTextView
+            android:id="@+id/variant_for_display"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="Выберите тип отображения"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/rounded_border"
+            android:drawableEnd="@android:drawable/arrow_down_float"
+            android:hint="Выберите тип"
+            android:inputType="none"
+            android:minHeight="48dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            tools:text="Общее" />
 
-            <AutoCompleteTextView
-                android:id="@+id/variant_for_display"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="none" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Карточка для PieChart -->
-        <androidx.cardview.widget.CardView
+        <!-- Круговая диаграмма -->
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/pieChart"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="?attr/cardBackgroundColor">
+            android:layout_height="300dp"
+            android:layout_marginTop="16dp" />
 
-            <com.github.mikephil.charting.charts.PieChart
-                android:id="@+id/pieChart"
-                android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:padding="8dp" />
-
-        </androidx.cardview.widget.CardView>
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="?attr/cardBackgroundColor">
-
+        <!-- Линейная диаграмма -->
             <com.github.mikephil.charting.charts.LineChart
                 android:id="@+id/lineChart"
                 android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:padding="8dp" />
-
-        </androidx.cardview.widget.CardView>
-
+                android:layout_height="match_parent" />
 
     </LinearLayout>
-</FrameLayout>
+</ScrollView>

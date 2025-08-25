@@ -38,6 +38,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.transition)
+
     implementation(libs.room.runtime)
 
     annotationProcessor(libs.room.compiler)

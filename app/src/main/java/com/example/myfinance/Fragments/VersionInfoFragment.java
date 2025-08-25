@@ -1,7 +1,6 @@
 package com.example.myfinance.Fragments;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -67,7 +66,8 @@ public class VersionInfoFragment extends Fragment {
     private void setupVersionData() {
         versionDescriptions = new LinkedHashMap<>();
         versionDescriptions.put(
-                "V 0.9", "Добавлено:\n- Новый тип графика (линейный)\nИсправлено:\n\nИзменено: Полностью пересмотрен дизайн\n\n\n" + "0.9.1\n - Добавлено: В главной странице возможноcть выбирать месяц"
+                "V 0.9", "Добавлено:\n- Новый тип графика (линейный)\nИсправлено:\n\nИзменено: Полностью пересмотрен дизайн\n\n" + "0.9.1\n - Добавлено:\n- В главной странице возможноcть выбирать месяц\n\n" +
+                        "0.9.2 \nДобавлено:\n- Анализ по категориям\nИсправлено:\n- Страница анализа"
         );
         versionDescriptions.put(
                 "V 0.8", "Добавлено: \n- Страница анализа. Теперь можно посмотреть на что Вы тратите" +
@@ -141,7 +141,6 @@ public class VersionInfoFragment extends Fragment {
             } else {
                 infoText.setText(selectedVersion + ". Информация отсутствует.");
             }
-            Log.d(TAG, "Version selected: " + selectedVersion);
         });
 
         versionSpinner.setOnClickListener(v -> versionSpinner.showDropDown());

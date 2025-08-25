@@ -16,4 +16,9 @@
     <string name="login_failed">"Login failed"</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string-array name="display_variants_array">
+        <item>Общее</item>
+        <item>Доходы</item>
+        <item>Расходы</item>
+    </string-array>
 </resources>
