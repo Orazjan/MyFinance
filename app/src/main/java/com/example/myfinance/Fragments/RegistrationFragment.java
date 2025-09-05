@@ -237,7 +237,7 @@ public class RegistrationFragment extends Fragment {
     private void validateSurname(String surname) {
         if (surname.trim().isEmpty()) {
             isSurnameValid = false;
-            surnameInputLayout.setError("Фамилия не может быть пустой"); // Изменено сообщение
+            surnameInputLayout.setError("Фамилия не может быть пустой");
         } else if (surname.length() < 2) {
             isSurnameValid = false;
             surnameInputLayout.setError("Фамилия пользователя должна быть больше 2х букв");

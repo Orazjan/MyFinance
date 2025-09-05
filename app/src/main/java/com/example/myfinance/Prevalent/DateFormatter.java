@@ -54,6 +54,10 @@ public class DateFormatter {
      * @return Название месяца на английском.
      */
     public static String getMonthName(String dateString) {
+        // Добавлена проверка на null, чтобы избежать NullPointerException
+        if (dateString == null) {
+            return null;
+        }
         try {
             Date date = FORMATTER.parse(dateString);
             if (date != null) {

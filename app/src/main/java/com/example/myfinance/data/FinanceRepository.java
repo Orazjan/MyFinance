@@ -3,11 +3,9 @@ package com.example.myfinance.data;
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MediatorLiveData;
-import androidx.lifecycle.Transformations; // Добавлено для Transformations.map
+import androidx.lifecycle.Transformations;
 
 import com.example.myfinance.DAO.DAOFinances;
-import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieEntry;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
@@ -19,7 +17,6 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map; // Map больше не используется для PieEntries, но может быть нужен для других целей
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

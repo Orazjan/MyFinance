@@ -71,6 +71,7 @@ public class PatternFragment extends Fragment {
 
         categoryViewModel = new ViewModelProvider(requireActivity(), new CategoryViewModel.TaskViewModelFactory(requireActivity().getApplication())).get(CategoryViewModel.class);
 
+        // Инициализация и загрузка данных только в onViewCreated
         loadAndDisplay();
         setupTextWatchersAndClickListeners();
     }
@@ -103,10 +104,18 @@ public class PatternFragment extends Fragment {
 
         categoryViewModel.getAllCategories().observe(getViewLifecycleOwner(), categories -> {
             List<CategoryItem> categoryItems = new ArrayList<>();
-            if (categories != null) {
-                for (Categories category : categories) {
-                    categoryItems.add(new CategoryItem(category.getCategoryName(), category.getSum(), category.getOperationType()));
-                }
+
+            // Проверяем, если список категорий пуст, добавляем шаблон по умолчанию
+            if (categories == null || categories.isEmpty()) {
+                Log.d(TAG, "No categories found. Adding default template.");
+                Categories defaultCategory = new Categories("Другое", 0.0, "Расход");
+                categoryViewModel.insert(defaultCategory); // Вставляем в базу данных
+                // LiveData автоматически обновит UI после вставки
+                return;
+            }
+
+            for (Categories category : categories) {
+                categoryItems.add(new CategoryItem(category.getCategoryName(), category.getSum(), category.getOperationType()));
             }
 
             if (CategoryAdapter == null) {
@@ -265,7 +274,7 @@ public class PatternFragment extends Fragment {
 
         View dialogView = inflater.inflate(R.layout.dialog_change_or_delete, null);
         TextView instructionTextView = dialogView.findViewById(R.id.categoryNameTextView);
-        TextInputEditText editTextSum = dialogView.findViewById(R.id.sum_edit_text); // ИЗМЕНЕНО: на TextInputEditText
+        TextInputEditText editTextSum = dialogView.findViewById(R.id.sum_edit_text);
         ImageView imgClose = dialogView.findViewById(R.id.imgClose);
 
         instructionTextView.setText("Изменить сумму для " + category.getCategoryName() + ":");

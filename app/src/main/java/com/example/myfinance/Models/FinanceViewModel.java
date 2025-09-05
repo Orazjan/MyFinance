@@ -5,7 +5,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.myfinance.DAO.DAOFinances;
 import com.example.myfinance.data.FinanceRepository;
 import com.example.myfinance.data.Finances;
 
@@ -34,6 +33,10 @@ public class FinanceViewModel extends ViewModel {
 
     public void delete(Finances finances) {
         finrepository.delete(finances);
+    }
+
+    public void deleteAllFinances() {
+        finrepository.deleteAll();
     }
 
     public static class TaskViewModelFactory implements ViewModelProvider.Factory {

@@ -56,6 +56,7 @@ public class ProfileChangeFragment extends Fragment {
         return inflater.inflate(R.layout.profile_change_fragment, container, false);
     }
 
+
     /**
      * Вызывается после создания View.
      *
@@ -78,7 +79,7 @@ public class ProfileChangeFragment extends Fragment {
         fb = FirebaseFirestore.getInstance();
 
         authStateListener = firebaseAuth -> updateUserProfileUI();
-
+        checkStatusOfTextView();
         if (btnSave != null) {
             btnSave.setOnClickListener(v -> {
                 Toast.makeText(getContext(), "Сохранено", Toast.LENGTH_SHORT).show();
@@ -88,42 +89,9 @@ public class ProfileChangeFragment extends Fragment {
             Log.e(TAG, "btnSave is null, cannot set OnClickListener.");
         }
 
-        // Проверяем, что поля ввода не null перед установкой слушателей
-        if (nameEditText != null) {
-            nameEditText.setOnClickListener(v -> {
-                if ("Не авторизован".equals(nameEditText.getText().toString())) {
-                    Log.d(TAG, "Click on nameEditText ignored: Not authorized.");
-                    return; // Ничего не делаем, если не авторизован
-                }
-                showDialogToChangeNameSurname(nameEditText);
-            });
-        }
-        if (famEditText != null) {
-            famEditText.setOnClickListener(v -> {
-                if ("Не авторизован".equals(famEditText.getText().toString())) {
-                    Log.d(TAG, "Click on famEditText ignored: Not authorized.");
-                    return; // Ничего не делаем, если не авторизован
-                }
-                showDialogToChangeNameSurname(famEditText);
-            });
-        }
-        if (emailEditText != null) {
-            emailEditText.setOnClickListener(v -> {
-                // Если пользователь авторизован, показываем Toast
-                if (auth.getCurrentUser() != null) {
-                    Toast.makeText(getContext(), "Это ваш Email. Для изменения потребуется аутентификация.", Toast.LENGTH_SHORT).show();
-                } else {
-                    // ИЗМЕНЕНО: Если пользователь не авторизован, показываем Toast и не переходим на LoginActivity
-                    Toast.makeText(getContext(), "Вы не авторизованы. Нажмите кнопку 'Зарегистрироваться' для входа.", Toast.LENGTH_SHORT).show();
-                    Log.d(TAG, "Click on emailEditText ignored: User not authenticated.");
-                    return; // Ничего не делаем
-                }
-            });
-        }
         if (regDataEditText != null) {
             regDataEditText.setOnClickListener(v -> {
                 if ("Не авторизован".equals(regDataEditText.getText().toString())) {
-                    Log.d(TAG, "Click on regDataEditText ignored: Not authorized.");
                     return; // Ничего не делаем, если не авторизован
                 }
                 Toast.makeText(getContext(), "Дата регистрации не редактируется напрямую.", Toast.LENGTH_SHORT).show();
@@ -136,6 +104,21 @@ public class ProfileChangeFragment extends Fragment {
             });
         } else {
             Log.e(TAG, "btnForAutentification is null, cannot set OnClickListener.");
+        }
+    }
+
+    private void checkStatusOfTextView() {
+        if (auth.getCurrentUser() == null) {
+            nameEditText.setEnabled(false);
+            famEditText.setEnabled(false);
+            regDataEditText.setEnabled(false);
+            emailEditText.setEnabled(false);
+        } else if (auth.getCurrentUser() != null) {
+            nameEditText.setEnabled(true);
+            famEditText.setEnabled(true);
+            regDataEditText.setEnabled(false);
+            emailEditText.setEnabled(false);
+            btnForAutentification.setText("Перезайти в другой аккаунт");
         }
     }
 

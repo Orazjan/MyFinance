@@ -7,15 +7,30 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.example.myfinance.Models.AmountViewModel;
+import com.example.myfinance.Models.CategoryViewModel;
+import com.example.myfinance.Models.FinanceViewModel;
+import com.example.myfinance.MyApplication;
 import com.example.myfinance.Prevalent.AddSettingToDataStoreManager;
 import com.example.myfinance.R;
+import com.example.myfinance.data.AmountRepository;
+import com.example.myfinance.data.CategoryRepository;
+import com.example.myfinance.data.FinanceRepository;
+import com.example.myfinance.data.TotalAmount;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +43,12 @@ public class SettingsFragment extends Fragment {
     private AutoCompleteTextView themeSpinner;
     private List<String> currencyOptions;
     private List<String> themeOptions;
+    private FirebaseAuth auth;
+    private FirebaseFirestore fb;
+    private CardView deleteAllPatterns, deleteAllFinances;
+    private CategoryViewModel categoryViewModel;
+    private FinanceViewModel finViewModel;
+    private AmountViewModel amountViewModel;
 
     private static final String TAG = "SettingsFragment";
 
@@ -40,15 +61,101 @@ public class SettingsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        auth = FirebaseAuth.getInstance();
+        fb = FirebaseFirestore.getInstance();
+        deleteAllFinances = view.findViewById(R.id.deleteAllFinances);
+        deleteAllPatterns = view.findViewById(R.id.deleteAllPatterns);
         appSettingsManager = new AddSettingToDataStoreManager(requireContext());
         requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), callback);
+
+        // Инициализация репозиториев
+        MyApplication myApplication = (MyApplication) requireActivity().getApplication();
+        CategoryRepository categoryRepository = myApplication.getCategoryRepository();
+        FinanceRepository financeRepository = myApplication.getFinanceRepository();
+        AmountRepository amountRepository = myApplication.getAmountRepository();
+
+        // Инициализация ViewModel с использованием пользовательских фабрик
+        categoryViewModel = new ViewModelProvider(
+                requireActivity(),
+                new CategoryViewModel.TaskViewModelFactory(requireActivity().getApplication())
+        ).get(CategoryViewModel.class);
+
+        finViewModel = new ViewModelProvider(
+                requireActivity(),
+                new FinanceViewModel.TaskViewModelFactory(financeRepository)
+        ).get(FinanceViewModel.class);
+
+        amountViewModel = new ViewModelProvider(
+                requireActivity(),
+                new AmountViewModel.TaskViewModelFactory(amountRepository)
+        ).get(AmountViewModel.class);
 
         initUI(view);
         setupSpinnerData();
         setupAdapters();
         loadSettingsIntoSpinners();
         setupSpinnerListeners();
+
+        deleteAllPatterns.setOnClickListener(v -> {
+            deletePatterns();
+        });
+
+        deleteAllFinances.setOnClickListener(v -> {
+            deleteFinances();
+        });
+    }
+
+    /**
+     * Удаляет все шаблоны из Firestore и локальной базы Room.
+     */
+    private void deletePatterns() {
+        if (auth.getCurrentUser() != null) {
+            String userEmail = auth.getCurrentUser().getEmail();
+            assert userEmail != null;
+            fb.collection("users").document(userEmail).collection("categories").get().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    WriteBatch batch = fb.batch();
+                    for (DocumentSnapshot document : task.getResult()) {
+                        batch.delete(document.getReference());
+                    }
+                    batch.commit().addOnSuccessListener(aVoid -> {
+                        Toast.makeText(requireContext(), "Все шаблоны успешно удалены", Toast.LENGTH_SHORT).show();
+                        categoryViewModel.deleteAll();
+                    }).addOnFailureListener(e -> {
+                        Toast.makeText(requireContext(), "Ошибка удаления", Toast.LENGTH_SHORT).show();
+                    });
+                } else {
+                    Log.w("Delete", "Error getting documents", task.getException());
+                }
+            });
+        }
+    }
+
+    /**
+     * Удаляет все финансовые операции из Firestore и локальной базы Room.
+     */
+    private void deleteFinances() {
+        if (auth.getCurrentUser() != null) {
+            String userEmail = auth.getCurrentUser().getEmail();
+            assert userEmail != null;
+            fb.collection("users").document(userEmail).collection("finances").get().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    WriteBatch batch = fb.batch();
+                    for (DocumentSnapshot document : task.getResult()) {
+                        batch.delete(document.getReference());
+                    }
+                    batch.commit().addOnSuccessListener(aVoid -> {
+                        Toast.makeText(requireContext(), "Все финансы успешно удалены", Toast.LENGTH_SHORT).show();
+                        finViewModel.deleteAllFinances();
+                        amountViewModel.insert(new TotalAmount(0.0, 0.0));
+                    }).addOnFailureListener(e -> {
+                        Toast.makeText(requireContext(), "Ошибка удаления", Toast.LENGTH_SHORT).show();
+                    });
+                } else {
+                    Log.w("Delete", "Error getting documents", task.getException());
+                }
+            });
+        }
     }
 
     /**
@@ -68,7 +175,6 @@ public class SettingsFragment extends Fragment {
      * @param view Корневой View фрагмента.
      */
     private void initUI(@NonNull View view) {
-        // ИЗМЕНЕНО: findViewById для AutoCompleteTextView
         currencySpinner = view.findViewById(R.id.currencySpinner);
         themeSpinner = view.findViewById(R.id.themeSpinner);
     }
@@ -84,8 +190,7 @@ public class SettingsFragment extends Fragment {
     /**
      * Создает и устанавливает адаптеры для AutoCompleteTextView.
      */
-    private void setupAdapters() { // Переименован метод
-        // ИЗМЕНЕНО: Использование android.R.layout.simple_dropdown_item_1line для AutoCompleteTextView
+    private void setupAdapters() {
         ArrayAdapter<String> currencyAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, currencyOptions);
         ArrayAdapter<String> themeAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, themeOptions);
 
@@ -103,7 +208,7 @@ public class SettingsFragment extends Fragment {
         if (currencyPosition >= 0) {
             currencySpinner.setText(currencyOptions.get(currencyPosition), false);
         } else if (!currencyOptions.isEmpty()) {
-            currencySpinner.setText(currencyOptions.get(0), false); // Устанавливаем первый элемент по умолчанию
+            currencySpinner.setText(currencyOptions.get(0), false);
         }
 
         String currentThemeKey = appSettingsManager.getTheme();

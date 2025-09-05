@@ -1,16 +1,12 @@
 package com.example.myfinance.Fragments;
 
-import android.content.DialogInterface;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -203,6 +199,7 @@ public class MainFragment extends Fragment {
             filteredFinances = allFinances;
         } else {
             String selectedMonth = Months.getMonthEn(monthIndex);
+            // Добавлена проверка на null для finance.getDate()
             filteredFinances = allFinances.stream().filter(finance -> {
                 String financeMonth = DateFormatter.getMonthName(finance.getDate());
                 return financeMonth != null && financeMonth.equalsIgnoreCase(selectedMonth);
@@ -274,8 +271,13 @@ public class MainFragment extends Fragment {
         } else {
             String selectedMonth = Months.getMonthEn(monthIndex);
 
+            // Добавлена проверка на null для finance.getDate()
             List<Finances> filteredFinances = allFinances.stream().filter(finance -> {
-                String financeMonth = DateFormatter.getMonthName(finance.getDate());
+                String dateString = finance.getDate();
+                if (dateString == null) {
+                    return false; // Пропускаем записи с пустой датой
+                }
+                String financeMonth = DateFormatter.getMonthName(dateString);
                 return financeMonth != null && financeMonth.equalsIgnoreCase(selectedMonth);
             }).collect(Collectors.toList());
 
@@ -460,69 +462,6 @@ public class MainFragment extends Fragment {
         }
 
         amountViewModel.insert(new TotalAmount(newCalculatedBalance, newCalculatedExpenses));
-    }
-
-    /**
-     * Отображение диалогового окна для изменения общей суммы.
-     *
-     * @param initialSum Исходная сумма для отображения в диалоге.
-     */
-    private void showAlertDialogForAddingSum(double initialSum) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
-        LayoutInflater inflater = requireActivity().getLayoutInflater();
-
-        View view = inflater.inflate(R.layout.dialog_input_sum, null);
-        TextView sumChange = view.findViewById(R.id.sumForChange);
-        EditText editTextSum = view.findViewById(R.id.dialog_edit_text);
-        sumChange.setText("Введите начальный баланс");
-        editTextSum.setText(String.valueOf(initialSum));
-        editTextSum.setSelection(editTextSum.getText().length());
-
-        builder.setView(view);
-        builder.setTitle("Установить начальный баланс");
-
-        builder.setPositiveButton("Установить", null);
-        builder.setNegativeButton("Отмена", (dialogInterface, i) -> dialogInterface.dismiss());
-
-        AlertDialog dialog = builder.create();
-        dialog.setOnShowListener(dialogInterface -> {
-            Button positiveBtn = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
-            positiveBtn.setEnabled(!editTextSum.getText().toString().trim().isEmpty());
-
-            positiveBtn.setOnClickListener(v -> {
-                String sumText = editTextSum.getText().toString().trim();
-                if (!sumText.isEmpty()) {
-                    try {
-                        double newSum = Double.parseDouble(sumText);
-                        double currentTotalExpenses = amountViewModel.getSumma().getValue() != null ? amountViewModel.getSumma().getValue() : 0.0;
-
-                        amountViewModel.insert(new TotalAmount(newSum, currentTotalExpenses));
-
-                        dialogInterface.dismiss();
-                    } catch (NumberFormatException e) {
-                        Toast.makeText(requireContext(), "Введите корректное числовое значение", Toast.LENGTH_SHORT).show();
-                        Log.e(TAG, "Ошибка парсинга суммы: " + sumText, e);
-                    }
-                }
-            });
-            editTextSum.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                }
-
-                @Override
-                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    positiveBtn.setEnabled(!charSequence.toString().trim().isEmpty());
-                }
-
-                @Override
-                public void afterTextChanged(Editable editable) {
-                }
-            });
-
-        });
-        dialog.setCanceledOnTouchOutside(false);
-        dialog.show();
     }
 
     /**

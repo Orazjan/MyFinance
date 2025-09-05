@@ -1,6 +1,7 @@
 package com.example.myfinance.Models;
 
 import android.app.Application;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
@@ -9,7 +10,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.myfinance.MyApplication;
 import com.example.myfinance.data.Categories;
 import com.example.myfinance.data.CategoryRepository;
-import com.google.android.gms.tasks.Task; // Добавлен импорт Task
+import com.google.android.gms.tasks.Task;
 
 import java.util.List;
 
@@ -42,6 +43,10 @@ public class CategoryViewModel extends ViewModel {
         repository.delete(categories);
     }
 
+    public void deleteAll() {
+        repository.deleteAll();
+    }
+
     public LiveData<Double> getSumForCategory(String categoryName) {
         return repository.getTotalSumByCategory(categoryName);
     }
@@ -50,7 +55,7 @@ public class CategoryViewModel extends ViewModel {
         return repository.getCategoryByName(category.getCategoryName());
     }
 
-    // НОВЫЙ МЕТОД: Прокси для getCategoryByNameAsync из репозитория
+    // Прокси для getCategoryByNameAsync из репозитория
     public Task<Categories> getCategoryByNameAsync(String categoryName) {
         return repository.getCategoryByNameAsync(categoryName);
     }
