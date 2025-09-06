@@ -42,7 +42,7 @@ import java.util.Objects;
 public class ProfileChangeFragment extends Fragment {
     private static final String TAG = "ProfileChangeFragment";
 
-    private TextInputEditText emailEditText, nameEditText, famEditText, regDataEditText;
+    private TextInputEditText emailEditText, nameEditText, regDataEditText;
     private MaterialButton btnSave;
     private MaterialButton btnForAutentification;
 
@@ -56,21 +56,12 @@ public class ProfileChangeFragment extends Fragment {
         return inflater.inflate(R.layout.profile_change_fragment, container, false);
     }
 
-
-    /**
-     * Вызывается после создания View.
-     *
-     * @param view               The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
-     * @param savedInstanceState If non-null, this fragment is being re-constructed
-     * from a previous saved state as given here.
-     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         emailEditText = view.findViewById(R.id.emailEditText);
         nameEditText = view.findViewById(R.id.nameEditText);
-        famEditText = view.findViewById(R.id.famEditText);
         regDataEditText = view.findViewById(R.id.regDataEditText);
         btnSave = view.findViewById(R.id.btnForSave);
         btnForAutentification = view.findViewById(R.id.btnForAutentification);
@@ -80,6 +71,7 @@ public class ProfileChangeFragment extends Fragment {
 
         authStateListener = firebaseAuth -> updateUserProfileUI();
         checkStatusOfTextView();
+
         if (btnSave != null) {
             btnSave.setOnClickListener(v -> {
                 Toast.makeText(getContext(), "Сохранено", Toast.LENGTH_SHORT).show();
@@ -103,19 +95,17 @@ public class ProfileChangeFragment extends Fragment {
                 startActivity(new Intent(requireContext(), LoginActivity.class));
             });
         } else {
-            Log.e(TAG, "btnForAutentification is null, cannot set OnClickListener.");
+            Log.e(TAG, "Кнопка не работает");
         }
     }
 
     private void checkStatusOfTextView() {
         if (auth.getCurrentUser() == null) {
             nameEditText.setEnabled(false);
-            famEditText.setEnabled(false);
             regDataEditText.setEnabled(false);
             emailEditText.setEnabled(false);
         } else if (auth.getCurrentUser() != null) {
             nameEditText.setEnabled(true);
-            famEditText.setEnabled(true);
             regDataEditText.setEnabled(false);
             emailEditText.setEnabled(false);
             btnForAutentification.setText("Перезайти в другой аккаунт");
@@ -145,9 +135,6 @@ public class ProfileChangeFragment extends Fragment {
             if (nameSurnameEditTextToUpdate.getId() == R.id.nameEditText) {
                 dialogTitleTextView.setText("Изменить имя");
                 nameChangeEditText.setHint("Введите имя");
-            } else if (nameSurnameEditTextToUpdate.getId() == R.id.famEditText) {
-                dialogTitleTextView.setText("Изменение фамилии");
-                nameChangeEditText.setHint("Введите фамилию");
             } else {
                 dialogTitleTextView.setText("Изменить данные");
                 nameChangeEditText.setHint("Введите новое значение");
@@ -164,8 +151,7 @@ public class ProfileChangeFragment extends Fragment {
                 String fieldToUpdate;
                 if (nameSurnameEditTextToUpdate.getId() == R.id.nameEditText) {
                     fieldToUpdate = "name";
-                } else if (nameSurnameEditTextToUpdate.getId() == R.id.famEditText) {
-                    fieldToUpdate = "surname";
+
                 } else {
                     Log.w("Dialog", "Не удалось определить поле для обновления.");
                     return;
@@ -202,7 +188,6 @@ public class ProfileChangeFragment extends Fragment {
             updates.put(fieldName, newValue);
 
             userRef.set(updates, SetOptions.merge()).addOnSuccessListener(aVoid -> {
-                Log.d(TAG, "Поле " + fieldName + " успешно обновлено/создано.");
                 Toast.makeText(requireContext(), fieldName + " успешно обновлено!", Toast.LENGTH_SHORT).show();
                 updateUserProfileUI();
             }).addOnFailureListener(e -> {
@@ -220,7 +205,6 @@ public class ProfileChangeFragment extends Fragment {
      */
     private void updateUserProfileUI() {
         FirebaseUser currentUser = auth.getCurrentUser();
-        Log.d(TAG, "updateUserProfileUI: Current FirebaseUser is " + (currentUser != null ? currentUser.getEmail() : "null (user not logged in)"));
 
         if (currentUser != null) {
             String userEmail = currentUser.getEmail();
@@ -239,9 +223,7 @@ public class ProfileChangeFragment extends Fragment {
                 public void onSuccess(DocumentSnapshot documentSnapshot) {
                     if (documentSnapshot.exists()) {
                         String name = documentSnapshot.getString("name");
-                        String surname = documentSnapshot.getString("surname");
                         if (nameEditText != null) nameEditText.setText(name);
-                        if (famEditText != null) famEditText.setText(surname);
                     } else {
                         Log.d(TAG, "Документ не найден");
                         Toast.makeText(getContext(), "Документ не найден", Toast.LENGTH_SHORT).show();
@@ -254,7 +236,6 @@ public class ProfileChangeFragment extends Fragment {
                     Toast.makeText(getContext(), "Ошибка загрузки данных: " + e.getMessage(), Toast.LENGTH_SHORT).show();
 
                     if (nameEditText != null) nameEditText.setText("Ошибка загрузки");
-                    if (famEditText != null) famEditText.setText("Ошибка загрузки");
                 }
             });
 
@@ -262,7 +243,6 @@ public class ProfileChangeFragment extends Fragment {
             if (emailEditText != null) emailEditText.setText("Не авторизован");
             if (regDataEditText != null) regDataEditText.setText("Не авторизован");
             if (nameEditText != null) nameEditText.setText("Не авторизован");
-            if (famEditText != null) famEditText.setText("Не авторизован");
         }
     }
 
@@ -298,7 +278,6 @@ public class ProfileChangeFragment extends Fragment {
         // Устанавливаем ссылки на null, чтобы избежать утечек памяти
         emailEditText = null;
         nameEditText = null;
-        famEditText = null;
         regDataEditText = null;
         btnSave = null;
         btnForAutentification = null;

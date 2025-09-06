@@ -39,11 +39,9 @@ public class RegistrationFragment extends Fragment {
     private static final String TAG = "RegistrationFragment";
 
     private MaterialButton textViewForLogin;
-    private TextInputEditText usernameEditText, emailEditText, surnameEditText, passwordEditText;
-
+    private TextInputEditText usernameEditText, emailEditText, passwordEditText;
+    private TextInputLayout usernameInputLayout, emailInputLayout, passwordInputLayout;
     private MaterialButton regButton;
-
-    private TextInputLayout usernameInputLayout, emailInputLayout, surnameInputLayout, passwordInputLayout;
 
     private boolean isUsernameValid = false;
     private boolean isEmailValid = false;
@@ -97,8 +95,6 @@ public class RegistrationFragment extends Fragment {
         textViewForLogin = view.findViewById(R.id.textViewForLogin);
         usernameInputLayout = view.findViewById(R.id.usernameInputLayout);
         usernameEditText = view.findViewById(R.id.username_edit_text);
-        surnameInputLayout = view.findViewById(R.id.surnameInputLayout);
-        surnameEditText = view.findViewById(R.id.surname_edit_text);
         emailInputLayout = view.findViewById(R.id.emailInputLayout);
         emailEditText = view.findViewById(R.id.email_edit_text);
         passwordInputLayout = view.findViewById(R.id.passwordInputLayout);
@@ -111,7 +107,6 @@ public class RegistrationFragment extends Fragment {
 
         regButton.setOnClickListener(v -> {
             validateUserName(usernameEditText.getText().toString());
-            validateSurname(surnameEditText.getText().toString());
             validateEmail(emailEditText.getText().toString());
             validatePassword(passwordEditText.getText().toString());
 
@@ -119,9 +114,8 @@ public class RegistrationFragment extends Fragment {
                 String email = emailEditText.getText().toString();
                 String password = passwordEditText.getText().toString();
                 String username = usernameEditText.getText().toString();
-                String surname = surnameEditText.getText().toString();
 
-                createUser(email, password, username, surname);
+                createUser(email, password, username);
             } else {
                 Toast.makeText(getContext(), "Пожалуйста, исправьте ошибки ввода", Toast.LENGTH_SHORT).show();
             }
@@ -158,22 +152,6 @@ public class RegistrationFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable editable) {
                 validateUserName(editable.toString());
-                updateRegistrationButtonState();
-            }
-        });
-
-        surnameEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                validateSurname(editable.toString());
                 updateRegistrationButtonState();
             }
         });
@@ -229,23 +207,6 @@ public class RegistrationFragment extends Fragment {
         }
     }
 
-    /**
-     * Проверка ввода пользователя (Фамилия)
-     *
-     * @param surname
-     */
-    private void validateSurname(String surname) {
-        if (surname.trim().isEmpty()) {
-            isSurnameValid = false;
-            surnameInputLayout.setError("Фамилия не может быть пустой");
-        } else if (surname.length() < 2) {
-            isSurnameValid = false;
-            surnameInputLayout.setError("Фамилия пользователя должна быть больше 2х букв");
-        } else {
-            surnameInputLayout.setError(null); // Очищаем ошибку
-            isSurnameValid = true;
-        }
-    }
 
     /**
      * Проверка ввода пользователя (Email)
@@ -296,9 +257,8 @@ public class RegistrationFragment extends Fragment {
      * @param email
      * @param password
      * @param username
-     * @param surname
      */
-    private void createUser(String email, String password, String username, String surname) {
+    private void createUser(String email, String password, String username) {
         auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(ContextCompat.getMainExecutor(requireContext()), new OnCompleteListener<AuthResult>() {
                     @Override
@@ -307,7 +267,7 @@ public class RegistrationFragment extends Fragment {
                             Log.d(TAG, "createUserWithEmail:success");
                             if (RegSuccessListener != null)
                                 RegSuccessListener.onRegSuccess();
-                            saveToFirebase(email, username, surname);
+                            saveToFirebase(email, username);
                         } else {
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
                             Toast.makeText(getContext(), "Ошибка при регистрации: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show(); // Добавлено сообщение об ошибке
@@ -323,13 +283,11 @@ public class RegistrationFragment extends Fragment {
      *
      * @param email
      * @param name
-     * @param surname
      */
-    private void saveToFirebase(String email, String name, String surname) {
+    private void saveToFirebase(String email, String name) {
         DocumentReference userRef = fb.collection("users").document(email);
         Map<String, String> userData = new HashMap<>();
         userData.put("name", name);
-        userData.put("surname", surname);
         userRef.set(userData).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
@@ -358,8 +316,6 @@ public class RegistrationFragment extends Fragment {
         // Очищаем ссылки на TextInputLayout и TextInputEditText
         usernameInputLayout = null;
         usernameEditText = null;
-        surnameInputLayout = null;
-        surnameEditText = null;
         emailInputLayout = null;
         emailEditText = null;
         passwordInputLayout = null;

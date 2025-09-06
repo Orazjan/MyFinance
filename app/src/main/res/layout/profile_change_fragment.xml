@@ -30,24 +30,6 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Поле ввода для Фамилии -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/famInputLayout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:hint="Фамилия">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/famEditText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textPersonName"
-                android:textColor="?android:attr/textColorPrimary" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
         <!-- Поле для Почты (нередактируемое, для отображения) -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/emailInputLayout"

@@ -18,21 +18,21 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:orientation="vertical"
             android:padding="24dp">
 
             <!-- Заголовок страницы регистрации -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        android:text="Регистрация"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="24sp"
-        android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:text="Регистрация"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="24sp"
+                android:textStyle="bold" />
 
             <!-- Поле ввода для Имени -->
             <com.google.android.material.textfield.TextInputLayout
@@ -51,31 +51,13 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Поле ввода для Фамилии -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/surnameInputLayout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-                android:hint="Фамилия">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/surname_edit_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textCapSentences"
-                    android:textColor="?android:attr/textColorPrimary" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
             <!-- Поле ввода для Email -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/emailInputLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:hint="Email">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -91,10 +73,10 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/passwordInputLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:hint="Пароль"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="Пароль"
                 app:endIconMode="password_toggle">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -108,27 +90,27 @@
 
             <!-- Кнопка "Уже есть аккаунт? Нажмите для входа" -->
             <com.google.android.material.button.MaterialButton
-        android:id="@+id/textViewForLogin"
+                android:id="@+id/textViewForLogin"
                 style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="Уже есть аккаунт? Нажмите для входа"
                 android:textColor="?attr/colorPrimary" />
 
             <!-- Кнопка "Зарегистрироваться" -->
             <com.google.android.material.button.MaterialButton
-        android:id="@+id/reg_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+                android:id="@+id/reg_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:text="Зарегистрироваться"
                 android:textColor="?attr/colorOnPrimary"
                 app:backgroundTint="?attr/colorPrimary"
                 app:cornerRadius="8dp"
                 app:elevation="2dp" />
 
-</LinearLayout>
+        </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
