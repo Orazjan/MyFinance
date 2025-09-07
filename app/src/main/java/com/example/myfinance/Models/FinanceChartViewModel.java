@@ -121,6 +121,26 @@ public class FinanceChartViewModel extends AndroidViewModel {
         );
     }
 
+    // --- Новые методы для получения полных списков ---
+
+    /**
+     * Возвращает полный список доходов (без фильтра по месяцу).
+     */
+    public LiveData<List<Finances>> getAllIncomes() {
+        return Transformations.map(allFinances, finances ->
+                filterFinances(finances, "Все", "Доход")
+        );
+    }
+
+    /**
+     * Возвращает полный список расходов (без фильтра по месяцу).
+     */
+    public LiveData<List<Finances>> getAllExpenses() {
+        return Transformations.map(allFinances, finances ->
+                filterFinances(finances, "Все", "Расход")
+        );
+    }
+
     /**
      * Вспомогательный метод для фильтрации финансовых операций.
      */

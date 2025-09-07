@@ -41,7 +41,7 @@ MyFinance — это современное и интуитивно понятн
 
 1) Клонируйте репозиторий:
 
-  git clone [https://github.com/Orazjan/MyFinance](https://github.com/Orazjan/MyFinance)
+    git clone [https://github.com/Orazjan/MyFinance](https://github.com/Orazjan/MyFinance)
 
 2) Откройте проект в Android Studio.
 
@@ -54,6 +54,6 @@ MyFinance — это современное и интуитивно понятн
 Контакты
 Если у вас есть вопросы или предложения по проекту, свяжитесь со мной:
 
-GitHub: [https://github.com/Orazjan]
+GitHub: [https://github.com/Orazjan](Orazjan)
 
 Email: [orazjanov11@gmail.com]

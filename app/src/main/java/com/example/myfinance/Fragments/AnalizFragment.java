@@ -1,6 +1,5 @@
 package com.example.myfinance.Fragments;
 
-import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 
 import android.graphics.Color;
@@ -12,6 +11,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,6 +22,7 @@ import com.example.myfinance.Models.FinanceChartViewModel;
 import com.example.myfinance.Prevalent.Months;
 import com.example.myfinance.R;
 import com.example.myfinance.data.DateSum;
+import com.example.myfinance.data.Finances;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.Entry;
@@ -31,12 +32,16 @@ import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.PercentFormatter;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class AnalizFragment extends Fragment {
+public class AnalizFragment extends Fragment implements OnChartValueSelectedListener {
 
     private Spinner spinnerForMonth;
     private PieChart pieChart;
@@ -56,6 +61,10 @@ public class AnalizFragment extends Fragment {
     // Новые переменные для хранения сумм доходов и расходов
     private Double totalIncomesSum = 0.0;
     private Double totalExpensesSum = 0.0;
+
+    // Полные списки для фильтрации по категории
+    private List<Finances> allIncomes;
+    private List<Finances> allExpenses;
 
     @Nullable
     @Override
@@ -97,12 +106,12 @@ public class AnalizFragment extends Fragment {
         // Настройка Spinner для выбора месяца
         setupMonthSpinner();
 
+        // Устанавливаем слушатель кликов на PieChart
+        pieChart.setOnChartValueSelectedListener(this);
+
         return rootView;
     }
 
-    /**
-     * Вызывается при включении фрагмента.
-     */
     @Override
     public void onResume() {
         super.onResume();
@@ -192,6 +201,15 @@ public class AnalizFragment extends Fragment {
             this.totalIncomesSum = totalSum != null ? totalSum : 0.0;
             updateAnalysis(variantForDisplay.getText().toString());
         });
+
+        // Наблюдатели для получения полных списков транзакций
+        viewModel.getAllIncomes().observe(getViewLifecycleOwner(), incomes -> {
+            this.allIncomes = incomes;
+        });
+
+        viewModel.getAllExpenses().observe(getViewLifecycleOwner(), expenses -> {
+            this.allExpenses = expenses;
+        });
     }
 
     /**
@@ -207,7 +225,9 @@ public class AnalizFragment extends Fragment {
             case "Общее":
                 // Передаем общие суммы доходов и расходов для круговой диаграммы
                 setupPieChartForGeneral(totalIncomesSum, totalExpensesSum);
-                lineChart.setVisibility(INVISIBLE);
+                // Показываем линейный график для общего анализа
+                lineChart.setVisibility(VISIBLE);
+                setupLineChartForGeneralComparison(incomesLineData, expensesLineData);
                 break;
             case "Доходы":
                 lineChart.setVisibility(VISIBLE);
@@ -291,6 +311,7 @@ public class AnalizFragment extends Fragment {
     }
 
     /**
+     *
      * @param entries
      */
     private void setupPieChartForExpenses(List<PieEntry> entries) {
@@ -316,13 +337,39 @@ public class AnalizFragment extends Fragment {
     }
 
     // --- Методы для настройки LineChart ---
-
     /**
-     * Создает данные для LineChart.Если вдруг нужно будет показывать линейный график в разделе общее
-     * @param entriesIncome
-     * @param entriesExpense
-     * @return
+     * Настраивает линейный график для общего сравнения доходов и расходов.
+     * @param incomesList Список данных для доходов по датам.
+     * @param expensesList Список данных для расходов по датам.
      */
+    private void setupLineChartForGeneralComparison(List<DateSum> incomesList, List<DateSum> expensesList) {
+        if ((incomesList == null || incomesList.isEmpty()) && (expensesList == null || expensesList.isEmpty())) {
+            lineChart.clear();
+            lineChart.setNoDataText("Нет данных для сравнения");
+            lineChart.invalidate();
+            return;
+        }
+
+        ArrayList<Entry> entriesIncome = new ArrayList<>();
+        if (incomesList != null) {
+            for (int i = 0; i < incomesList.size(); i++) {
+                entriesIncome.add(new Entry(i, (float) incomesList.get(i).getTotal()));
+            }
+        }
+
+        ArrayList<Entry> entriesExpense = new ArrayList<>();
+        if (expensesList != null) {
+            for (int i = 0; i < expensesList.size(); i++) {
+                entriesExpense.add(new Entry(i, (float) expensesList.get(i).getTotal()));
+            }
+        }
+
+        LineData data = getLineData(entriesIncome, entriesExpense);
+        lineChart.setData(data);
+        lineChart.getDescription().setText("Сравнение доходов и расходов");
+        lineChart.getDescription().setTextSize(12f);
+    }
+
     @NonNull
     private static LineData getLineData(ArrayList<Entry> entriesIncome, ArrayList<Entry> entriesExpense) {
         LineDataSet dataSetIncome = new LineDataSet(entriesIncome, "Доходы");
@@ -341,9 +388,6 @@ public class AnalizFragment extends Fragment {
         return data;
     }
 
-    /**
-     * @param dateSums
-     */
     private void setupLineChartForIncomes(List<DateSum> dateSums) {
         // ЕСЛИ НЕТ ДАННЫХ, ВЫВОДИМ СООБЩЕНИЕ
         if (dateSums == null || dateSums.isEmpty()) {
@@ -366,9 +410,6 @@ public class AnalizFragment extends Fragment {
         lineChart.getDescription().setTextSize(12f);
     }
 
-    /**
-     * @param dateSums
-     */
     private void setupLineChartForExpenses(List<DateSum> dateSums) {
         // ЕСЛИ НЕТ ДАННЫХ, ВЫВОДИМ СООБЩЕНИЕ
         if (dateSums == null || dateSums.isEmpty()) {
@@ -389,5 +430,39 @@ public class AnalizFragment extends Fragment {
         lineChart.setData(data);
         lineChart.getDescription().setText("Динамика расходов");
         lineChart.getDescription().setTextSize(12f);
+    }
+
+    // --- Методы OnChartValueSelectedListener ---
+    @Override
+    public void onValueSelected(Entry e, Highlight h) {
+        if (e instanceof PieEntry) {
+            PieEntry selectedEntry = (PieEntry) e;
+            String selectedCategory = selectedEntry.getLabel();
+
+            // Определяем, какой тип транзакций был выбран
+            String currentVariant = variantForDisplay.getText().toString();
+            List<Finances> transactions = new ArrayList<>();
+
+            if ("Доходы".equals(currentVariant)) {
+                transactions = allIncomes.stream().filter(f -> f.getFinanceResult() != null && f.getFinanceResult().equals(selectedCategory)).collect(Collectors.toList());
+            } else if ("Расходы".equals(currentVariant)) {
+                transactions = allExpenses.stream().filter(f -> f.getFinanceResult() != null && f.getFinanceResult().equals(selectedCategory)).collect(Collectors.toList());
+            } else {
+                Toast.makeText(getContext(), "Выберите 'Доходы' или 'Расходы' для просмотра деталей", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Создаем и отображаем Bottom Sheet
+            TransactionDetailsBottomSheetFragment bottomSheetFragment = new TransactionDetailsBottomSheetFragment();
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("transactions", (Serializable) new ArrayList<>(transactions));
+            bottomSheetFragment.setArguments(bundle);
+            bottomSheetFragment.show(getParentFragmentManager(), bottomSheetFragment.getTag());
+        }
+    }
+
+    @Override
+    public void onNothingSelected() {
+        // Ничего не делаем, если ничего не выбрано
     }
 }
