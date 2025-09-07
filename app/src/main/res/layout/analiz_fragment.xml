@@ -37,6 +37,13 @@
             android:paddingEnd="16dp"
             tools:text="Общее" />
 
+        <Spinner
+            android:id="@+id/spinnerForMonth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="10sp" />
+
+
         <!-- Круговая диаграмма -->
         <com.github.mikephil.charting.charts.PieChart
             android:id="@+id/pieChart"

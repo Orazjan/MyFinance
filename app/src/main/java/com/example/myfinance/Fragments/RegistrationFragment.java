@@ -45,7 +45,6 @@ public class RegistrationFragment extends Fragment {
 
     private boolean isUsernameValid = false;
     private boolean isEmailValid = false;
-    private boolean isSurnameValid = false;
     private boolean isPasswordValid = false;
 
     private FirebaseAuth auth;
@@ -110,7 +109,7 @@ public class RegistrationFragment extends Fragment {
             validateEmail(emailEditText.getText().toString());
             validatePassword(passwordEditText.getText().toString());
 
-            if (isEmailValid && isPasswordValid && isUsernameValid && isSurnameValid) {
+            if (isEmailValid && isPasswordValid && isUsernameValid) {
                 String email = emailEditText.getText().toString();
                 String password = passwordEditText.getText().toString();
                 String username = usernameEditText.getText().toString();
@@ -249,7 +248,7 @@ public class RegistrationFragment extends Fragment {
      * Обновление состояния кнопки регистрации (активна, если все поля валидны)
      */
     private void updateRegistrationButtonState() {
-        regButton.setEnabled(isEmailValid && isPasswordValid && isUsernameValid && isSurnameValid);
+        regButton.setEnabled(isEmailValid && isPasswordValid && isUsernameValid);
     }
 
     /**

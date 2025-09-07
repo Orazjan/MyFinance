@@ -8,8 +8,10 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Spinner;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,6 +19,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.myfinance.Models.FinanceChartViewModel;
+import com.example.myfinance.Prevalent.Months;
 import com.example.myfinance.R;
 import com.example.myfinance.data.DateSum;
 import com.github.mikephil.charting.charts.LineChart;
@@ -35,6 +38,7 @@ import java.util.List;
 
 public class AnalizFragment extends Fragment {
 
+    private Spinner spinnerForMonth;
     private PieChart pieChart;
     private LineChart lineChart;
     private AutoCompleteTextView variantForDisplay;
@@ -62,6 +66,8 @@ public class AnalizFragment extends Fragment {
         pieChart = rootView.findViewById(R.id.pieChart);
         lineChart = rootView.findViewById(R.id.lineChart);
 
+        spinnerForMonth = rootView.findViewById(R.id.spinnerForMonth);
+
         // Инициализация выпадающего списка
         variantForDisplay = rootView.findViewById(R.id.variant_for_display);
 
@@ -88,9 +94,66 @@ public class AnalizFragment extends Fragment {
             updateAnalysis(selectedVariant);
         });
 
+        // Настройка Spinner для выбора месяца
+        setupMonthSpinner();
+
         return rootView;
     }
 
+    /**
+     * Вызывается при включении фрагмента.
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+        int selectedPosition = spinnerForMonth.getSelectedItemPosition();
+        if (selectedPosition == 0) {
+            viewModel.showAllData();
+        } else {
+            viewModel.filterByMonth(Months.getMonthEn(selectedPosition));
+        }
+    }
+
+    /**
+     * Настраивает Spinner для выбора месяца.
+     * Этот метод заменяет `uploadAndShowMonth` и `updateFinancesListForMonth`,
+     * поскольку они содержали некорректную логику для этого фрагмента.
+     */
+    private void setupMonthSpinner() {
+        String[] items = Months.getMonthsRu();
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_item,
+                items
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerForMonth.setAdapter(adapter);
+
+        // Устанавливаем текущий месяц в качестве значения по умолчанию
+        spinnerForMonth.setSelection(0);
+
+        spinnerForMonth.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                // Если выбрана позиция 0 ("За всё время")
+                if (position == 0) {
+                    viewModel.showAllData();
+                } else {
+                    // Фильтруем по выбранному месяцу.
+                    viewModel.filterByMonth(Months.getMonthEn(position));
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Ничего не делаем
+            }
+        });
+    }
+
+    /**
+     * Настраивает наблюдателей (Observers) для LiveData.
+     */
     private void setupObservers() {
         // Наблюдатель для данных кругового графика расходов
         viewModel.getPieChartDataForExpenses().observe(getViewLifecycleOwner(), pieEntries -> {
@@ -144,8 +207,6 @@ public class AnalizFragment extends Fragment {
             case "Общее":
                 // Передаем общие суммы доходов и расходов для круговой диаграммы
                 setupPieChartForGeneral(totalIncomesSum, totalExpensesSum);
-                // Используем отдельные списки данных для сравнения на линейном графике
-//                setupLineChartForGeneralComparison(incomesLineData, expensesLineData);
                 lineChart.setVisibility(INVISIBLE);
                 break;
             case "Доходы":
@@ -181,8 +242,13 @@ public class AnalizFragment extends Fragment {
             entries.add(new PieEntry(totalExpenses.floatValue(), "Расходы"));
         }
 
-        // Если данных нет, ничего не строим
-        if (entries.isEmpty()) return;
+        // ЕСЛИ НЕТ ДАННЫХ, ВЫВОДИМ СООБЩЕНИЕ
+        if (entries.isEmpty()) {
+            pieChart.clear();
+            pieChart.setNoDataText("Нет данных для отображения");
+            pieChart.invalidate();
+            return;
+        }
 
         PieDataSet dataSet = new PieDataSet(entries, "Общий анализ");
         dataSet.setColors(new int[]{Color.GREEN, Color.RED});
@@ -198,8 +264,18 @@ public class AnalizFragment extends Fragment {
         pieChart.setCenterTextSize(16f);
     }
 
+    /**
+     * @param entries
+     */
     private void setupPieChartForIncomes(List<PieEntry> entries) {
-        if (entries == null) return;
+        // ЕСЛИ НЕТ ДАННЫХ, ВЫВОДИМ СООБЩЕНИЕ
+        if (entries == null || entries.isEmpty()) {
+            pieChart.clear();
+            pieChart.setNoDataText("Нет данных по доходам");
+            pieChart.invalidate();
+            return;
+        }
+
         PieDataSet dataSet = new PieDataSet(entries, "Доходы по категориям");
         dataSet.setColors(ColorTemplate.COLORFUL_COLORS);
         dataSet.setValueTextSize(12f);
@@ -214,8 +290,17 @@ public class AnalizFragment extends Fragment {
         pieChart.setCenterTextSize(16f);
     }
 
+    /**
+     * @param entries
+     */
     private void setupPieChartForExpenses(List<PieEntry> entries) {
-        if (entries == null) return;
+        // ЕСЛИ НЕТ ДАННЫХ, ВЫВОДИМ СООБЩЕНИЕ
+        if (entries == null || entries.isEmpty()) {
+            pieChart.clear();
+            pieChart.setNoDataText("Нет данных по расходам");
+            pieChart.invalidate();
+            return;
+        }
         PieDataSet dataSet = new PieDataSet(entries, "Расходы по категориям");
         dataSet.setColors(ColorTemplate.VORDIPLOM_COLORS);
         dataSet.setValueTextSize(12f);
@@ -233,28 +318,13 @@ public class AnalizFragment extends Fragment {
     // --- Методы для настройки LineChart ---
 
     /**
-     * Настраивает линейный график для сравнения доходов и расходов.
-     * @param incomesList Список данных для доходов по датам.
-     * @param expensesList Список данных для расходов по датам.
+     * Создает данные для LineChart.Если вдруг нужно будет показывать линейный график в разделе общее
+     * @param entriesIncome
+     * @param entriesExpense
+     * @return
      */
-    private void setupLineChartForGeneralComparison(List<DateSum> incomesList, List<DateSum> expensesList) {
-        // Если данные отсутствуют, ничего не строим
-        if (incomesList == null && expensesList == null) return;
-
-        ArrayList<Entry> entriesIncome = new ArrayList<>();
-        if (incomesList != null) {
-            for (int i = 0; i < incomesList.size(); i++) {
-                entriesIncome.add(new Entry(i, (float) incomesList.get(i).getTotal()));
-            }
-        }
-
-        ArrayList<Entry> entriesExpense = new ArrayList<>();
-        if (expensesList != null) {
-            for (int i = 0; i < expensesList.size(); i++) {
-                entriesExpense.add(new Entry(i, (float) expensesList.get(i).getTotal()));
-            }
-        }
-
+    @NonNull
+    private static LineData getLineData(ArrayList<Entry> entriesIncome, ArrayList<Entry> entriesExpense) {
         LineDataSet dataSetIncome = new LineDataSet(entriesIncome, "Доходы");
         dataSetIncome.setColor(Color.GREEN);
         dataSetIncome.setCircleColor(Color.GREEN);
@@ -268,13 +338,21 @@ public class AnalizFragment extends Fragment {
         dataSetExpense.setDrawValues(false);
 
         LineData data = new LineData(dataSetIncome, dataSetExpense);
-        lineChart.setData(data);
-        lineChart.getDescription().setText("Сравнение доходов и расходов");
-        lineChart.getDescription().setTextSize(12f);
+        return data;
     }
 
+    /**
+     * @param dateSums
+     */
     private void setupLineChartForIncomes(List<DateSum> dateSums) {
-        if (dateSums == null) return;
+        // ЕСЛИ НЕТ ДАННЫХ, ВЫВОДИМ СООБЩЕНИЕ
+        if (dateSums == null || dateSums.isEmpty()) {
+            lineChart.clear();
+            lineChart.setNoDataText("Нет данных по доходам");
+            lineChart.invalidate();
+            return;
+        }
+
         ArrayList<Entry> entries = new ArrayList<>();
         for (int i = 0; i < dateSums.size(); i++) {
             entries.add(new Entry(i, (float) dateSums.get(i).getTotal()));
@@ -288,8 +366,18 @@ public class AnalizFragment extends Fragment {
         lineChart.getDescription().setTextSize(12f);
     }
 
+    /**
+     * @param dateSums
+     */
     private void setupLineChartForExpenses(List<DateSum> dateSums) {
-        if (dateSums == null) return;
+        // ЕСЛИ НЕТ ДАННЫХ, ВЫВОДИМ СООБЩЕНИЕ
+        if (dateSums == null || dateSums.isEmpty()) {
+            lineChart.clear();
+            lineChart.setNoDataText("Нет данных по расходам");
+            lineChart.invalidate();
+            return;
+        }
+
         ArrayList<Entry> entries = new ArrayList<>();
         for (int i = 0; i < dateSums.size(); i++) {
             entries.add(new Entry(i, (float) dateSums.get(i).getTotal()));

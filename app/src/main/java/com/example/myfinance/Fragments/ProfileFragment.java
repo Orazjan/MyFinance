@@ -31,7 +31,7 @@ public class ProfileFragment extends Fragment {
     private int clickCount = 0;
     private static final long RESET_CLICK_COUNT_DELAY = 1000;
     private FirebaseUser cuurentUser;
-    private String AppVersion = "Ver: 0.9.2";
+    private String AppVersion = "Ver: 0.9.3";
     private FinanceChartViewModel financeChartViewModel;
 
     @Override

@@ -5,31 +5,42 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import com.google.firebase.firestore.Exclude;
+import com.google.firebase.firestore.PropertyName;
+
 @Entity(tableName = "Finances")
 public class Finances {
     @PrimaryKey(autoGenerate = true)
     private int id;
 
+    // Временный ID для Firestore, пока не будет сгенерирован настоящий
+    private String firestoreId;
+
+    // Аннотация @PropertyName указывает, что это поле соответствует полю 'category' в Firestore.
+    @PropertyName("category")
     @ColumnInfo(name = "financeResult")
     private String financeResult;
 
+    // Аннотация @PropertyName указывает, что это поле соответствует полю 'sum' в Firestore.
+    @PropertyName("sum")
     @ColumnInfo(name = "summa")
     private double summa;
 
     @ColumnInfo(name = "comments")
     private String comments;
 
+    @PropertyName("type")
     @ColumnInfo(name = "operationType")
     private String operationType;
 
     @ColumnInfo(name = "date")
     private String date;
 
+    @Exclude
     @ColumnInfo(name = "isSynced")
     private boolean isSynced;
 
-    private String firestoreId;
-
+    // Пустой конструктор, обязателен для корректной десериализации из Firestore.
     public Finances() {
         this.isSynced = false;
         this.firestoreId = null;
@@ -44,18 +55,23 @@ public class Finances {
         this.isSynced = false;
     }
 
+    // Геттеры и сеттеры
+    @PropertyName("type")
     public String getOperationType() {
         return operationType;
     }
 
+    @PropertyName("type")
     public void setOperationType(String operationType) {
         this.operationType = operationType;
     }
 
+    @PropertyName("category")
     public String getFinanceResult() {
         return financeResult;
     }
 
+    @PropertyName("category")
     public void setFinanceResult(String financeResult) {
         this.financeResult = financeResult;
     }
@@ -68,10 +84,12 @@ public class Finances {
         this.id = id;
     }
 
+    @PropertyName("sum")
     public double getSumma() {
         return summa;
     }
 
+    @PropertyName("sum")
     public void setSumma(double summa) {
         this.summa = summa;
     }
@@ -100,6 +118,7 @@ public class Finances {
         return firestoreId;
     }
 
+    @Exclude
     public boolean isSynced() {
         return isSynced;
     }
@@ -114,7 +133,7 @@ public class Finances {
         return "Finances{" +
                 "comments='" + comments + '\'' +
                 ", id=" + id +
-                ", financeResult='" + financeResult + '\'' + // Используем новое имя поля
+                ", financeResult='" + financeResult + '\'' +
                 ", summa=" + summa +
                 ", operationType='" + operationType + '\'' +
                 ", date='" + date + '\'' +
