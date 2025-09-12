@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.myfinance.MainActivity;
 import com.example.myfinance.Models.FinanceChartViewModel;
+import com.example.myfinance.Prevalent.TutorialController;
 import com.example.myfinance.R;
 import com.example.myfinance.data.FinanceRepository;
 import com.google.firebase.auth.FirebaseAuth;
@@ -61,21 +62,66 @@ public class ProfileFragment extends Fragment {
 
         if (getActivity() instanceof MainActivity) {
             MainActivity mainActivity = (MainActivity) getActivity();
+            TutorialController tutorialController = mainActivity.getTutorialController();
+
+            if (tutorialController != null) {
+                // Шаг 1: кнопка "Изменить профиль"
+                tutorialController.addStep(
+                        btnProfileChange,
+                        "Нажмите, чтобы изменить данные своего профиля.",
+                        "Изменение профиля",
+                        null,
+                        false
+                );
+
+                // Шаг 2: кнопка "Настройки"
+                tutorialController.addStep(
+                        btnSettings,
+                        "Здесь вы можете изменить настройки приложения, например, тему.",
+                        "Настройки",
+                        null,
+                        false
+                );
+
+                // Шаг 3: кнопка "Шаблон"
+                tutorialController.addStep(
+                        btnPattern,
+                        "Управление шаблонами для быстрого добавления операций.",
+                        "Шаблоны",
+                        null,
+                        false
+                );
+
+                // Шаг 4: кнопка "Синхронизация"
+                tutorialController.addStep(
+                        btnSync,
+                        "Синхронизация данных с облаком.",
+                        "Синхронизация",
+                        null,
+                        false
+                );
+
+                // Шаг 5: кнопка "Выход"
+                tutorialController.addStep(
+                        btnEsc,
+                        "Кнопка для выхода из учетной записи.",
+                        "Выход",
+                        null,
+                        false
+                );
+            }
 
             if (btnProfileChange != null) {
                 btnProfileChange.setOnClickListener(v -> {
                     mainActivity.openSecondaryFragment(new ProfileChangeFragment(), "ProfileChange");
-
                 });
             }
 
             if (VERSIONOFAPP != null) {
                 VERSIONOFAPP.setOnClickListener(v -> {
                     clickCount++;
-
                     if (clickCount == 3) {
                         mainActivity.openSecondaryFragment(new VersionInfoFragment(), "VersionInfo");
-
                         clickCount = 0;
                     } else {
                         new android.os.Handler().postDelayed(() -> {
@@ -104,9 +150,7 @@ public class ProfileFragment extends Fragment {
         btnSync.setOnClickListener(v -> {
             Toast.makeText(getContext(), "Синхронизация", Toast.LENGTH_SHORT).show();
             financeChartViewModel = new ViewModelProvider(this).get(FinanceChartViewModel.class);
-
             if (financeChartViewModel != null) {
-                // Вызываем метод синхронизации из FinanceRepository
                 financeChartViewModel.syncDataFromFirestore(new FinanceRepository.SyncCallback() {
                     @Override
                     public void onSyncComplete(boolean success, String message) {

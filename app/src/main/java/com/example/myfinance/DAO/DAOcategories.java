@@ -50,10 +50,6 @@ public interface DAOcategories {
     @Query("SELECT SUM(sum) FROM categories_table WHERE categoryName = :categoryName")
     LiveData<Double> getTotalSumByCategory(String categoryName);
 
-    // Метод getSumForCategory удален, так как getTotalSumByCategory выполняет ту же функцию.
-    // @Query("SELECT SUM(sum) FROM categories_table WHERE categoryName = :categoryName")
-    // LiveData<Double> getSumForCategory(String categoryName); // УДАЛЕНО
-
     @Query("UPDATE categories_table SET sum = :newSum, isSynced = 0 WHERE categoryName = :name")
     void updateCategorySum(String name, double newSum);
 

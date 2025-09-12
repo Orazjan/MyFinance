@@ -18,7 +18,7 @@ import java.util.List;
 
 public class ShowFinancesAdapter extends BaseAdapter {
 
-    private static final String TAG = "FinancesAdapter"; // Тэг для логов
+    private static final String TAG = "FinancesAdapter";
     private List<ShowFinances> finances;
     private LayoutInflater inflater;
     private Context context; // Добавлен контекст для ContextCompat
@@ -33,27 +33,23 @@ public class ShowFinancesAdapter extends BaseAdapter {
     public void addItem(ShowFinances newItem) {
         finances.add(newItem);
         notifyDataSetChanged();
-        Log.d(TAG, "Item added: " + newItem.getName() + " - " + newItem.getSum() + ". Total items: " + finances.size());
     }
 
     public void addAllItems(List<ShowFinances> newItems) {
         finances.clear();
         finances.addAll(newItems);
         notifyDataSetChanged();
-        Log.d(TAG, "All items added. Total items: " + finances.size());
     }
 
     public void clearItems() {
         finances.clear();
         notifyDataSetChanged();
-        Log.d(TAG, "All items cleared.");
     }
 
     public void setItems(List<ShowFinances> newFinances) {
         this.finances.clear();
         this.finances.addAll(newFinances);
         notifyDataSetChanged();
-        Log.d(TAG, "Items set. Total items: " + finances.size());
     }
 
     @Override
@@ -84,20 +80,16 @@ public class ShowFinancesAdapter extends BaseAdapter {
             holder.textOperationType = convertView.findViewById(R.id.operation);
 
             convertView.setTag(holder);
-            Log.d(TAG, "Created new view for position: " + position);
         } else {
             holder = (ViewHolder) convertView.getTag();
-            Log.d(TAG, "Reusing view for position: " + position);
         }
 
         ShowFinances item = (ShowFinances) getItem(position);
 
-        Log.d(TAG, "Item at position " + position + ": ID=" + item.getId() + ", Sum=" + item.getSum() + ", Name=" + item.getName() + ", OperationType=" + item.getOperationType());
-
         if (holder.textViewId != null) {
             holder.textViewId.setText(String.valueOf(item.getId()));
         } else {
-            Log.e(TAG, "textViewId is null for position " + position);
+            Log.e(TAG, "textViewId == null " + position);
         }
 
         if (holder.textViewSum != null) {
@@ -113,13 +105,13 @@ public class ShowFinancesAdapter extends BaseAdapter {
                 holder.textViewSum.setTextColor(ContextCompat.getColor(context, R.color.text_dark_primary));
             }
         } else {
-            Log.e(TAG, "textViewSum is null for position " + position);
+            Log.e(TAG, "textViewSum == null " + position);
         }
 
         if (holder.textViewName != null) {
             holder.textViewName.setText(item.getName() != null ? item.getName() : "N/A");
         } else {
-            Log.e(TAG, "textViewName is null for position " + position);
+            Log.e(TAG, "textViewName == null " + position);
         }
         if (holder.textOperationType != null) {
             holder.textOperationType.setText(item.getOperationType() != null ? item.getOperationType() : "N/A");

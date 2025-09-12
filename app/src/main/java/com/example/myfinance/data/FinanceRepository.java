@@ -58,9 +58,6 @@ public class FinanceRepository {
                         Log.e(TAG, "Failed to push unsynced local data to Firestore: " + pushTask.getException().getMessage());
                     }
                 });
-
-            } else {
-                System.out.println("Auth state changed: User is logged out.");
             }
         });
     }
@@ -135,13 +132,9 @@ public class FinanceRepository {
         finances.setSynced(false);
         finances.setFirestoreId(null);
 
-        Log.d(TAG, "Insert (pre-Room): RoomID=" + finances.getId() + ", FirestoreID=" + finances.getFirestoreId() + ", isSynced=" + finances.isSynced());
-
         databaseWriteExeutor.execute(() -> {
             long roomId = daoFinances.insert(finances);
             finances.setId((int) roomId);
-
-            Log.d(TAG, "Insert (post-Room): RoomID=" + finances.getId() + ", FirestoreID=" + finances.getFirestoreId() + ", isSynced=" + finances.isSynced());
 
             attemptFirestoreSync(finances);
         });
@@ -154,11 +147,8 @@ public class FinanceRepository {
     public void update(Finances finances) {
         finances.setSynced(false);
 
-        Log.d(TAG, "Update (pre-Room): RoomID=" + finances.getId() + ", FirestoreID=" + finances.getFirestoreId() + ", isSynced=" + finances.isSynced());
-
         databaseWriteExeutor.execute(() -> {
             daoFinances.update(finances);
-            Log.d(TAG, "Update (post-Room): RoomID=" + finances.getId() + ", FirestoreID=" + finances.getFirestoreId() + ", isSynced=" + finances.isSynced());
             attemptFirestoreSync(finances);
         });
     }
@@ -195,7 +185,6 @@ public class FinanceRepository {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 document.getReference().delete();
                             }
-                            Log.d(TAG, "All documents deleted from Firestore.");
                         });
                     } else {
                         Log.d(TAG, "Error getting documents from Firestore: ", task.getException());
@@ -307,7 +296,6 @@ public class FinanceRepository {
                             });
                         })
                         .addOnFailureListener(e -> {
-                            System.err.println("Error updating finances to Firestore: " + e.getMessage());
                             Log.e(TAG, "Error updating finances to Firestore for Room ID: " + finances.getId(), e);
                         });
             } else {
@@ -321,7 +309,6 @@ public class FinanceRepository {
                             });
                         })
                         .addOnFailureListener(e -> {
-                            System.err.println("Error adding finances to Firestore: " + e.getMessage());
                             Log.e(TAG, "Error adding finances to Firestore for Room ID: " + finances.getId(), e);
                         });
             }
@@ -337,8 +324,6 @@ public class FinanceRepository {
     public Task<Void> syncUnsyncedDataToFirestore() {
         FirebaseUser user = auth.getCurrentUser();
         CollectionReference userFinancesRef = getUserFinancesCollection();
-
-        Log.d(TAG, "syncUnsyncedDataToFirestore called. Current Firebase User: " + (user != null ? user.getEmail() : "null"));
 
         if (user == null || userFinancesRef == null) {
             Log.d(TAG, "syncUnsyncedDataToFirestore SKIPPED. User not authenticated or Firestore ref null.");
@@ -422,13 +407,11 @@ public class FinanceRepository {
                             finance.setSynced(true);
                             daoFinances.insert(finance);
                         }
-                        Log.d(TAG, "Full sync from Firestore completed. " + queryDocumentSnapshots.size() + " documents loaded.");
                         if (callback != null)
                             callback.onSyncComplete(true, "Data synced successfully.");
                     });
                 })
                 .addOnFailureListener(e -> {
-                    System.err.println("Error syncing data from Firestore: " + e.getMessage());
                     Log.e(TAG, "Full sync from Firestore FAILED: " + e.getMessage(), e);
                     if (callback != null)
                         callback.onSyncComplete(false, "Error syncing data: " + e.getMessage());

@@ -97,7 +97,6 @@ public class AddingNewFinance extends Fragment {
      * Использует categoryViewModel (поле класса).
      */
     private void loadAndDisplay() {
-        Log.d(TAG, "loadAndDisplay: Called. Observing all categories from ViewModel.");
         categoryViewModel.getAllCategories().observe(getViewLifecycleOwner(), categories -> {
             List<String> categoryNames = new ArrayList<>();
             if (categories != null) {
@@ -114,24 +113,20 @@ public class AddingNewFinance extends Fragment {
             if (operationTypeAdapter == null) {
                 operationTypeAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, operationTypesList);
                 SpinnerForChooseActiveOrPassive.setAdapter(operationTypeAdapter);
-                Log.d(TAG, "loadAndDisplay: New operation type adapter set.");
             } else {
                 operationTypeAdapter.clear();
                 operationTypeAdapter.addAll(operationTypesList);
                 operationTypeAdapter.notifyDataSetChanged();
-                Log.d(TAG, "loadAndDisplay: Existing operation type adapter updated.");
             }
 
             // Инициализация адаптера для категорий
             if (categorySpinnerAdapter == null) {
                 categorySpinnerAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, categoryNames);
                 standart_variant.setAdapter(categorySpinnerAdapter);
-                Log.d(TAG, "loadAndDisplay: New category adapter set for spinner.");
             } else {
                 categorySpinnerAdapter.clear();
                 categorySpinnerAdapter.addAll(categoryNames);
                 categorySpinnerAdapter.notifyDataSetChanged();
-                Log.d(TAG, "loadAndDisplay: Existing category adapter updated.");
             }
 
             // Установка начального выбора для категории
@@ -139,15 +134,12 @@ public class AddingNewFinance extends Fragment {
                 if (selectedCategory == null || !categoryNames.contains(selectedCategory)) {
                     selectedCategory = categoryNames.get(0);
                     standart_variant.setText(selectedCategory, false); // Устанавливаем текст и не фильтруем
-                    Log.d(TAG, "loadAndDisplay: Initial selected category set to: " + selectedCategory);
                 } else {
                     standart_variant.setText(selectedCategory, false);
-                    Log.d(TAG, "loadAndDisplay: Retained selected category: " + selectedCategory);
                 }
             } else {
                 selectedCategory = null;
                 standart_variant.setText("", false); // Очищаем текст, если категорий нет
-                Log.d(TAG, "loadAndDisplay: Category list is empty. Selected category set to null.");
             }
 
             // Установка начального выбора для типа операции
@@ -155,15 +147,12 @@ public class AddingNewFinance extends Fragment {
                 if (selectedOperationType == null || !operationTypesList.contains(selectedOperationType)) {
                     selectedOperationType = operationTypesList.get(0); // По умолчанию "Доход"
                     SpinnerForChooseActiveOrPassive.setText(selectedOperationType, false);
-                    Log.d(TAG, "loadAndDisplay: Initial selected operation type set to: " + selectedOperationType);
                 } else {
                     SpinnerForChooseActiveOrPassive.setText(selectedOperationType, false);
-                    Log.d(TAG, "loadAndDisplay: Retained selected operation type: " + selectedOperationType);
                 }
             } else {
                 selectedOperationType = null;
                 SpinnerForChooseActiveOrPassive.setText("", false);
-                Log.d(TAG, "loadAndDisplay: Operation type list is empty. Selected operation type set to null.");
             }
 
             validateFieldsForButton();
@@ -271,14 +260,12 @@ public class AddingNewFinance extends Fragment {
             selectedCategory = (String) parent.getItemAtPosition(position);
             setToReasonAndSum(selectedCategory);
             validateFieldsForButton();
-            Log.d(TAG, "Category AutoCompleteTextView item selected: " + selectedCategory);
         });
 
         // Слушатель для AutoCompleteTextView типа операции
         SpinnerForChooseActiveOrPassive.setOnItemClickListener((parent, view, position, id) -> {
             selectedOperationType = (String) parent.getItemAtPosition(position);
             validateFieldsForButton();
-            Log.d(TAG, "Operation type AutoCompleteTextView item selected: " + selectedOperationType);
         });
     }
 
@@ -295,13 +282,6 @@ public class AddingNewFinance extends Fragment {
         boolean isOperationTypeSelected = selectedOperationType != null && !selectedOperationType.isEmpty(); // Проверка на пустую строку
 
         btnAdd.setEnabled(isSumValid && isReasonValid && isCategorySelected && isOperationTypeSelected);
-        Log.d(TAG, "validateFieldsForButton: isValid=" + btnAdd.isEnabled() +
-                ", isSumValid=" + isSumValid +
-                ", isReasonValid=" + isReasonValid +
-                ", isCategorySelected=" + isCategorySelected +
-                ", isOperationTypeSelected=" + isOperationTypeSelected +
-                ", current selectedCategory=" + selectedCategory +
-                ", selectedOperationType=" + selectedOperationType);
     }
 
     /**
@@ -317,7 +297,6 @@ public class AddingNewFinance extends Fragment {
 
         getParentFragmentManager().setFragmentResult("ValueSumAndType", result); // Используем ключ "ValueSumAndType"
         getParentFragmentManager().popBackStack();
-        Log.d(TAG, "popBackAndPassData: Data sent to MainFragment: Sum=" + sum + ", OperationType=" + operationType);
     }
 
     /**
@@ -332,7 +311,6 @@ public class AddingNewFinance extends Fragment {
         Finances newFinance = new Finances(reason, sum, operationType, comments, getCurrentDate());
         financeViewModel.insert(newFinance);
         Toast.makeText(requireContext(), "Данные добавлены!", Toast.LENGTH_SHORT).show();
-        Log.d(TAG, "addingToDb: New finance added: Reason=" + reason + ", Sum=" + sum + ", Type=" + operationType);
     }
 
     /**
@@ -372,15 +350,12 @@ public class AddingNewFinance extends Fragment {
                     if (operationTypeAdapter != null) {
                         // Устанавливаем текст AutoCompleteTextView, а не selection для Spinner
                         SpinnerForChooseActiveOrPassive.setText(selectedOperationType, false);
-                        Log.d(TAG, "setToReasonAndSum: Operation type set to: " + selectedOperationType);
                     } else {
                         Log.w(TAG, "setToReasonAndSum: Operation type adapter is null.");
                     }
-                    Log.d(TAG, "setToReasonAndSum: Reason, sum, and operation type set for category: " + categoryName + ", sum: " + category.getSum() + ", operationType: " + selectedOperationType);
                 } else {
                     sumEditText.setText("");
                     focusAndOpenKeyboard(sumEditText);
-                    Log.d(TAG, "setToReasonAndSum: Category not found for: " + categoryName + ". Clearing sum field.");
                 }
                 validateFieldsForButton();
             }).addOnFailureListener(e -> {
@@ -403,7 +378,6 @@ public class AddingNewFinance extends Fragment {
             }
 
             focusAndOpenKeyboard(reasonEditText);
-            Log.d(TAG, "setToReasonAndSum: categoryName is null. Clearing fields.");
             validateFieldsForButton();
         }
     }

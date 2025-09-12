@@ -34,13 +34,13 @@ import com.example.myfinance.MyApplication;
 import com.example.myfinance.Prevalent.AddSettingToDataStoreManager;
 import com.example.myfinance.Prevalent.DateFormatter;
 import com.example.myfinance.Prevalent.Months;
+import com.example.myfinance.Prevalent.TutorialController;
 import com.example.myfinance.R;
 import com.example.myfinance.data.AmountDatabase;
 import com.example.myfinance.data.AmountRepository;
 import com.example.myfinance.data.FinanceRepository;
 import com.example.myfinance.data.Finances;
 import com.example.myfinance.data.TotalAmount;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,7 +54,7 @@ public class MainFragment extends Fragment {
     private AddSettingToDataStoreManager appSettingsManager;
     private TextView sumTextView;
     private TextView valutaTextView, summaTextView, SecondvalutaTextView;
-    private FloatingActionButton btnAddNewCheck;
+    // Удаляем FloatingActionButton отсюда, так как он управляется из MainActivity
     private ListView mainCheck;
     private List<ShowFinances> financeList;
     private ShowFinancesAdapter financeAdapter;
@@ -99,7 +99,7 @@ public class MainFragment extends Fragment {
         sumTextView = view.findViewById(R.id.sum);
         valutaTextView = view.findViewById(R.id.valutaTextView);
         summaTextView = view.findViewById(R.id.summaTextView);
-        btnAddNewCheck = view.findViewById(R.id.btnAddNewCheck);
+        // btnAddNewCheck = view.findViewById(R.id.btnAddNewCheck); // Удаляем инициализацию кнопки
         mainCheck = view.findViewById(R.id.mainCheck);
         SecondvalutaTextView = view.findViewById(R.id.SecondvalutaTextView);
         spinnerForMonth = view.findViewById(R.id.spinnerForMonth);
@@ -147,6 +147,8 @@ public class MainFragment extends Fragment {
         uploadAndShowMonth();
         updateCurrencyDisplay();
 
+        // Удаляем OnClickListener отсюда, так как он управляется из MainActivity
+        /*
         btnAddNewCheck.setOnClickListener(v -> {
             if (getActivity() instanceof MainActivity) {
                 MainActivity mainActivity = (MainActivity) getActivity();
@@ -155,6 +157,7 @@ public class MainFragment extends Fragment {
                 Toast.makeText(getContext(), "Ошибка: Не удалось открыть окно добавления.", Toast.LENGTH_SHORT).show();
             }
         });
+        */
 
         setExitTransition(TransitionInflater.from(getContext()).inflateTransition(R.transition.change_bounds_transition));
 
@@ -181,7 +184,56 @@ public class MainFragment extends Fragment {
             showDialogForChangingData(clickedItem);
             return true;
         });
+
+        // Инициализируем шаги туториала после того, как все View были созданы.
+        initTutorialControllerSteps(view);
     }
+
+    /**
+     * Инициализирует и добавляет шаги туториала для этого фрагмента.
+     * Этот метод должен вызываться после того, как все View будут созданы.
+     *
+     * @param view Корневой View фрагмента.
+     */
+    private void initTutorialControllerSteps(@NonNull View view) {
+        if (getActivity() instanceof MainActivity) {
+            MainActivity mainActivity = (MainActivity) getActivity();
+            TutorialController tutorialController = mainActivity.getTutorialController();
+
+            // Проверяем, что контроллер туториала существует.
+            if (tutorialController == null) {
+                return;
+            }
+
+            // Шаг 2: Спиннер для выбора месяца
+            Spinner spinner = view.findViewById(R.id.spinnerForMonth);
+            if (spinner != null) {
+                tutorialController.addStep(
+                        spinner,
+                        "Используйте это меню, чтобы отфильтровать операции по месяцам. По умолчанию отображаются все операции.",
+                        "Фильтр по месяцам",
+                        null,
+                        false
+                );
+            }
+
+            // Шаг 3: Список операций
+            ListView listView = view.findViewById(R.id.mainCheck);
+            if (listView != null) {
+                tutorialController.addStep(
+                        listView,
+                        "В этом списке вы можете видеть все ваши финансовые операции. Нажмите и удерживайте, чтобы изменить или удалить запись.",
+                        "Список операций",
+                        null,
+                        false
+                );
+            }
+
+            // Шаг 4: Кнопка "Добавить"
+            // Удаляем этот шаг, так как кнопка управляется из MainActivity.
+        }
+    }
+
 
     /**
      * Создает сводный список категорий и их общих сумм на основе отфильтрованных финансов.

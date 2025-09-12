@@ -34,6 +34,13 @@
                 android:textSize="30sp"
                 android:textStyle="italic|bold" />
 
+            <ImageView
+                android:id="@+id/button_tutorial"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:src="@drawable/question_foreground" />
+
             <ProgressBar
                 android:id="@+id/progressBar"
                 android:layout_width="30sp"
@@ -72,6 +79,18 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/appBarLayout" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btnAddNewCheck"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="70sp"
+        android:src="@drawable/pen"
+        app:backgroundTint="@color/fab_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tint="@color/on_secondary_color" />
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tab_layout"

@@ -66,7 +66,7 @@ public class TransactionAdapter extends ArrayAdapter<Finances> {
 
                 // Проверяем, удалось ли распарсить дату
                 if (parsedDate != null) {
-                    SimpleDateFormat displayFormat = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
+                    SimpleDateFormat displayFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
                     String formattedDate = displayFormat.format(parsedDate);
                     transactionDate.setText(formattedDate);
                 } else {

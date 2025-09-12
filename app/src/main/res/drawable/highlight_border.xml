@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- Прозрачная заливка -->
+    <solid android:color="@android:color/transparent" />
+
+    <!-- Яркая обводка для подсветки -->
+    <stroke
+        android:width="3dp"
+        android:color="#FF4081"
+        android:dashWidth="10dp"
+        android:dashGap="5dp" />
+
+    <!-- Закругленные углы -->
+    <corners android:radius="8dp" />
+
+    <!-- Эффект свечения -->
+    <padding
+        android:bottom="4dp"
+        android:left="4dp"
+        android:right="4dp"
+        android:top="4dp" />
+
+</shape>

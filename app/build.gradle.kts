@@ -38,6 +38,8 @@ android {
 }
 
 dependencies {
+    implementation (libs.taptargetview)
+
     implementation(libs.transition)
 
     implementation(libs.room.runtime)

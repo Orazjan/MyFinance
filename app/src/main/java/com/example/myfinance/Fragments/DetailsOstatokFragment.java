@@ -102,7 +102,9 @@ public class DetailsOstatokFragment extends Fragment {
             // Фильтруем все операции, чтобы найти те, которые относятся к выбранной категории
             List<Finances> categoryFinances = new ArrayList<>();
             if (allFinances != null) {
-                categoryFinances = allFinances.stream().filter(finance -> finance.getFinanceResult().equalsIgnoreCase(clickedCategory.getCategoryName())).collect(Collectors.toList());
+                categoryFinances = allFinances.stream()
+                        .filter(finance -> finance.getFinanceResult() != null && finance.getFinanceResult().equalsIgnoreCase(clickedCategory.getCategoryName()))
+                        .collect(Collectors.toList());
             }
 
             // Создаем и отображаем Bottom Sheet
