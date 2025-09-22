@@ -20,7 +20,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.transition.TransitionInflater;
 
@@ -32,9 +31,9 @@ import com.example.myfinance.Models.FinanceViewModel;
 import com.example.myfinance.Models.ShowFinances;
 import com.example.myfinance.MyApplication;
 import com.example.myfinance.Prevalent.AddSettingToDataStoreManager;
+import com.example.myfinance.Prevalent.AppTutorialManager;
 import com.example.myfinance.Prevalent.DateFormatter;
 import com.example.myfinance.Prevalent.Months;
-import com.example.myfinance.Prevalent.TutorialController;
 import com.example.myfinance.R;
 import com.example.myfinance.data.AmountDatabase;
 import com.example.myfinance.data.AmountRepository;
@@ -50,11 +49,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Фрагмент, отображающий остаток на счете, список операций и кнопку добавления новой операции.
+ */
 public class MainFragment extends Fragment {
     private AddSettingToDataStoreManager appSettingsManager;
     private TextView sumTextView;
     private TextView valutaTextView, summaTextView, SecondvalutaTextView;
-    // Удаляем FloatingActionButton отсюда, так как он управляется из MainActivity
     private ListView mainCheck;
     private List<ShowFinances> financeList;
     private ShowFinancesAdapter financeAdapter;
@@ -66,8 +67,8 @@ public class MainFragment extends Fragment {
     private Spinner spinnerForMonth;
     private CardView cardViewOstatok;
     private static final String TAG = "MainFragment";
+    private static final String TUTORIAL_SHOWN_KEY = "main_fragment_tutorial_shown";
 
-    // Список для хранения всех финансовых операций, полученных из базы данных
     private List<Finances> allFinances;
 
     @Nullable
@@ -76,21 +77,11 @@ public class MainFragment extends Fragment {
         return inflater.inflate(R.layout.main_fragment, container, false);
     }
 
-    /**
-     * Вызывается после создания View.
-     */
     @Override
     public void onResume() {
         super.onResume();
-        if (mainCheck != null) {
-            mainCheck.post(() -> {
-                mainCheck.requestLayout();
-                mainCheck.invalidate();
-            });
-        }
         updateCurrencyDisplay();
     }
-
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -99,7 +90,6 @@ public class MainFragment extends Fragment {
         sumTextView = view.findViewById(R.id.sum);
         valutaTextView = view.findViewById(R.id.valutaTextView);
         summaTextView = view.findViewById(R.id.summaTextView);
-        // btnAddNewCheck = view.findViewById(R.id.btnAddNewCheck); // Удаляем инициализацию кнопки
         mainCheck = view.findViewById(R.id.mainCheck);
         SecondvalutaTextView = view.findViewById(R.id.SecondvalutaTextView);
         spinnerForMonth = view.findViewById(R.id.spinnerForMonth);
@@ -133,31 +123,13 @@ public class MainFragment extends Fragment {
             }
         });
 
-        // Загружаем все финансы один раз и наблюдаем за изменениями
-        finViewModel.getAllFinances().observe(getViewLifecycleOwner(), new Observer<List<Finances>>() {
-            @Override
-            public void onChanged(@Nullable List<Finances> finances) {
-                // Сохраняем весь список финансов
-                allFinances = finances;
-                // При каждом изменении данных, обновляем отображение с учетом текущего выбранного месяца
-                updateFinancesListForMonth(spinnerForMonth.getSelectedItemPosition());
-            }
+        finViewModel.getAllFinances().observe(getViewLifecycleOwner(), finances -> {
+            allFinances = finances;
+            updateFinancesListForMonth(spinnerForMonth.getSelectedItemPosition());
         });
 
         uploadAndShowMonth();
         updateCurrencyDisplay();
-
-        // Удаляем OnClickListener отсюда, так как он управляется из MainActivity
-        /*
-        btnAddNewCheck.setOnClickListener(v -> {
-            if (getActivity() instanceof MainActivity) {
-                MainActivity mainActivity = (MainActivity) getActivity();
-                mainActivity.openSecondaryFragment(new AddingNewFinance(), "AddingNewFinance");
-            } else {
-                Toast.makeText(getContext(), "Ошибка: Не удалось открыть окно добавления.", Toast.LENGTH_SHORT).show();
-            }
-        });
-        */
 
         setExitTransition(TransitionInflater.from(getContext()).inflateTransition(R.transition.change_bounds_transition));
 
@@ -165,10 +137,8 @@ public class MainFragment extends Fragment {
             double sum = Double.parseDouble(sumTextView.getText().toString());
             String valuta = valutaTextView.getText().toString();
 
-            // Создаем сводный список категорий
             ArrayList<CategorySummary> categories = createCategorySummaryList(spinnerForMonth.getSelectedItemPosition());
 
-            // Создаем новый фрагмент и передаем в него данные, включая полный список финансов
             DetailsOstatokFragment detailsFragment = DetailsOstatokFragment.newInstance(sum, valuta, "ostatok_card_transition", categories, (ArrayList<Finances>) allFinances);
 
             FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
@@ -185,62 +155,15 @@ public class MainFragment extends Fragment {
             return true;
         });
 
-        // Инициализируем шаги туториала после того, как все View были созданы.
-        initTutorialControllerSteps(view);
-    }
-
-    /**
-     * Инициализирует и добавляет шаги туториала для этого фрагмента.
-     * Этот метод должен вызываться после того, как все View будут созданы.
-     *
-     * @param view Корневой View фрагмента.
-     */
-    private void initTutorialControllerSteps(@NonNull View view) {
+        // Настройка туториала теперь происходит здесь.
+        // Мы делегируем всю логику AppTutorialManager.
         if (getActivity() instanceof MainActivity) {
             MainActivity mainActivity = (MainActivity) getActivity();
-            TutorialController tutorialController = mainActivity.getTutorialController();
-
-            // Проверяем, что контроллер туториала существует.
-            if (tutorialController == null) {
-                return;
-            }
-
-            // Шаг 2: Спиннер для выбора месяца
-            Spinner spinner = view.findViewById(R.id.spinnerForMonth);
-            if (spinner != null) {
-                tutorialController.addStep(
-                        spinner,
-                        "Используйте это меню, чтобы отфильтровать операции по месяцам. По умолчанию отображаются все операции.",
-                        "Фильтр по месяцам",
-                        null,
-                        false
-                );
-            }
-
-            // Шаг 3: Список операций
-            ListView listView = view.findViewById(R.id.mainCheck);
-            if (listView != null) {
-                tutorialController.addStep(
-                        listView,
-                        "В этом списке вы можете видеть все ваши финансовые операции. Нажмите и удерживайте, чтобы изменить или удалить запись.",
-                        "Список операций",
-                        null,
-                        false
-                );
-            }
-
-            // Шаг 4: Кнопка "Добавить"
-            // Удаляем этот шаг, так как кнопка управляется из MainActivity.
+            AppTutorialManager appTutorialManager = mainActivity.getAppTutorialManager();
+            appTutorialManager.setupMainFragmentTutorial(view);
         }
     }
 
-
-    /**
-     * Создает сводный список категорий и их общих сумм на основе отфильтрованных финансов.
-     *
-     * @param monthIndex Индекс выбранного месяца.
-     * @return ArrayList<CategorySummary> сводный список категорий и сумм.
-     */
     private ArrayList<CategorySummary> createCategorySummaryList(int monthIndex) {
         if (allFinances == null) {
             return new ArrayList<>();
@@ -251,7 +174,6 @@ public class MainFragment extends Fragment {
             filteredFinances = allFinances;
         } else {
             String selectedMonth = Months.getMonthEn(monthIndex);
-            // Добавлена проверка на null для finance.getDate()
             filteredFinances = allFinances.stream().filter(finance -> {
                 String financeMonth = DateFormatter.getMonthName(finance.getDate());
                 return financeMonth != null && financeMonth.equalsIgnoreCase(selectedMonth);
@@ -277,12 +199,8 @@ public class MainFragment extends Fragment {
         return categorySummaries;
     }
 
-    /**
-     * Загрузка и отображение текущего месяца.
-     */
     private void uploadAndShowMonth() {
         String[] items = Months.getMonthsRu();
-
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_spinner_item,
@@ -290,7 +208,6 @@ public class MainFragment extends Fragment {
         );
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerForMonth.setAdapter(adapter);
-
         spinnerForMonth.setSelection(0);
 
         spinnerForMonth.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -305,10 +222,6 @@ public class MainFragment extends Fragment {
         });
     }
 
-    /**
-     * Обновляет отображаемый список финансовых операций в зависимости от выбранного месяца.
-     * @param monthIndex Индекс выбранного месяца (0-12).
-     */
     private void updateFinancesListForMonth(int monthIndex) {
         if (allFinances == null) {
             return;
@@ -322,17 +235,12 @@ public class MainFragment extends Fragment {
             }
         } else {
             String selectedMonth = Months.getMonthEn(monthIndex);
-
-            // Добавлена проверка на null для finance.getDate()
             List<Finances> filteredFinances = allFinances.stream().filter(finance -> {
                 String dateString = finance.getDate();
-                if (dateString == null) {
-                    return false; // Пропускаем записи с пустой датой
-                }
+                if (dateString == null) return false;
                 String financeMonth = DateFormatter.getMonthName(dateString);
                 return financeMonth != null && financeMonth.equalsIgnoreCase(selectedMonth);
             }).collect(Collectors.toList());
-
 
             for (Finances finance : filteredFinances) {
                 financeList.add(new ShowFinances(finance.getId(), finance.getSumma(), finance.getFinanceResult(), finance.getOperationType(), finance.getComments(), finance.getDate(), finance.getFirestoreId()));
@@ -342,15 +250,8 @@ public class MainFragment extends Fragment {
         Collections.reverse(financeList);
         financeAdapter.setItems(financeList);
         financeAdapter.notifyDataSetChanged();
-        mainCheck.requestLayout();
-        mainCheck.invalidate();
     }
 
-
-    /**
-     * Обновление отображения валюты и инициализация текущего баланса и общей суммы расходов из БД.
-     * Обзерверы LiveData будут обновлять поля currentBalance и totalExpenses.
-     */
     private void updateCurrencyDisplay() {
         valutaTextView.setText(appSettingsManager.getCurrencyType());
         SecondvalutaTextView.setText(appSettingsManager.getCurrencyType());
@@ -376,11 +277,6 @@ public class MainFragment extends Fragment {
         });
     }
 
-    /**
-     * Отображение диалогового окна для изменения данных.
-     *
-     * @param clickedItem Объект ShowFinances, который нужно изменить.
-     */
     private void showDialogForChangingData(ShowFinances clickedItem) {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
@@ -492,11 +388,6 @@ public class MainFragment extends Fragment {
         dialog.show();
     }
 
-    /**
-     * Обновление общей суммы и баланса на основе новой операции.
-     * @param amount Сумма операции.
-     * @param operationType Тип операции ("Доход" или "Расход").
-     */
     private void updateBalanceAndExpensesOnNewFinance(double amount, String operationType) {
         double currentBalanceBefore = amountViewModel.getLastAmount().getValue() != null ? amountViewModel.getLastAmount().getValue() : 0.0;
         double totalExpensesBefore = amountViewModel.getSumma().getValue() != null ? amountViewModel.getSumma().getValue() : 0.0;
@@ -516,11 +407,6 @@ public class MainFragment extends Fragment {
         amountViewModel.insert(new TotalAmount(newCalculatedBalance, newCalculatedExpenses));
     }
 
-    /**
-     * Возвращает текущую дату в формате "dd.MM.yyyy".
-     *
-     * @return Текущая дата в строковом формате.
-     */
     public String getCurrentDate() {
         return DateFormatter.formatDate(new Date());
     }

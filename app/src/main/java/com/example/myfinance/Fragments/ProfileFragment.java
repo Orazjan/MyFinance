@@ -70,8 +70,7 @@ public class ProfileFragment extends Fragment {
                         btnProfileChange,
                         "Нажмите, чтобы изменить данные своего профиля.",
                         "Изменение профиля",
-                        null,
-                        false
+                        -1
                 );
 
                 // Шаг 2: кнопка "Настройки"
@@ -79,8 +78,7 @@ public class ProfileFragment extends Fragment {
                         btnSettings,
                         "Здесь вы можете изменить настройки приложения, например, тему.",
                         "Настройки",
-                        null,
-                        false
+                        -1
                 );
 
                 // Шаг 3: кнопка "Шаблон"
@@ -88,8 +86,7 @@ public class ProfileFragment extends Fragment {
                         btnPattern,
                         "Управление шаблонами для быстрого добавления операций.",
                         "Шаблоны",
-                        null,
-                        false
+                        -1
                 );
 
                 // Шаг 4: кнопка "Синхронизация"
@@ -97,8 +94,7 @@ public class ProfileFragment extends Fragment {
                         btnSync,
                         "Синхронизация данных с облаком.",
                         "Синхронизация",
-                        null,
-                        false
+                        -1
                 );
 
                 // Шаг 5: кнопка "Выход"
@@ -106,8 +102,7 @@ public class ProfileFragment extends Fragment {
                         btnEsc,
                         "Кнопка для выхода из учетной записи.",
                         "Выход",
-                        null,
-                        false
+                        -1
                 );
             }
 

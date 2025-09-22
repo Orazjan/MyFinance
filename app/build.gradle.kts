@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.example.myfinance"
-    compileSdk = 35
+    compileSdk = 36
     buildFeatures {
         buildConfig = true
         viewBinding = true
@@ -38,6 +38,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.material.tap.target.prompt)
+
     implementation (libs.taptargetview)
 
     implementation(libs.transition)

@@ -1,105 +1,208 @@
 package com.example.myfinance.Prevalent;
 
-import android.annotation.SuppressLint;
+import android.animation.Animator;
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Color;
-import android.util.Log;
+import android.os.Handler;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
-import com.getkeepsafe.taptargetview.TapTarget;
-import com.getkeepsafe.taptargetview.TapTargetSequence;
+import androidx.cardview.widget.CardView;
 
-import java.util.LinkedList;
-import java.util.Queue;
+import com.example.myfinance.R;
 
-/**
- * Класс, который управляет пошаговым обучением (туториалом) для пользователя.
- * <p>
- * Использует библиотеку TapTargetView для создания визуальных подсказок и подсветки элементов
- * пользовательского интерфейса.
- */
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import uk.co.samuelwall.materialtaptargetprompt.MaterialTapTargetPrompt;
+import uk.co.samuelwall.materialtaptargetprompt.extras.backgrounds.RectanglePromptBackground;
+
 public class TutorialController {
 
-    private final String TAG = "TutorialController";
-    private final Activity activity;
-    private final Queue<TutorialStep> tutorialSteps;
-    private TapTargetSequence tutorialSequence;
+    private final Context context;
+    private final List<TutorialStep> tutorialSteps = new ArrayList<>();
+    private int currentStep = 0;
+    private boolean isTutorialActive = false;
+    private final Handler handler = new Handler();
 
-    /**
-     * Конструктор контроллера обучения.
-     *
-     * @param activity Текущая активность, в которой будет отображаться обучение.
-     */
-    public TutorialController(Activity activity) {
-        this.activity = activity;
-        this.tutorialSteps = new LinkedList<>();
+    public TutorialController(Context context) {
+        this.context = context;
     }
 
     /**
-     * Добавляет новый шаг в последовательность обучения.
-     *
-     * @param targetView    Целевой элемент, который нужно подсветить.
-     * @param description   Описание шага.
-     * @param title         Заголовок шага.
-     * @param action        Действие, которое нужно выполнить после завершения шага.
-     * @param highlightOnly Если true, отображает только подсветку без текста подсказки.
+     * Добавляет обычный шаг туториала.
+     * @param targetView View, на которую указывает подсказка.
+     * @param description Текст подсказки.
+     * @param title Заголовок подсказки.
+     * @param order Порядок шага.
      */
-    public void addStep(View targetView, String description, String title, Runnable action, boolean highlightOnly) {
-        tutorialSteps.add(new TutorialStep(targetView, description, title, action, highlightOnly));
-        Log.d(TAG, "Added tutorial step for: " + targetView.getId());
+    public void addStep(View targetView, String description, String title, int order) {
+        tutorialSteps.add(new TutorialStep(targetView, description, title, order, false));
     }
 
     /**
-     * Запускает последовательность обучения.
-     * <p>
-     * Если очередь шагов пуста, обучение не запускается.
+     * Добавляет специальный, неблокирующий шаг туториала.
+     * @param targetView View, над которой отобразится подсказка (не будет блокировать).
+     * @param description Текст подсказки.
+     * @param title Заголовок подсказки.
+     * @param order Порядок шага.
      */
-    @SuppressLint("ResourceType")
+    public void addNonBlockingHintStep(View targetView, String description, String title, int order) {
+        tutorialSteps.add(new TutorialStep(targetView, description, title, order, true));
+    }
+
     public void startTutorial() {
-        if (tutorialSteps.isEmpty()) {
-            Log.w(TAG, "Tutorial steps queue is empty. Cannot start tutorial.");
+        if (isTutorialActive) {
+            return;
+        }
+        isTutorialActive = true;
+        currentStep = 0;
+        showNextStep();
+    }
+
+    private void showNextStep() {
+        if (currentStep < tutorialSteps.size()) {
+            TutorialStep step = tutorialSteps.get(currentStep);
+            if (step.targetView.isShown()) {
+                if (step.isNonBlocking) {
+                    showNonBlockingHint(step);
+                } else {
+                    showBlockingStep(step);
+                }
+            } else {
+                // Если view не видна, пропускаем этот шаг и переходим к следующему
+                currentStep++;
+                showNextStep();
+            }
+        } else {
+            // Туториал завершен
+            isTutorialActive = false;
+        }
+    }
+
+    /**
+     * Показывает обычный (блокирующий) шаг туториала.
+     */
+    private void showBlockingStep(TutorialStep step) {
+        if (step.targetView == null) {
+            currentStep++;
+            showNextStep();
             return;
         }
 
-        tutorialSequence = new TapTargetSequence(activity)
-                .continueOnCancel(true);
+        MaterialTapTargetPrompt.Builder promptBuilder = new MaterialTapTargetPrompt.Builder((Activity) context).setTarget(step.targetView).setPrimaryText(step.title).setSecondaryText(step.description).setFocalColour(context.getResources().getColor(R.color.white)).setBackgroundColour(context.getResources().getColor(R.color.accent_green)).setPromptBackground(new RectanglePromptBackground()).setPromptStateChangeListener((prompt, state) -> {
+            if (state == MaterialTapTargetPrompt.STATE_DISMISSED || state == MaterialTapTargetPrompt.STATE_FINISHING) {
+                currentStep++;
+                showNextStep();
+            }
+        });
 
-        // Создаем последовательность TapTarget на основе добавленных шагов
-        for (TutorialStep step : tutorialSteps) {
-            // Создаем TapTarget, передавая заголовок и описание.
-            TapTarget tapTarget = TapTarget.forView(step.targetView, step.title, step.description);
-
-            // Настраиваем подсветку и дополнительные параметры
-            tapTarget.targetRadius(70) // Увеличиваем радиус подсветки
-                    .outerCircleAlpha(0.80f) // Делаем затемнение более темным
-                    .drawShadow(true) // Добавляем тень для лучшей видимости
-                    .cancelable(false) // Делаем шаг обязательным для выполнения
-                    .titleTextColor(Color.WHITE) // Явно устанавливаем белый цвет для заголовка
-                    .descriptionTextColor(Color.WHITE); // Явно устанавливаем белый цвет для описания
-
-            tutorialSequence.target(tapTarget);
-        }
-
-        // Запускаем последовательность
-        tutorialSequence.start();
+        promptBuilder.show();
     }
 
     /**
-     * Внутренний класс для представления одного шага обучения.
+     * Показывает специальную, неблокирующую подсказку (для ListView).
      */
+    private void showNonBlockingHint(TutorialStep step) {
+        FrameLayout rootView = step.targetView.getRootView().findViewById(android.R.id.content);
+
+        CardView hintCard = new CardView(context);
+        hintCard.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        hintCard.setCardBackgroundColor(context.getResources().getColor(R.color.white));
+        hintCard.setRadius(10);
+        hintCard.setCardElevation(10);
+        hintCard.setAlpha(0); // Начнем с прозрачности для анимации
+
+        LinearLayout layout = new LinearLayout(context);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setGravity(Gravity.CENTER);
+        layout.setPadding(32, 32, 32, 32);
+
+        TextView titleTextView = new TextView(context);
+        titleTextView.setText(step.title);
+        titleTextView.setTextColor(Color.WHITE);
+        titleTextView.setTextSize(20);
+        titleTextView.setGravity(Gravity.CENTER);
+
+        TextView descriptionTextView = new TextView(context);
+        descriptionTextView.setText(step.description);
+        descriptionTextView.setTextColor(Color.WHITE);
+        descriptionTextView.setTextSize(16);
+        descriptionTextView.setGravity(Gravity.CENTER);
+
+        layout.addView(titleTextView);
+        layout.addView(descriptionTextView);
+        hintCard.addView(layout);
+
+        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+        layoutParams.gravity = Gravity.BOTTOM;
+        layoutParams.bottomMargin = (int) (40 * context.getResources().getDisplayMetrics().density); // 40dp от низа
+
+        rootView.addView(hintCard, layoutParams);
+
+        // Анимация появления
+        hintCard.animate().alpha(1).setDuration(500).setListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+            }
+        });
+
+        // Автоматическое скрытие через 10 секунд
+        handler.postDelayed(() -> {
+            hintCard.animate().alpha(0).setDuration(500).setListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    rootView.removeView(hintCard);
+                    currentStep++;
+                    showNextStep();
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+                }
+            });
+        }, TimeUnit.SECONDS.toMillis(10));
+    }
+
     private static class TutorialStep {
         final View targetView;
         final String description;
         final String title;
-        final Runnable action;
-        final boolean highlightOnly;
+        final int order;
+        final boolean isNonBlocking;
 
-        TutorialStep(View targetView, String description, String title, Runnable action, boolean highlightOnly) {
+        TutorialStep(View targetView, String description, String title, int order, boolean isNonBlocking) {
             this.targetView = targetView;
             this.description = description;
             this.title = title;
-            this.action = action;
-            this.highlightOnly = highlightOnly;
+            this.order = order;
+            this.isNonBlocking = isNonBlocking;
         }
     }
 }
