@@ -32,7 +32,7 @@ public class DetailsOstatokFragment extends Fragment {
     private ListView categoryListView;
     private TextView sumTextView, valutaTextView;
     private ArrayList<CategorySummary> categorySummaries;
-    private ArrayList<Finances> allFinances; // Поле для хранения всех финансовых операций
+    private ArrayList<Finances> allFinances;
 
     public DetailsOstatokFragment() {
     }
@@ -110,7 +110,7 @@ public class DetailsOstatokFragment extends Fragment {
             // Создаем и отображаем Bottom Sheet
             TransactionDetailsBottomSheetFragment bottomSheetFragment = new TransactionDetailsBottomSheetFragment();
             Bundle bundle = new Bundle();
-            bundle.putSerializable("transactions", (Serializable) categoryFinances); // Передаем список операций
+            bundle.putSerializable("transactions", (Serializable) categoryFinances);
             bottomSheetFragment.setArguments(bundle);
             bottomSheetFragment.show(getParentFragmentManager(), bottomSheetFragment.getTag());
         });

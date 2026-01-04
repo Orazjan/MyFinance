@@ -1,6 +1,5 @@
 package com.example.myfinance.Fragments;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
@@ -10,6 +9,7 @@ import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -18,13 +18,9 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.myfinance.R;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -32,13 +28,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Фрагмент для регистрации пользователя
- */
 public class RegistrationFragment extends Fragment {
     private static final String TAG = "RegistrationFragment";
 
-    private MaterialButton textViewForLogin;
+    private TextView textViewForLogin;
     private TextInputEditText usernameEditText, emailEditText, passwordEditText;
     private TextInputLayout usernameInputLayout, emailInputLayout, passwordInputLayout;
     private MaterialButton regButton;
@@ -53,14 +46,15 @@ public class RegistrationFragment extends Fragment {
     private OnRegSuccessListener RegSuccessListener;
 
     public RegistrationFragment() {
-
     }
 
     /**
-     * Вызывается при прикреплении фрагмента к активности
-     *
-     * @param context
+     * Интерфейс для коллбэка
      */
+    public interface OnRegSuccessListener {
+        void onRegSuccess();
+    }
+
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -77,13 +71,6 @@ public class RegistrationFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_registration, container, false);
     }
 
-    /**
-     * Этот метод вызывается после создания View фрагмента.
-     *
-     * @param view               The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
-     * @param savedInstanceState If non-null, this fragment is being re-constructed
-     * from a previous saved state as given here.
-     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -91,6 +78,7 @@ public class RegistrationFragment extends Fragment {
         auth = FirebaseAuth.getInstance();
         fb = FirebaseFirestore.getInstance();
 
+        // Инициализация View
         textViewForLogin = view.findViewById(R.id.textViewForLogin);
         usernameInputLayout = view.findViewById(R.id.usernameInputLayout);
         usernameEditText = view.findViewById(R.id.username_edit_text);
@@ -98,12 +86,12 @@ public class RegistrationFragment extends Fragment {
         emailEditText = view.findViewById(R.id.email_edit_text);
         passwordInputLayout = view.findViewById(R.id.passwordInputLayout);
         passwordEditText = view.findViewById(R.id.password_edit_text);
-        regButton = view.findViewById(R.id.reg_button); // MaterialButton
+        regButton = view.findViewById(R.id.reg_button);
 
         regButton.setEnabled(false);
-
         setupTextWatchers();
 
+        // Кнопка регистрации
         regButton.setOnClickListener(v -> {
             validateUserName(usernameEditText.getText().toString());
             validateEmail(emailEditText.getText().toString());
@@ -113,173 +101,129 @@ public class RegistrationFragment extends Fragment {
                 String email = emailEditText.getText().toString();
                 String password = passwordEditText.getText().toString();
                 String username = usernameEditText.getText().toString();
-
                 createUser(email, password, username);
             } else {
                 Toast.makeText(getContext(), "Пожалуйста, исправьте ошибки ввода", Toast.LENGTH_SHORT).show();
             }
         });
 
+        // Ссылка "Уже есть аккаунт? Войти"
         textViewForLogin.setOnClickListener(v -> {
-            getParentFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new LoginFragment())
-                    .addToBackStack(null)
-                    .commit();
+            // Просто возвращаемся назад в стеке, так как LoginFragment лежит под нами
+            if (getParentFragmentManager().getBackStackEntryCount() > 0) {
+                getParentFragmentManager().popBackStack();
+            } else {
+                // Если вдруг стека нет (экран открылся первым), заменяем на Login
+                getParentFragmentManager().beginTransaction().setCustomAnimations(android.R.anim.slide_in_left, android.R.anim.slide_out_right).replace(R.id.fragment_container, new LoginFragment()).commit();
+            }
         });
     }
 
     /**
-     * Интерфейс для коллбэка
-     */
-    public interface OnRegSuccessListener {
-        void onRegSuccess();
-    }
-
-    /**
-     * Настройка слушателей для текстовых полей
+     * Настройка слушателей для TextWatchers
      */
     private void setupTextWatchers() {
-        usernameEditText.addTextChangedListener(new TextWatcher() {
+        TextWatcher watcher = new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
 
             @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
 
             @Override
-            public void afterTextChanged(Editable editable) {
-                validateUserName(editable.toString());
+            public void afterTextChanged(Editable s) {
+                validateUserName(usernameEditText.getText().toString());
+                validateEmail(emailEditText.getText().toString());
+                validatePassword(passwordEditText.getText().toString());
                 updateRegistrationButtonState();
             }
-        });
-
-        emailEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int int_after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int int_after) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                validateEmail(editable.toString());
-                updateRegistrationButtonState();
-            }
-        });
-
-        passwordEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int int_after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int int_after) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                validatePassword(editable.toString());
-                updateRegistrationButtonState();
-            }
-        });
+        };
+        usernameEditText.addTextChangedListener(watcher);
+        emailEditText.addTextChangedListener(watcher);
+        passwordEditText.addTextChangedListener(watcher);
     }
 
     /**
-     * Проверка ввода пользователя (Имя)
-     *
+     * Валидация имени пользователя
      * @param username
      */
     private void validateUserName(String username) {
         if (username.trim().isEmpty()) {
             isUsernameValid = false;
-            usernameInputLayout.setError("Имя пользователя не может быть пустым");
+            usernameInputLayout.setError("Имя не может быть пустым");
         } else if (username.length() < 2) {
             isUsernameValid = false;
-            usernameInputLayout.setError("Имя пользователя должно быть больше 2х букв");
+            usernameInputLayout.setError("Минимум 2 символа");
         } else {
-            usernameInputLayout.setError(null); // Очищаем ошибку
+            usernameInputLayout.setError(null);
             isUsernameValid = true;
         }
     }
 
-
     /**
-     * Проверка ввода пользователя (Email)
-     *
-     * @param email Введенный текст email
+     * Валидация Email
+     * @param email
      */
-    @SuppressLint("SetTextI18n")
     private void validateEmail(String email) {
         if (email.trim().isEmpty()) {
             isEmailValid = false;
-            emailInputLayout.setError("Email не может быть пустым");
+            emailInputLayout.setError("Email обязателен");
         } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             isEmailValid = false;
-            emailInputLayout.setError("Введите корректный Email адрес");
+            emailInputLayout.setError("Некорректный Email");
         } else {
             isEmailValid = true;
-            emailInputLayout.setError(null); // Очищаем ошибку
+            emailInputLayout.setError(null);
         }
     }
 
     /**
-     * Проверка ввода пароля
-     *
-     * @param password Введенный текст пароля
+     * Валидация пароля
+     * @param password
      */
     private void validatePassword(String password) {
         if (password.trim().isEmpty()) {
             isPasswordValid = false;
-            passwordInputLayout.setError("Пароль не может быть пустым");
+            passwordInputLayout.setError("Пароль обязателен");
         } else if (password.length() < 6) {
             isPasswordValid = false;
-            passwordInputLayout.setError("Пароль должен быть не менее 6 символов");
+            passwordInputLayout.setError("Минимум 6 символов");
         } else {
             isPasswordValid = true;
-            passwordInputLayout.setError(null); // Очищаем ошибку
+            passwordInputLayout.setError(null);
         }
     }
 
     /**
-     * Обновление состояния кнопки регистрации (активна, если все поля валидны)
+     * Обновление состояния кнопки регистрации
      */
     private void updateRegistrationButtonState() {
         regButton.setEnabled(isEmailValid && isPasswordValid && isUsernameValid);
     }
 
     /**
-     * Создание пользователя в Firebase
+     * Создание пользователя
      * @param email
      * @param password
      * @param username
      */
     private void createUser(String email, String password, String username) {
-        auth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(ContextCompat.getMainExecutor(requireContext()), new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            Log.d(TAG, "createUserWithEmail:success");
-                            if (RegSuccessListener != null)
-                                RegSuccessListener.onRegSuccess();
-                            saveToFirebase(email, username);
-                        } else {
-                            Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                            Toast.makeText(getContext(), "Ошибка при регистрации: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show(); // Добавлено сообщение об ошибке
-                        }
+        auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(ContextCompat.getMainExecutor(requireContext()), task -> {
+            if (task.isSuccessful()) {
+                Log.d(TAG, "createUser:success");
+                saveToFirebase(email, username);
+                if (RegSuccessListener != null) RegSuccessListener.onRegSuccess();
+            } else {
+                Log.w(TAG, "createUser:failure", task.getException());
+                Toast.makeText(getContext(), "Ошибка: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
-
                 });
-
     }
 
     /**
      * Сохранение данных пользователя в Firebase
-     *
      * @param email
      * @param name
      */
@@ -287,45 +231,15 @@ public class RegistrationFragment extends Fragment {
         DocumentReference userRef = fb.collection("users").document(email);
         Map<String, String> userData = new HashMap<>();
         userData.put("name", name);
-        userRef.set(userData).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()) {
-                    Log.d(TAG, "User data saved to Firebase successfully.");
-                } else {
-                    Log.e(TAG, "Error saving user data to Firebase: " + task.getException().getMessage());
-                    Toast.makeText(getContext(), "Ошибка при сохранении данных пользователя: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.e(TAG, "Error saving user data to Firebase (failure listener): " + e.getMessage());
-                Toast.makeText(getContext(), "Ошибка при сохранении данных пользователя: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+        userRef.set(userData).addOnFailureListener(e -> Log.e(TAG, "Error saving user data: " + e.getMessage()));
     }
 
-    /**
-     * Очистка ресурсов при уничтожении View фрагмента
-     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // Очищаем ссылки на TextInputLayout и TextInputEditText
-        usernameInputLayout = null;
-        usernameEditText = null;
-        emailInputLayout = null;
-        emailEditText = null;
-        passwordInputLayout = null;
-        passwordEditText = null;
-        textViewForLogin = null;
-        regButton = null;
+        // Очистка ссылок
     }
 
-    /**
-     * Очистка ресурсов при откреплении фрагмента от активности
-     */
     @Override
     public void onDetach() {
         super.onDetach();

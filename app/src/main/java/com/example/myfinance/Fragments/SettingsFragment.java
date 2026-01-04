@@ -1,5 +1,7 @@
 package com.example.myfinance.Fragments;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,7 +27,6 @@ import com.example.myfinance.MyApplication;
 import com.example.myfinance.Prevalent.AddSettingToDataStoreManager;
 import com.example.myfinance.R;
 import com.example.myfinance.data.AmountRepository;
-import com.example.myfinance.data.CategoryRepository;
 import com.example.myfinance.data.FinanceRepository;
 import com.example.myfinance.data.TotalAmount;
 import com.google.firebase.auth.FirebaseAuth;
@@ -71,9 +72,10 @@ public class SettingsFragment extends Fragment {
 
         // Инициализация репозиториев
         MyApplication myApplication = (MyApplication) requireActivity().getApplication();
-        CategoryRepository categoryRepository = myApplication.getCategoryRepository();
         FinanceRepository financeRepository = myApplication.getFinanceRepository();
         AmountRepository amountRepository = myApplication.getAmountRepository();
+        View btnContactDev = view.findViewById(R.id.btnContactDev);
+        View btnPrivacyPolicy = view.findViewById(R.id.btnPrivacyPolicy);
 
         // Инициализация ViewModel с использованием пользовательских фабрик
         categoryViewModel = new ViewModelProvider(
@@ -109,6 +111,20 @@ public class SettingsFragment extends Fragment {
                     })
                     .show();
 
+        });
+
+        btnContactDev.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_SENDTO);
+            intent.setData(Uri.parse("mailto:orazjanov11@gmail.com"));
+            intent.putExtra(Intent.EXTRA_SUBJECT, "Поддержка MyFinance");
+            startActivity(Intent.createChooser(intent, "Отправить письмо"));
+        });
+
+        btnPrivacyPolicy.setOnClickListener(v -> {
+            String url = "https://sites.google.com/view/myfinanceteam";
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(Uri.parse(url));
+            startActivity(i);
         });
 
         deleteAllFinances.setOnClickListener(v -> {

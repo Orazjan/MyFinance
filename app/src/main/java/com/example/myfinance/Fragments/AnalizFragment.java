@@ -3,15 +3,18 @@ package com.example.myfinance.Fragments;
 import static android.view.View.VISIBLE;
 
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.Spinner;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -39,30 +42,28 @@ import com.github.mikephil.charting.utils.ColorTemplate;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 public class AnalizFragment extends Fragment implements OnChartValueSelectedListener {
 
-    private Spinner spinnerForMonth;
+    private AutoCompleteTextView spinnerForMonth;
     private PieChart pieChart;
     private LineChart lineChart;
     private AutoCompleteTextView variantForDisplay;
+    private TextView tvTotalExpenses, tvAverageExpense, tvBalanceStats;
     private String[] variants;
     private FinanceChartViewModel viewModel;
 
-    // Переменные для хранения данных, полученных из ViewModel
     private List<PieEntry> expensesPieData;
     private List<PieEntry> incomesPieData;
     private List<PieEntry> allTransactionsPieData;
-
     private List<DateSum> expensesLineData;
     private List<DateSum> incomesLineData;
 
-    // Новые переменные для хранения сумм доходов и расходов
     private Double totalIncomesSum = 0.0;
     private Double totalExpensesSum = 0.0;
 
-    // Полные списки для фильтрации по категории
     private List<Finances> allIncomes;
     private List<Finances> allExpenses;
 
@@ -71,42 +72,48 @@ public class AnalizFragment extends Fragment implements OnChartValueSelectedList
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.analiz_fragment, container, false);
 
-        // Инициализация графиков
+        // Инициализация View
         pieChart = rootView.findViewById(R.id.pieChart);
         lineChart = rootView.findViewById(R.id.lineChart);
-
         spinnerForMonth = rootView.findViewById(R.id.spinnerForMonth);
-
-        // Инициализация выпадающего списка
         variantForDisplay = rootView.findViewById(R.id.variant_for_display);
 
-        // Получение вариантов из файла ресурсов (arrays.xml)
+        // Инициализация TextView статистики
+        tvTotalExpenses = rootView.findViewById(R.id.tvTotalExpenses);
+        tvAverageExpense = rootView.findViewById(R.id.tvAverageExpense);
+        tvBalanceStats = rootView.findViewById(R.id.tvBalanceStats);
+
+        // Базовая настройка PieChart (делаем его бубликом)
+        pieChart.setDrawHoleEnabled(true);
+        pieChart.setHoleColor(Color.WHITE);
+        pieChart.setTransparentCircleColor(Color.WHITE);
+        pieChart.setTransparentCircleAlpha(110);
+        pieChart.setHoleRadius(58f);
+        pieChart.setTransparentCircleRadius(61f);
+        pieChart.setDrawCenterText(true);
+        pieChart.setRotationEnabled(true);
+        pieChart.setHighlightPerTapEnabled(true);
+        pieChart.getDescription().setEnabled(false);
+        pieChart.setEntryLabelColor(Color.BLACK);
+
+        // Настройка Spinner варианта отображения
         variants = getResources().getStringArray(R.array.display_variants_array);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, variants);
         variantForDisplay.setAdapter(adapter);
-
-        // Установка "Общее" в качестве значения по умолчанию
         variantForDisplay.setText(variants[0], false);
-
-        // Добавление обработчика кликов для показа выпадающего списка
         variantForDisplay.setOnClickListener(v -> variantForDisplay.showDropDown());
-
-        // Получение экземпляра ViewModel
-        viewModel = new ViewModelProvider(this).get(FinanceChartViewModel.class);
-
-        // Настройка наблюдателей (Observers) для LiveData
-        setupObservers();
-
-        // Добавляем слушатель для обработки выбора элемента из списка
         variantForDisplay.setOnItemClickListener((parent, view, position, id) -> {
             String selectedVariant = variants[position];
             updateAnalysis(selectedVariant);
         });
 
-        // Настройка Spinner для выбора месяца
+        // ViewModel и Observers
+        viewModel = new ViewModelProvider(this).get(FinanceChartViewModel.class);
+        setupObservers();
+
         setupMonthSpinner();
 
-        // Устанавливаем слушатель кликов на PieChart
+        // Слушатель графиков
         pieChart.setOnChartValueSelectedListener(this);
 
         return rootView;
@@ -115,117 +122,111 @@ public class AnalizFragment extends Fragment implements OnChartValueSelectedList
     @Override
     public void onResume() {
         super.onResume();
-        int selectedPosition = spinnerForMonth.getSelectedItemPosition();
-        if (selectedPosition == 0) {
+        String currentText = spinnerForMonth.getText().toString();
+
+        String[] items = Months.getMonthsRu();
+
+        if (currentText.equals(items[0])) {
             viewModel.showAllData();
         } else {
-            viewModel.filterByMonth(Months.getMonthEn(selectedPosition));
+            for (int i = 1; i < items.length; i++) {
+                if (currentText.equals(items[i])) {
+                    viewModel.filterByMonth(Months.getMonthEn(i));
+                    break;
+                }
+            }
         }
     }
 
-    /**
-     * Настраивает Spinner для выбора месяца.
-     * Этот метод заменяет `uploadAndShowMonth` и `updateFinancesListForMonth`,
-     * поскольку они содержали некорректную логику для этого фрагмента.
-     */
     private void setupMonthSpinner() {
         String[] items = Months.getMonthsRu();
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                requireContext(),
-                android.R.layout.simple_spinner_item,
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line,
                 items
         );
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
         spinnerForMonth.setAdapter(adapter);
 
-        // Устанавливаем текущий месяц в качестве значения по умолчанию
-        spinnerForMonth.setSelection(0);
+        // Устанавливаем текст по умолчанию (индекс 0 - "За всё время")
+        spinnerForMonth.setText(items[0], false);
 
-        spinnerForMonth.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                // Если выбрана позиция 0 ("За всё время")
-                if (position == 0) {
-                    viewModel.showAllData();
-                } else {
-                    // Фильтруем по выбранному месяцу.
-                    viewModel.filterByMonth(Months.getMonthEn(position));
-                }
-            }
+        // Открытие списка по клику
+        spinnerForMonth.setOnClickListener(v -> spinnerForMonth.showDropDown());
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                // Ничего не делаем
+        // Обработка выбора (для AutoCompleteTextView используется OnItemClickListener)
+        spinnerForMonth.setOnItemClickListener((parent, view, position, id) -> {
+            // position совпадает с индексом в массиве items
+            if (position == 0) {
+                // Выбрано "За всё время"
+                viewModel.showAllData();
+            } else {
+                viewModel.filterByMonth(Months.getMonthEn(position));
             }
         });
     }
 
-    /**
-     * Настраивает наблюдателей (Observers) для LiveData.
-     */
     private void setupObservers() {
-        // Наблюдатель для данных кругового графика расходов
         viewModel.getPieChartDataForExpenses().observe(getViewLifecycleOwner(), pieEntries -> {
             this.expensesPieData = pieEntries;
             updateAnalysis(variantForDisplay.getText().toString());
         });
-
-        // Наблюдатель для данных кругового графика доходов
         viewModel.getPieChartDataForIncomes().observe(getViewLifecycleOwner(), pieEntries -> {
             this.incomesPieData = pieEntries;
             updateAnalysis(variantForDisplay.getText().toString());
         });
-
-        // Наблюдатель для данных кругового графика всех транзакций
         viewModel.getPieChartDataForAll().observe(getViewLifecycleOwner(), pieEntries -> {
             this.allTransactionsPieData = pieEntries;
             updateAnalysis(variantForDisplay.getText().toString());
         });
-
-        // Наблюдатель для данных линейного графика расходов
         viewModel.getExpensesLineChartDateSums().observe(getViewLifecycleOwner(), dateSums -> {
             this.expensesLineData = dateSums;
-            // Вычисляем общую сумму расходов
             this.totalExpensesSum = dateSums.stream().mapToDouble(DateSum::getTotal).sum();
+            updateStatsUI(); // Обновляем цифры статистики
             updateAnalysis(variantForDisplay.getText().toString());
         });
-
-        // Наблюдатель для данных линейного графика доходов
         viewModel.getIncomesLineChartDateSums().observe(getViewLifecycleOwner(), dateSums -> {
             this.incomesLineData = dateSums;
             updateAnalysis(variantForDisplay.getText().toString());
         });
-
-        // Наблюдатель для общей суммы доходов
         viewModel.getTotalIncomesSum().observe(getViewLifecycleOwner(), totalSum -> {
             this.totalIncomesSum = totalSum != null ? totalSum : 0.0;
+            updateStatsUI();
             updateAnalysis(variantForDisplay.getText().toString());
         });
-
-        // Наблюдатели для получения полных списков транзакций
-        viewModel.getAllIncomes().observe(getViewLifecycleOwner(), incomes -> {
-            this.allIncomes = incomes;
-        });
-
-        viewModel.getAllExpenses().observe(getViewLifecycleOwner(), expenses -> {
-            this.allExpenses = expenses;
-        });
+        viewModel.getAllIncomes().observe(getViewLifecycleOwner(), incomes -> this.allIncomes = incomes);
+        viewModel.getAllExpenses().observe(getViewLifecycleOwner(), expenses -> this.allExpenses = expenses);
     }
 
     /**
-     * Обновляет диаграммы на основе выбранного варианта и имеющихся данных.
-     * @param selectedVariant Выбранный вариант ("Общее", "Доходы", "Расходы").
+     * Обновляет текстовые поля статистики (Всего, Среднее, Баланс)
      */
+    private void updateStatsUI() {
+        if (tvTotalExpenses == null) return;
+
+        // Всего расходов
+        tvTotalExpenses.setText(String.format(Locale.getDefault(), "%.1f", totalExpensesSum));
+
+        // Баланс (Доходы - Расходы)
+        double balance = totalIncomesSum - totalExpensesSum;
+        tvBalanceStats.setText(String.format(Locale.getDefault(), "%.1f", balance));
+        if (balance < 0) tvBalanceStats.setTextColor(Color.RED);
+        else tvBalanceStats.setTextColor(Color.parseColor("#4CAF50")); // Green
+
+        // 3. Средний расход
+        double average = 0.0;
+        if (allExpenses != null && !allExpenses.isEmpty()) {
+            average = totalExpensesSum / allExpenses.size();
+        }
+        tvAverageExpense.setText(String.format(Locale.getDefault(), "%.1f", average));
+    }
+
     private void updateAnalysis(String selectedVariant) {
-        // Очистка предыдущих данных
         pieChart.clear();
         lineChart.clear();
 
         switch (selectedVariant) {
             case "Общее":
-                // Передаем общие суммы доходов и расходов для круговой диаграммы
                 setupPieChartForGeneral(totalIncomesSum, totalExpensesSum);
-                // Показываем линейный график для общего анализа
                 lineChart.setVisibility(VISIBLE);
                 setupLineChartForGeneralComparison(incomesLineData, expensesLineData);
                 break;
@@ -240,229 +241,216 @@ public class AnalizFragment extends Fragment implements OnChartValueSelectedList
                 setupLineChartForExpenses(expensesLineData);
                 break;
         }
-
-        // Обновление диаграмм
         pieChart.invalidate();
         lineChart.invalidate();
     }
 
-    // --- Методы для настройки PieChart ---
+    /**
+     * Генерирует SpannableString для центрированного текста в PieChart.
+     * @param title
+     * @param amount
+     * @param subtitle
+     * @return
+     */
+    private SpannableString generateCenterSpannableText(String title, double amount, String subtitle) {
+        String amountStr = String.format(Locale.getDefault(), "%.1f", amount);
+        String fullText = title + "\n" + amountStr + "\n" + subtitle;
+
+        SpannableString s = new SpannableString(fullText);
+
+        int titleLen = title.length();
+        int amountLen = amountStr.length();
+        int subtitleLen = subtitle.length();
+
+        int startAmount = titleLen + 1;
+        int endAmount = startAmount + amountLen;
+        int startSubtitle = endAmount + 1;
+
+        // Стиль Заголовка (верх)
+        s.setSpan(new RelativeSizeSpan(0.9f), 0, titleLen, 0);
+        s.setSpan(new ForegroundColorSpan(Color.GRAY), 0, titleLen, 0);
+
+        // Стиль Суммы (центр) - Жирный и Крупный
+        s.setSpan(new RelativeSizeSpan(1.8f), startAmount, endAmount, 0);
+        s.setSpan(new StyleSpan(Typeface.BOLD), startAmount, endAmount, 0);
+        s.setSpan(new ForegroundColorSpan(Color.BLACK), startAmount, endAmount, 0);
+
+        // Стиль Подписи (низ)
+        s.setSpan(new RelativeSizeSpan(0.9f), startSubtitle, fullText.length(), 0);
+        s.setSpan(new ForegroundColorSpan(Color.GRAY), startSubtitle, fullText.length(), 0);
+
+        return s;
+    }
 
     /**
-     * Настраивает круговой график для общего анализа доходов и расходов.
-     * @param totalIncomes Общая сумма доходов.
-     * @param totalExpenses Общая сумма расходов.
+     * @param totalIncomes
+     * @param totalExpenses
      */
     private void setupPieChartForGeneral(Double totalIncomes, Double totalExpenses) {
         ArrayList<PieEntry> entries = new ArrayList<>();
-        if (totalIncomes > 0) {
-            entries.add(new PieEntry(totalIncomes.floatValue(), "Доходы"));
-        }
-        if (totalExpenses > 0) {
-            entries.add(new PieEntry(totalExpenses.floatValue(), "Расходы"));
-        }
 
-        // ЕСЛИ НЕТ ДАННЫХ, ВЫВОДИМ СООБЩЕНИЕ
+        // Формируем доли для визуализации (Зеленая и Красная часть)
+        if (totalIncomes > 0) entries.add(new PieEntry(totalIncomes.floatValue(), "Доходы"));
+        if (totalExpenses > 0) entries.add(new PieEntry(totalExpenses.floatValue(), "Расходы"));
+
         if (entries.isEmpty()) {
             pieChart.clear();
-            pieChart.setNoDataText("Нет данных для отображения");
-            pieChart.invalidate();
+            pieChart.setNoDataText("Нет данных");
+            // Если данных нет, пишем 0
+            pieChart.setCenterText(generateCenterSpannableText("Расходы", 0.0, "Общий анализ"));
             return;
         }
 
-        PieDataSet dataSet = new PieDataSet(entries, "Общий анализ");
-        dataSet.setColors(new int[]{Color.GREEN, Color.RED});
-        dataSet.setValueTextSize(12f);
-        dataSet.setValueFormatter(new PercentFormatter(pieChart));
+        PieDataSet dataSet = new PieDataSet(entries, "");
+        dataSet.setColors(Color.parseColor("#4CAF50"), Color.parseColor("#F44336")); // Зеленый, Красный
+        dataSet.setValueTextSize(0f); // Убираем текст значений с самого графика для чистоты
+        dataSet.setDrawValues(false); // Или true, для процентоы на дугах
 
         PieData data = new PieData(dataSet);
         pieChart.setData(data);
-        pieChart.setEntryLabelColor(Color.BLACK);
         pieChart.setUsePercentValues(true);
-        pieChart.getDescription().setEnabled(false);
-        pieChart.setCenterText("Общий анализ");
-        pieChart.setCenterTextSize(16f);
+
+        // Здесь выводим именно РАСХОДЫ в центре
+        pieChart.setCenterText(generateCenterSpannableText("Общий анализ", totalExpenses, "Расходы"));
+
+        pieChart.invalidate(); // Принудительная перерисовка
+    }
+
+    /**
+     * @param entries
+     */
+    private void setupPieChartForExpenses(List<PieEntry> entries) {
+        if (entries == null || entries.isEmpty()) {
+            pieChart.clear();
+            pieChart.setNoDataText("Нет данных");
+            pieChart.setCenterText(generateCenterSpannableText("Расходы", 0.0, "Всего"));
+            return;
+        }
+
+        PieDataSet dataSet = new PieDataSet(entries, "");
+        dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
+        dataSet.setValueTextSize(12f);
+        dataSet.setValueTextColor(Color.WHITE);
+        dataSet.setValueFormatter(new PercentFormatter(pieChart));
+
+        pieChart.setData(new PieData(dataSet));
+        pieChart.setUsePercentValues(true);
+
+        pieChart.setCenterText(generateCenterSpannableText("Категории", totalExpensesSum, "Расходы"));
+
+        pieChart.invalidate();
     }
 
     /**
      * @param entries
      */
     private void setupPieChartForIncomes(List<PieEntry> entries) {
-        // ЕСЛИ НЕТ ДАННЫХ, ВЫВОДИМ СООБЩЕНИЕ
         if (entries == null || entries.isEmpty()) {
             pieChart.clear();
-            pieChart.setNoDataText("Нет данных по доходам");
-            pieChart.invalidate();
+            pieChart.setNoDataText("Нет данных");
+            pieChart.setCenterText(generateCenterSpannableText("Доходы", 0.0, "Всего"));
             return;
         }
 
-        PieDataSet dataSet = new PieDataSet(entries, "Доходы по категориям");
+        PieDataSet dataSet = new PieDataSet(entries, "");
         dataSet.setColors(ColorTemplate.COLORFUL_COLORS);
         dataSet.setValueTextSize(12f);
+        dataSet.setValueTextColor(Color.WHITE);
         dataSet.setValueFormatter(new PercentFormatter(pieChart));
 
-        PieData data = new PieData(dataSet);
-        pieChart.setData(data);
-        pieChart.setEntryLabelColor(Color.BLACK);
+        pieChart.setData(new PieData(dataSet));
         pieChart.setUsePercentValues(true);
-        pieChart.getDescription().setEnabled(false);
-        pieChart.setCenterText("Анализ доходов");
-        pieChart.setCenterTextSize(16f);
+
+        pieChart.setCenterText(generateCenterSpannableText("Категории", totalIncomesSum, "Доходы"));
+
+        pieChart.invalidate();
     }
 
-    /**
-     *
-     * @param entries
-     */
-    private void setupPieChartForExpenses(List<PieEntry> entries) {
-        // ЕСЛИ НЕТ ДАННЫХ, ВЫВОДИМ СООБЩЕНИЕ
-        if (entries == null || entries.isEmpty()) {
-            pieChart.clear();
-            pieChart.setNoDataText("Нет данных по расходам");
-            pieChart.invalidate();
-            return;
-        }
-        PieDataSet dataSet = new PieDataSet(entries, "Расходы по категориям");
-        dataSet.setColors(ColorTemplate.VORDIPLOM_COLORS);
-        dataSet.setValueTextSize(12f);
-        dataSet.setValueFormatter(new PercentFormatter(pieChart));
-
-        PieData data = new PieData(dataSet);
-        pieChart.setData(data);
-        pieChart.setEntryLabelColor(Color.BLACK);
-        pieChart.setUsePercentValues(true);
-        pieChart.getDescription().setEnabled(false);
-        pieChart.setCenterText("Анализ расходов");
-        pieChart.setCenterTextSize(16f);
-    }
-
-    // --- Методы для настройки LineChart ---
-    /**
-     * Настраивает линейный график для общего сравнения доходов и расходов.
-     * @param incomesList Список данных для доходов по датам.
-     * @param expensesList Список данных для расходов по датам.
-     */
     private void setupLineChartForGeneralComparison(List<DateSum> incomesList, List<DateSum> expensesList) {
         if ((incomesList == null || incomesList.isEmpty()) && (expensesList == null || expensesList.isEmpty())) {
-            lineChart.clear();
-            lineChart.setNoDataText("Нет данных для сравнения");
-            lineChart.invalidate();
+            lineChart.setNoDataText("Нет данных");
             return;
         }
-
         ArrayList<Entry> entriesIncome = new ArrayList<>();
-        if (incomesList != null) {
-            for (int i = 0; i < incomesList.size(); i++) {
-                entriesIncome.add(new Entry(i, (float) incomesList.get(i).getTotal()));
-            }
-        }
+        if (incomesList != null) for (int i = 0; i < incomesList.size(); i++)
+            entriesIncome.add(new Entry(i, (float) incomesList.get(i).getTotal()));
 
         ArrayList<Entry> entriesExpense = new ArrayList<>();
-        if (expensesList != null) {
-            for (int i = 0; i < expensesList.size(); i++) {
-                entriesExpense.add(new Entry(i, (float) expensesList.get(i).getTotal()));
-            }
-        }
+        if (expensesList != null) for (int i = 0; i < expensesList.size(); i++)
+            entriesExpense.add(new Entry(i, (float) expensesList.get(i).getTotal()));
 
-        LineData data = getLineData(entriesIncome, entriesExpense);
-        lineChart.setData(data);
-        lineChart.getDescription().setText("Сравнение доходов и расходов");
-        lineChart.getDescription().setTextSize(12f);
+        lineChart.setData(getLineData(entriesIncome, entriesExpense));
+        lineChart.getDescription().setText("Доходы vs Расходы");
     }
 
     @NonNull
     private static LineData getLineData(ArrayList<Entry> entriesIncome, ArrayList<Entry> entriesExpense) {
         LineDataSet dataSetIncome = new LineDataSet(entriesIncome, "Доходы");
-        dataSetIncome.setColor(Color.GREEN);
-        dataSetIncome.setCircleColor(Color.GREEN);
+        dataSetIncome.setColor(Color.parseColor("#4CAF50"));
+        dataSetIncome.setCircleColor(Color.parseColor("#4CAF50"));
         dataSetIncome.setLineWidth(2f);
         dataSetIncome.setDrawValues(false);
 
         LineDataSet dataSetExpense = new LineDataSet(entriesExpense, "Расходы");
-        dataSetExpense.setColor(Color.RED);
-        dataSetExpense.setCircleColor(Color.RED);
+        dataSetExpense.setColor(Color.parseColor("#F44336"));
+        dataSetExpense.setCircleColor(Color.parseColor("#F44336"));
         dataSetExpense.setLineWidth(2f);
         dataSetExpense.setDrawValues(false);
 
-        LineData data = new LineData(dataSetIncome, dataSetExpense);
-        return data;
+        return new LineData(dataSetIncome, dataSetExpense);
     }
 
     private void setupLineChartForIncomes(List<DateSum> dateSums) {
-        // ЕСЛИ НЕТ ДАННЫХ, ВЫВОДИМ СООБЩЕНИЕ
-        if (dateSums == null || dateSums.isEmpty()) {
-            lineChart.clear();
-            lineChart.setNoDataText("Нет данных по доходам");
-            lineChart.invalidate();
-            return;
-        }
-
+        if (dateSums == null || dateSums.isEmpty()) return;
         ArrayList<Entry> entries = new ArrayList<>();
-        for (int i = 0; i < dateSums.size(); i++) {
+        for (int i = 0; i < dateSums.size(); i++)
             entries.add(new Entry(i, (float) dateSums.get(i).getTotal()));
-        }
-        LineDataSet dataSet = new LineDataSet(entries, "Динамика доходов");
-        dataSet.setColor(Color.GREEN);
-        dataSet.setCircleColor(Color.GREEN);
-        LineData data = new LineData(dataSet);
-        lineChart.setData(data);
+        LineDataSet dataSet = new LineDataSet(entries, "Доходы");
+        dataSet.setColor(Color.parseColor("#4CAF50"));
+        dataSet.setCircleColor(Color.parseColor("#4CAF50"));
+        dataSet.setDrawValues(false);
+        lineChart.setData(new LineData(dataSet));
         lineChart.getDescription().setText("Динамика доходов");
-        lineChart.getDescription().setTextSize(12f);
     }
 
     private void setupLineChartForExpenses(List<DateSum> dateSums) {
-        // ЕСЛИ НЕТ ДАННЫХ, ВЫВОДИМ СООБЩЕНИЕ
-        if (dateSums == null || dateSums.isEmpty()) {
-            lineChart.clear();
-            lineChart.setNoDataText("Нет данных по расходам");
-            lineChart.invalidate();
-            return;
-        }
-
+        if (dateSums == null || dateSums.isEmpty()) return;
         ArrayList<Entry> entries = new ArrayList<>();
-        for (int i = 0; i < dateSums.size(); i++) {
+        for (int i = 0; i < dateSums.size(); i++)
             entries.add(new Entry(i, (float) dateSums.get(i).getTotal()));
-        }
-        LineDataSet dataSet = new LineDataSet(entries, "Динамика расходов");
-        dataSet.setColor(Color.RED);
-        dataSet.setCircleColor(Color.RED);
-        LineData data = new LineData(dataSet);
-        lineChart.setData(data);
+        LineDataSet dataSet = new LineDataSet(entries, "Расходы");
+        dataSet.setColor(Color.parseColor("#F44336"));
+        dataSet.setCircleColor(Color.parseColor("#F44336"));
+        dataSet.setDrawValues(false);
+        lineChart.setData(new LineData(dataSet));
         lineChart.getDescription().setText("Динамика расходов");
-        lineChart.getDescription().setTextSize(12f);
     }
 
-    // --- Методы OnChartValueSelectedListener ---
     @Override
     public void onValueSelected(Entry e, Highlight h) {
         if (e instanceof PieEntry) {
             PieEntry selectedEntry = (PieEntry) e;
             String selectedCategory = selectedEntry.getLabel();
-
-            // Определяем, какой тип транзакций был выбран
             String currentVariant = variantForDisplay.getText().toString();
             List<Finances> transactions = new ArrayList<>();
 
-            if ("Доходы".equals(currentVariant)) {
+            if ("Доходы".equals(currentVariant) && allIncomes != null) {
                 transactions = allIncomes.stream().filter(f -> f.getFinanceResult() != null && f.getFinanceResult().equals(selectedCategory)).collect(Collectors.toList());
-            } else if ("Расходы".equals(currentVariant)) {
+            } else if ("Расходы".equals(currentVariant) && allExpenses != null) {
                 transactions = allExpenses.stream().filter(f -> f.getFinanceResult() != null && f.getFinanceResult().equals(selectedCategory)).collect(Collectors.toList());
-            } else {
-                Toast.makeText(getContext(), "Выберите 'Доходы' или 'Расходы' для просмотра деталей", Toast.LENGTH_SHORT).show();
-                return;
             }
 
-            // Создаем и отображаем Bottom Sheet
-            TransactionDetailsBottomSheetFragment bottomSheetFragment = new TransactionDetailsBottomSheetFragment();
-            Bundle bundle = new Bundle();
-            bundle.putSerializable("transactions", (Serializable) new ArrayList<>(transactions));
-            bottomSheetFragment.setArguments(bundle);
-            bottomSheetFragment.show(getParentFragmentManager(), bottomSheetFragment.getTag());
+            if (!transactions.isEmpty()) {
+                TransactionDetailsBottomSheetFragment bottomSheetFragment = new TransactionDetailsBottomSheetFragment();
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("transactions", (Serializable) new ArrayList<>(transactions));
+                bottomSheetFragment.setArguments(bundle);
+                bottomSheetFragment.show(getParentFragmentManager(), bottomSheetFragment.getTag());
+            }
         }
     }
 
     @Override
     public void onNothingSelected() {
-        // Ничего не делаем, если ничего не выбрано
     }
 }

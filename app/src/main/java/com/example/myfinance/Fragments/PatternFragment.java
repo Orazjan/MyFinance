@@ -71,7 +71,6 @@ public class PatternFragment extends Fragment {
 
         categoryViewModel = new ViewModelProvider(requireActivity(), new CategoryViewModel.TaskViewModelFactory(requireActivity().getApplication())).get(CategoryViewModel.class);
 
-        // Инициализация и загрузка данных только в onViewCreated
         loadAndDisplay();
         setupTextWatchersAndClickListeners();
     }
@@ -110,7 +109,6 @@ public class PatternFragment extends Fragment {
                 Log.d(TAG, "No categories found. Adding default template.");
                 Categories defaultCategory = new Categories("Другое", 0.0, "Расход");
                 categoryViewModel.insert(defaultCategory); // Вставляем в базу данных
-                // LiveData автоматически обновит UI после вставки
                 return;
             }
 

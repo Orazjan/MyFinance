@@ -1,3 +1,8 @@
+/**
+ *
+ * Atanyazov Oraz 2024
+ *
+ */
 package com.example.myfinance;
 
 import static android.view.View.INVISIBLE;
@@ -7,7 +12,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -37,9 +41,6 @@ import com.google.firebase.auth.FirebaseUser;
 
 import java.util.concurrent.TimeUnit;
 
-/**
- * Main activity of the application
- */
 public class MainActivity extends AppCompatActivity {
 
     private final String TAG = "MainActivity";
@@ -47,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
     private TabLayout tabLayout;
     private ProgressBar progressBar;
     private FrameLayout fragmentContainer;
-    private ImageView button_tutorial;
     private FloatingActionButton btnAddNewCheck;
 
     private boolean doubleBackToExitPressedOnce = false;
@@ -62,9 +62,6 @@ public class MainActivity extends AppCompatActivity {
     private TutorialController tutorialController;
     private AppTutorialManager appTutorialManager;
 
-    /**
-     * Called when the activity is starting.
-     */
     @Override
     protected void onStart() {
         super.onStart();
@@ -73,11 +70,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Called when the activity is first created.
-     *
-     * @param savedInstanceState
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,7 +90,6 @@ public class MainActivity extends AppCompatActivity {
         viewPager = findViewById(R.id.viewPager);
         fragmentContainer = findViewById(R.id.fragment_container);
         tabLayout = findViewById(R.id.tab_layout);
-        button_tutorial = findViewById(R.id.button_tutorial);
         btnAddNewCheck = findViewById(R.id.btnAddNewCheck);
 
         if (progressBar != null) {
@@ -112,12 +103,6 @@ public class MainActivity extends AppCompatActivity {
             if (progressBar != null) {
                 progressBar.setVisibility(INVISIBLE);
             }
-
-            if (currentUser != null) {
-                progressBar.setVisibility(INVISIBLE);
-            } else {
-                progressBar.setVisibility(INVISIBLE);
-            }
         };
 
         if (viewPager == null) {
@@ -126,31 +111,32 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        if (tabLayout == null) {
-            Log.w(TAG, "Warning: TabLayout (R.id.tab_layout) not found!");
-        }
-
         if (fragmentContainer == null) {
             Toast.makeText(this, "Critical error: Fragment container not found.", Toast.LENGTH_LONG).show();
             finish();
             return;
         }
 
+        // Настройка адаптера ViewPager
         PagerAdapter adapter = new PagerAdapter(this);
         viewPager.setAdapter(adapter);
 
+        // Настройка TabLayout (Нижнее меню)
         if (tabLayout != null) {
             new TabLayoutMediator(tabLayout, viewPager,
                     (tab, position) -> {
                         switch (position) {
                             case ANALIZ_FRAGMENT_POSITION:
                                 tab.setText("Анализ");
+                                tab.setIcon(android.R.drawable.ic_menu_sort_by_size);
                                 break;
                             case MAIN_FRAGMENT_POSITION:
                                 tab.setText("Главное");
+                                tab.setIcon(android.R.drawable.ic_menu_rotate);
                                 break;
                             case PROFILE_FRAGMENT_POSITION:
                                 tab.setText("Профиль");
+                                tab.setIcon(android.R.drawable.ic_menu_myplaces);
                                 break;
                             default:
                                 tab.setText("Page " + (position + 1));
@@ -173,19 +159,20 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
+        // Логика видимости кнопки добавления (FAB)
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
                 if (position == MAIN_FRAGMENT_POSITION) {
-                    btnAddNewCheck.setVisibility(VISIBLE);
-                    // Запускаем туториал для MainFragment, когда переходим на эту страницу
+                    btnAddNewCheck.show();
                 } else {
-                    btnAddNewCheck.setVisibility(INVISIBLE);
+                    btnAddNewCheck.hide();
                 }
             }
         });
 
+        // Слушатель стека фрагментов (скрывает ViewPager, если открыт вторичный фрагмент)
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {
             int backStackCount = getSupportFragmentManager().getBackStackEntryCount();
 
@@ -202,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
                     viewPager.bringToFront();
                 }
                 if (viewPager.getCurrentItem() == MAIN_FRAGMENT_POSITION) {
-                    btnAddNewCheck.setVisibility(VISIBLE);
+                    btnAddNewCheck.show();
                 }
             } else {
                 if (viewPager != null) {
@@ -215,10 +202,11 @@ public class MainActivity extends AppCompatActivity {
                     fragmentContainer.setClickable(true);
                     fragmentContainer.setFocusable(true);
                 }
-                btnAddNewCheck.setVisibility(INVISIBLE);
+                btnAddNewCheck.hide();
             }
         });
 
+        // Обработка кнопки "Назад"
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -246,6 +234,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // Начальное состояние
         viewPager.post(() -> {
             viewPager.setCurrentItem(MAIN_FRAGMENT_POSITION, false);
             if (fragmentContainer != null)
@@ -255,23 +244,30 @@ public class MainActivity extends AppCompatActivity {
             btnAddNewCheck.setVisibility(VISIBLE);
         });
 
+        // Туториал
         tutorialController = new TutorialController(this);
         appTutorialManager = new AppTutorialManager(this, tutorialController);
-
-        // Настраиваем туториал только для элементов MainActivity
         appTutorialManager.setupMainActivityTutorial(this);
 
-        if (button_tutorial != null) {
-            button_tutorial.setOnClickListener(v -> {
-                Log.d(TAG, "Starting tutorial.");
-                appTutorialManager.forceStartTutorial();
+        if (tabLayout != null) {
+            tabLayout.post(() -> {
+                // Сначала переключаем на главный экран
+                viewPager.setCurrentItem(MAIN_FRAGMENT_POSITION, false);
+
+                // Скрываем/показываем контейнеры
+                if (fragmentContainer != null) fragmentContainer.setVisibility(View.GONE);
+                if (viewPager != null) viewPager.setVisibility(VISIBLE);
+                btnAddNewCheck.show();
+
+                // И только теперь настраиваем туториал (когда табы точно есть)
+                appTutorialManager.setupMainActivityTutorial(MainActivity.this);
             });
         }
 
         btnAddNewCheck.setOnClickListener(v -> {
-            Log.d(TAG, "FAB clicked. Opening AddNewCheckFragment.");
             openSecondaryFragment(new AddingNewFinance(), "AddingNewFinance");
         });
+
     }
 
     private void handleTabSelection(int position) {
@@ -282,19 +278,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Возвращает экземпляр менеджера туториалов.
-     * @return AppTutorialManager
-     */
     public AppTutorialManager getAppTutorialManager() {
         return appTutorialManager;
     }
 
-    /**
-     * Возвращает экземпляр контроллера туториалов.
-     *
-     * @return TutorialController
-     */
     public TutorialController getTutorialController() {
         return tutorialController;
     }
@@ -307,12 +294,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Открывает новый фрагмент поверх основного интерфейса.
-     * Этот метод скрывает ViewPager и показывает новый фрагмент в fragmentContainer.
-     * @param fragment Фрагмент, который нужно открыть.
-     * @param backStackTag Уникальный тег для стека возврата.
-     */
     public void openSecondaryFragment(Fragment fragment, String backStackTag) {
         if (fragmentContainer == null) {
             Log.e(TAG, "fragment_container not found. Cannot open fragment.");
@@ -320,42 +301,32 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Скрываем основной интерфейс с вкладками
         if (viewPager != null) {
             viewPager.setVisibility(View.GONE);
         }
-        // Показываем контейнер для нового фрагмента
         fragmentContainer.setVisibility(View.VISIBLE);
 
-        btnAddNewCheck.setVisibility(View.GONE);
+        btnAddNewCheck.hide();
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         Fragment existingFragment = fragmentManager.findFragmentByTag(backStackTag);
 
         FragmentTransaction transaction = fragmentManager.beginTransaction();
 
-        // Скрываем все видимые фрагменты в контейнере, чтобы избежать наложения
         for (Fragment f : fragmentManager.getFragments()) {
             if (f != null && f.isVisible() && f.getId() == R.id.fragment_container && !f.equals(existingFragment)) {
                 transaction.hide(f);
-                Log.d(TAG, "Hiding existing fragment: " + f.getClass().getSimpleName());
             }
         }
 
-        // Если фрагмента еще нет в стеке, добавляем его
         if (existingFragment == null) {
             transaction.add(R.id.fragment_container, fragment, backStackTag);
-            Log.d(TAG, "Adding new secondary fragment: " + fragment.getClass().getSimpleName());
         } else {
-            // Если он уже есть, просто показываем его
             transaction.show(existingFragment);
-            Log.d(TAG, "Showing existing secondary fragment: " + existingFragment.getClass().getSimpleName());
         }
 
-        // Добавляем транзакцию в стек возврата, чтобы можно было вернуться назад
         transaction.addToBackStack(backStackTag);
         transaction.commit();
-        Log.d(TAG, "Secondary fragment transaction committed.");
     }
 
     private void applySavedTheme(String themeKey) {
@@ -370,6 +341,17 @@ public class MainActivity extends AppCompatActivity {
             default:
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
                 break;
+        }
+    }
+
+    /**
+     * Публичный метод для переключения вкладок из кода (например, для туториала).
+     *
+     * @param position Индекс вкладки (0 - Анализ, 1 - Главная, 2 - Профиль)
+     */
+    public void selectTab(int position) {
+        if (viewPager != null) {
+            viewPager.setCurrentItem(position, true); // true для плавной анимации
         }
     }
 }

@@ -61,8 +61,6 @@ public class FinanceChartViewModel extends AndroidViewModel {
         filterByMonth("Все");
     }
 
-    // --- LiveData для PieChart (Круговая диаграмма) ---
-
     // Эта LiveData будет автоматически обновляться каждый раз, когда меняется
     // `selectedMonth` или `allFinances`.
     public LiveData<List<PieEntry>> getPieChartDataForExpenses() {
@@ -92,8 +90,6 @@ public class FinanceChartViewModel extends AndroidViewModel {
         );
     }
 
-    // --- LiveData для LineChart (Линейный график) ---
-
     public LiveData<List<DateSum>> getExpensesLineChartDateSums() {
         return Transformations.switchMap(selectedMonth, month ->
                 Transformations.map(allFinances, finances -> {
@@ -120,8 +116,6 @@ public class FinanceChartViewModel extends AndroidViewModel {
                 })
         );
     }
-
-    // --- Новые методы для получения полных списков ---
 
     /**
      * Возвращает полный список доходов (без фильтра по месяцу).
@@ -181,7 +175,7 @@ public class FinanceChartViewModel extends AndroidViewModel {
      */
     private List<DateSum> processForLineChart(List<Finances> finances) {
         return finances.stream()
-                .filter(f -> f.getDate() != null) // Добавили фильтрацию по полю date
+                .filter(f -> f.getDate() != null)
                 .collect(Collectors.groupingBy(Finances::getDate, Collectors.summingDouble(Finances::getSumma)))
                 .entrySet().stream()
                 .map(entry -> new DateSum(entry.getKey(), entry.getValue()))

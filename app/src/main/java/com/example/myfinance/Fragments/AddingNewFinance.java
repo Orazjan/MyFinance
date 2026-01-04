@@ -180,7 +180,7 @@ public class AddingNewFinance extends Fragment {
         } else {
             try {
                 double parsedSum = Double.parseDouble(sumStr);
-                if (parsedSum <= 0) { // Добавлена проверка на положительную сумму
+                if (parsedSum <= 0) {
                     sumInputLayout.setError("Сумма должна быть больше нуля");
                     isValid = false;
                 } else {
@@ -253,16 +253,14 @@ public class AddingNewFinance extends Fragment {
 
         sumEditText.addTextChangedListener(watcher);
         reasonEditText.addTextChangedListener(watcher);
-        commentsEditText.addTextChangedListener(watcher); // Добавлен TextWatcher для комментариев
+        commentsEditText.addTextChangedListener(watcher);
 
-        // Слушатель для AutoCompleteTextView категории
         standart_variant.setOnItemClickListener((parent, view, position, id) -> {
             selectedCategory = (String) parent.getItemAtPosition(position);
             setToReasonAndSum(selectedCategory);
             validateFieldsForButton();
         });
 
-        // Слушатель для AutoCompleteTextView типа операции
         SpinnerForChooseActiveOrPassive.setOnItemClickListener((parent, view, position, id) -> {
             selectedOperationType = (String) parent.getItemAtPosition(position);
             validateFieldsForButton();
@@ -276,10 +274,10 @@ public class AddingNewFinance extends Fragment {
         String sum = sumEditText.getText() != null ? sumEditText.getText().toString().trim() : "";
         String reason = reasonEditText.getText() != null ? reasonEditText.getText().toString().trim() : "";
 
-        boolean isSumValid = !sum.isEmpty() && Double.parseDouble(sum) > 0; // Проверка на > 0
+        boolean isSumValid = !sum.isEmpty() && Double.parseDouble(sum) > 0;
         boolean isReasonValid = !reason.isEmpty();
-        boolean isCategorySelected = selectedCategory != null && !selectedCategory.isEmpty(); // Проверка на пустую строку
-        boolean isOperationTypeSelected = selectedOperationType != null && !selectedOperationType.isEmpty(); // Проверка на пустую строку
+        boolean isCategorySelected = selectedCategory != null && !selectedCategory.isEmpty();
+        boolean isOperationTypeSelected = selectedOperationType != null && !selectedOperationType.isEmpty();
 
         btnAdd.setEnabled(isSumValid && isReasonValid && isCategorySelected && isOperationTypeSelected);
     }
@@ -348,7 +346,6 @@ public class AddingNewFinance extends Fragment {
                     selectedOperationType = category.getOperationType();
 
                     if (operationTypeAdapter != null) {
-                        // Устанавливаем текст AutoCompleteTextView, а не selection для Spinner
                         SpinnerForChooseActiveOrPassive.setText(selectedOperationType, false);
                     } else {
                         Log.w(TAG, "setToReasonAndSum: Operation type adapter is null.");

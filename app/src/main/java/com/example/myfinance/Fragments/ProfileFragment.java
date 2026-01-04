@@ -6,7 +6,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,7 +27,7 @@ import com.google.firebase.auth.FirebaseUser;
  */
 public class ProfileFragment extends Fragment {
     private TextView VERSIONOFAPP;
-    private Button btnProfileChange, btnPattern, btnSettings, btnSync, btnEsc;
+    private View btnProfileChange, btnPattern, btnSettings, btnSync, btnEsc;
     private int clickCount = 0;
     private static final long RESET_CLICK_COUNT_DELAY = 1000;
     private FirebaseUser cuurentUser;
@@ -65,7 +64,7 @@ public class ProfileFragment extends Fragment {
             TutorialController tutorialController = mainActivity.getTutorialController();
 
             if (tutorialController != null) {
-                // Шаг 1: кнопка "Изменить профиль"
+                // "Изменить профиль"
                 tutorialController.addStep(
                         btnProfileChange,
                         "Нажмите, чтобы изменить данные своего профиля.",
@@ -73,7 +72,7 @@ public class ProfileFragment extends Fragment {
                         -1
                 );
 
-                // Шаг 2: кнопка "Настройки"
+                // "Настройки"
                 tutorialController.addStep(
                         btnSettings,
                         "Здесь вы можете изменить настройки приложения, например, тему.",
@@ -81,7 +80,7 @@ public class ProfileFragment extends Fragment {
                         -1
                 );
 
-                // Шаг 3: кнопка "Шаблон"
+                // "Шаблон"
                 tutorialController.addStep(
                         btnPattern,
                         "Управление шаблонами для быстрого добавления операций.",
@@ -89,7 +88,7 @@ public class ProfileFragment extends Fragment {
                         -1
                 );
 
-                // Шаг 4: кнопка "Синхронизация"
+                // "Синхронизация"
                 tutorialController.addStep(
                         btnSync,
                         "Синхронизация данных с облаком.",
@@ -97,7 +96,7 @@ public class ProfileFragment extends Fragment {
                         -1
                 );
 
-                // Шаг 5: кнопка "Выход"
+                // "Выход"
                 tutorialController.addStep(
                         btnEsc,
                         "Кнопка для выхода из учетной записи.",

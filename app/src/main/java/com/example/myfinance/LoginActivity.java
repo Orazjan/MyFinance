@@ -12,7 +12,7 @@ import com.example.myfinance.Fragments.RegistrationFragment;
 /**
  * Активность для входа и регистрации пользователя.
  */
-public class LoginActivity extends AppCompatActivity implements RegistrationFragment.OnRegSuccessListener, LoginFragment.OnLoginSuccessListener {
+public class LoginActivity extends AppCompatActivity implements RegistrationFragment.OnRegSuccessListener, LoginFragment.LoginFragmentListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +42,18 @@ public class LoginActivity extends AppCompatActivity implements RegistrationFrag
     public void onLoginSuccess() {
         Toast.makeText(this, "Вход выполнен! Добро пожаловать", Toast.LENGTH_SHORT).show();
         finish();
+    }
+
+    @Override
+    public void onSwitchToRegister() {
+        getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(
+                        android.R.anim.slide_in_left, android.R.anim.slide_out_right,
+                        android.R.anim.slide_in_left, android.R.anim.slide_out_right
+                )
+                .replace(R.id.fragment_container, new RegistrationFragment())
+                .addToBackStack(null) // Добавляем в стек, чтобы кнопка Назад вернула на вход
+                .commit();
     }
 
     /**

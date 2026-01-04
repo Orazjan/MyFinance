@@ -53,11 +53,8 @@ dependencies {
 
     implementation (libs.mpandroidchart)
 
-    implementation (libs.facebook.android.sdk)
-
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
-    implementation (libs.facebook.login)
     implementation(libs.firebase.firestore)
 
     implementation(libs.material)

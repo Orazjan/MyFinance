@@ -5,12 +5,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -64,10 +63,11 @@ public class MainFragment extends Fragment {
     private AmountViewModel amountViewModel;
     private FinanceViewModel finViewModel;
     private FinanceRepository financeRepository;
-    private Spinner spinnerForMonth;
+
+    private AutoCompleteTextView spinnerForMonth;
+
     private CardView cardViewOstatok;
     private static final String TAG = "MainFragment";
-    private static final String TUTORIAL_SHOWN_KEY = "main_fragment_tutorial_shown";
 
     private List<Finances> allFinances;
 
@@ -92,7 +92,9 @@ public class MainFragment extends Fragment {
         summaTextView = view.findViewById(R.id.summaTextView);
         mainCheck = view.findViewById(R.id.mainCheck);
         SecondvalutaTextView = view.findViewById(R.id.SecondvalutaTextView);
+        ImageView ivHelp = view.findViewById(R.id.ivHelp);
         spinnerForMonth = view.findViewById(R.id.spinnerForMonth);
+
         cardViewOstatok = view.findViewById(R.id.cardViewOstatok);
 
         appSettingsManager = new AddSettingToDataStoreManager(requireContext());
@@ -115,6 +117,15 @@ public class MainFragment extends Fragment {
             mainCheck.setAdapter(financeAdapter);
         }
 
+        if (ivHelp != null) {
+            ivHelp.setOnClickListener(v -> {
+                if (getActivity() instanceof MainActivity) {
+                    // Запускаем туториал принудительно
+                    ((MainActivity) getActivity()).getAppTutorialManager().forceStartTutorial();
+                }
+            });
+        }
+
         getParentFragmentManager().setFragmentResultListener("ValueSumAndType", getViewLifecycleOwner(), (requestKey, bundle) -> {
             if (requestKey.equals("ValueSumAndType")) {
                 double newFinanceSum = bundle.getDouble("Sum");
@@ -125,7 +136,7 @@ public class MainFragment extends Fragment {
 
         finViewModel.getAllFinances().observe(getViewLifecycleOwner(), finances -> {
             allFinances = finances;
-            updateFinancesListForMonth(spinnerForMonth.getSelectedItemPosition());
+            updateFinancesListForMonth(getCurrentMonthIndex());
         });
 
         uploadAndShowMonth();
@@ -137,7 +148,7 @@ public class MainFragment extends Fragment {
             double sum = Double.parseDouble(sumTextView.getText().toString());
             String valuta = valutaTextView.getText().toString();
 
-            ArrayList<CategorySummary> categories = createCategorySummaryList(spinnerForMonth.getSelectedItemPosition());
+            ArrayList<CategorySummary> categories = createCategorySummaryList(getCurrentMonthIndex());
 
             DetailsOstatokFragment detailsFragment = DetailsOstatokFragment.newInstance(sum, valuta, "ostatok_card_transition", categories, (ArrayList<Finances>) allFinances);
 
@@ -155,15 +166,40 @@ public class MainFragment extends Fragment {
             return true;
         });
 
-        // Настройка туториала теперь происходит здесь.
-        // Мы делегируем всю логику AppTutorialManager.
         if (getActivity() instanceof MainActivity) {
-            MainActivity mainActivity = (MainActivity) getActivity();
-            AppTutorialManager appTutorialManager = mainActivity.getAppTutorialManager();
-            appTutorialManager.setupMainFragmentTutorial(view);
+            // Настройка шагов
+            ((MainActivity) getActivity()).getAppTutorialManager().setupMainFragmentTutorial(view);
+
+            view.post(() -> {
+                if (isAdded() && getActivity() != null) {
+                    ((MainActivity) getActivity()).getAppTutorialManager().triggerMainFragmentTutorial();
+                }
+            });
         }
     }
 
+    /**
+     * Получение индекса текущего месяца
+     *
+     * @return
+     */
+    private int getCurrentMonthIndex() {
+        String currentText = spinnerForMonth.getText().toString();
+        String[] items = Months.getMonthsRu();
+        for (int i = 0; i < items.length; i++) {
+            if (items[i].equals(currentText)) {
+                return i;
+            }
+        }
+        return 0; // По умолчанию "За всё время"
+    }
+
+    /**
+     * Создание списка категорий
+     *
+     * @param monthIndex
+     * @return
+     */
     private ArrayList<CategorySummary> createCategorySummaryList(int monthIndex) {
         if (allFinances == null) {
             return new ArrayList<>();
@@ -199,29 +235,33 @@ public class MainFragment extends Fragment {
         return categorySummaries;
     }
 
+    /**
+     * Загрузка и отображение списка месяцев
+     */
     private void uploadAndShowMonth() {
         String[] items = Months.getMonthsRu();
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                requireContext(),
-                android.R.layout.simple_spinner_item,
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line,
                 items
         );
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerForMonth.setAdapter(adapter);
-        spinnerForMonth.setSelection(0);
 
-        spinnerForMonth.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                updateFinancesListForMonth(position);
-            }
+        // Устанавливаем значение по умолчанию
+        spinnerForMonth.setText(items[0], false);
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
+        // Открываем список по клику
+        spinnerForMonth.setOnClickListener(v -> spinnerForMonth.showDropDown());
+
+        spinnerForMonth.setOnItemClickListener((parent, view, position, id) -> {
+            updateFinancesListForMonth(position);
         });
     }
 
+    /**
+     * Обновление списка операций
+     *
+     * @param monthIndex
+     */
     private void updateFinancesListForMonth(int monthIndex) {
         if (allFinances == null) {
             return;
@@ -252,6 +292,9 @@ public class MainFragment extends Fragment {
         financeAdapter.notifyDataSetChanged();
     }
 
+    /**
+     * Обновление валюты
+     */
     private void updateCurrencyDisplay() {
         valutaTextView.setText(appSettingsManager.getCurrencyType());
         SecondvalutaTextView.setText(appSettingsManager.getCurrencyType());
@@ -277,6 +320,11 @@ public class MainFragment extends Fragment {
         });
     }
 
+    /**
+     * Диалог для изменения данных
+     *
+     * @param clickedItem
+     */
     private void showDialogForChangingData(ShowFinances clickedItem) {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
@@ -388,6 +436,12 @@ public class MainFragment extends Fragment {
         dialog.show();
     }
 
+    /**
+     * Обновление баланса и расходов
+     *
+     * @param amount
+     * @param operationType
+     */
     private void updateBalanceAndExpensesOnNewFinance(double amount, String operationType) {
         double currentBalanceBefore = amountViewModel.getLastAmount().getValue() != null ? amountViewModel.getLastAmount().getValue() : 0.0;
         double totalExpensesBefore = amountViewModel.getSumma().getValue() != null ? amountViewModel.getSumma().getValue() : 0.0;
@@ -407,6 +461,10 @@ public class MainFragment extends Fragment {
         amountViewModel.insert(new TotalAmount(newCalculatedBalance, newCalculatedExpenses));
     }
 
+    /**
+     * Получение текущей даты
+     * @return
+     */
     public String getCurrentDate() {
         return DateFormatter.formatDate(new Date());
     }

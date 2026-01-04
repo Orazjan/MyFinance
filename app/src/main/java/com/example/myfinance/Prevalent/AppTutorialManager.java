@@ -5,8 +5,6 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
-import android.widget.ListView;
-import android.widget.Spinner;
 
 import com.example.myfinance.MainActivity;
 import com.example.myfinance.R;
@@ -17,11 +15,15 @@ import java.util.Objects;
 
 /**
  * Менеджер для инициализации и запуска всех туториалов в приложении.
- * Использует SharedPreferences для отслеживания, был ли туториал уже показан.
  */
 public class AppTutorialManager {
     private static final String TAG = "AppTutorialManager";
     private static final String TUTORIAL_SHOWN_KEY = "main_fragment_tutorial_shown";
+
+    // Константы позиций вкладок (должны совпадать с порядком в ViewPager MainActivity)
+    private static final int TAB_ANALIZ = 0;
+    private static final int TAB_MAIN = 1;
+    private static final int TAB_PROFILE = 2;
 
     private final Context context;
     private final TutorialController tutorialController;
@@ -33,99 +35,108 @@ public class AppTutorialManager {
     }
 
     /**
-     * Инициализирует и добавляет шаги туториала для MainActivity.
-     * Этот метод должен быть вызван в onCreate() MainActivity.
-     *
-     * @param mainActivity Экземпляр MainActivity для доступа к View.
+     * Инициализирует и добавляет шаги туториала для элементов MainActivity (Табы и FAB).
      */
     public void setupMainActivityTutorial(MainActivity mainActivity) {
-        View tutorialButton = mainActivity.findViewById(R.id.button_tutorial);
-        if (tutorialButton != null) {
-            tutorialController.addStep(tutorialButton, "Эта кнопка запускает обучение по работе с приложением", "Обучение", -1);
-        }
-
         TabLayout tabLayout = mainActivity.findViewById(R.id.tab_layout);
         if (tabLayout != null) {
+
+            // ШАГ 1: Таб "Главное"
             if (tabLayout.getTabAt(1) != null) {
                 View mainTab = Objects.requireNonNull(tabLayout.getTabAt(1)).view;
-                tutorialController.addStep(mainTab, "Здесь вы можете наблюдать за остатками и историей операций", "Главная страница", 1);
+                // ДЕЙСТВИЕ: Переключиться на вкладку "Главное" перед показом
+                tutorialController.addStep(mainTab, "Здесь вы можете наблюдать за остатками и историей операций", "Главная страница", 1, () -> mainActivity.selectTab(TAB_MAIN));
             }
+
+            // ШАГ 2: Кнопка добавления (FAB)
             FloatingActionButton btnAddNewCheck = mainActivity.findViewById(R.id.btnAddNewCheck);
             if (btnAddNewCheck != null) {
-                tutorialController.addStep(btnAddNewCheck, "Нажмите на эту кнопку, чтобы добавить новую финансовую операцию — доход или расход.", "Добавление операции", 2);
+                // ДЕЙСТВИЕ: Убедиться, что мы на вкладке "Главное" (FAB виден только там)
+                tutorialController.addStep(btnAddNewCheck, "Нажмите на эту кнопку, чтобы добавить новую финансовую операцию.", "Добавление операции", 2, () -> mainActivity.selectTab(TAB_MAIN));
             }
+
+            // ШАГ 3: Таб "Анализ"
             if (tabLayout.getTabAt(0) != null) {
                 View analizTab = Objects.requireNonNull(tabLayout.getTabAt(0)).view;
-                tutorialController.addStep(analizTab, "В этом разделе вы можете анализировать свои финансы с помощью графиков и отчетов", "Анализ финансов", 3);
+                // ДЕЙСТВИЕ: Переключиться на вкладку "Анализ" перед показом
+                tutorialController.addStep(analizTab, "В этом разделе вы можете анализировать свои финансы с помощью графиков.", "Анализ финансов", 3, () -> mainActivity.selectTab(TAB_ANALIZ));
             }
+
+            // ШАГ 4: Таб "Профиль"
             if (tabLayout.getTabAt(2) != null) {
                 View profileTab = Objects.requireNonNull(tabLayout.getTabAt(2)).view;
-                tutorialController.addStep(profileTab, "В профиле вы можете управлять своими настройками и учетной записью", "Управление профилем", 4);
+                // ДЕЙСТВИЕ: Переключиться на вкладку "Профиль" перед показом
+                tutorialController.addStep(profileTab, "В профиле вы можете управлять своими настройками.", "Управление профилем", 4, () -> mainActivity.selectTab(TAB_PROFILE));
             }
         }
     }
 
     /**
      * Инициализирует и добавляет шаги туториала для MainFragment.
-     * Этот метод должен быть вызван в onViewCreated() MainFragment.
-     *
-     * @param fragment Корневой View фрагмента.
      */
     public void setupMainFragmentTutorial(View fragment) {
-        // Шаги для MainFragment (карточка, спиннер, список)
+        // Здесь мы передаем null вместо действия, так как внутри фрагмента переключения не нужны,
+        // либо используем перегруженный метод addStep без последнего аргумента.
+
+        // Шаг 0: Кнопка справки
+        View ivHelp = fragment.findViewById(R.id.ivHelp);
+        if (ivHelp != null) {
+            tutorialController.addStep(ivHelp, "Нажмите сюда в любой момент, чтобы повторить это обучение.", "Справка", 99, null);
+        }
+
+        // Шаг 5: Карточка баланса
         View cardViewOstatok = fragment.findViewById(R.id.cardViewOstatok);
         if (cardViewOstatok != null) {
-            tutorialController.addStep(cardViewOstatok, "Здесь отображается ваш текущий баланс. Нажмите на карточку, чтобы увидеть сводку расходов по категориям.", "Текущий баланс", 5);
+            tutorialController.addStep(cardViewOstatok, "Здесь отображается ваш текущий баланс.", "Текущий баланс", 5, null);
         }
-        Spinner spinner = fragment.findViewById(R.id.spinnerForMonth);
+
+        // Шаг 6: Фильтр
+        View spinner = fragment.findViewById(R.id.spinnerForMonth);
         if (spinner != null) {
-            tutorialController.addStep(spinner, "Используйте это меню, чтобы отфильтровать операции по месяцам. По умолчанию отображаются все операции.", "Фильтр по месяцам", 6);
+            tutorialController.addStep(spinner, "Фильтр операций по месяцам.", "Фильтр по месяцам", 6, null);
         }
-        ListView listView = fragment.findViewById(R.id.mainCheck);
+
+        // Шаг 7: Список
+        View listView = fragment.findViewById(R.id.mainCheck);
         if (listView != null) {
-            tutorialController.addStep(listView, "В этом списке вы можете видеть все ваши финансовые операции. Нажмите и удерживайте, чтобы изменить или удалить запись.", "Список операций", 7);
+            tutorialController.addStep(listView, "Список ваших операций. Удерживайте для редактирования.", "Список операций", 7, null);
         }
     }
 
     /**
-     * Запускает туториал. Проверяет, был ли туториал уже показан.
-     * Предназначен для автоматического запуска (например, при первом входе).
+     * Автоматический запуск (только один раз).
      */
-    public void startTutorial() {
+    public void triggerMainFragmentTutorial() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         boolean tutorialShown = sharedPreferences.getBoolean(TUTORIAL_SHOWN_KEY, false);
 
-        if (!tutorialShown) {
-            Log.d(TAG, "Starting tutorial automatically.");
+        if (!tutorialShown && !mainTutorialCompleted) {
+            Log.d(TAG, "Triggering tutorial automatically.");
+
+            // Если мы запускаем туториал, убедимся, что мы на главном экране
+            if (context instanceof MainActivity) {
+                ((MainActivity) context).selectTab(TAB_MAIN);
+            }
+
             tutorialController.startTutorial();
+
             sharedPreferences.edit().putBoolean(TUTORIAL_SHOWN_KEY, true).apply();
-            mainTutorialCompleted = true; // Отмечаем, что главный туториал был показан
-        } else {
-            Log.d(TAG, "Tutorial has already been shown.");
             mainTutorialCompleted = true;
         }
     }
 
     /**
-     * Запускает туториал для MainFragment, если он еще не был показан.
-     * Вызывается из MainActivity при переключении на MainFragment.
-     */
-    public void triggerMainFragmentTutorial() {
-        if (!mainTutorialCompleted) {
-            Log.d(TAG, "Triggering MainFragment tutorial.");
-            tutorialController.startTutorial();
-            mainTutorialCompleted = true;
-        } else {
-            Log.d(TAG, "MainFragment tutorial has already been triggered.");
-        }
-    }
-
-    /**
-     * Принудительно запускает туториал, игнорируя флаг.
-     * Предназначен для запуска по нажатию кнопки.
+     * Принудительный запуск (по кнопке).
      */
     public void forceStartTutorial() {
         Log.d(TAG, "Forcing tutorial to start.");
+
+        // Обязательно переключаем на главный экран перед стартом,
+        // иначе туториал может попытаться показать элементы MainFragment, которых нет на экране
+        if (context instanceof MainActivity) {
+            ((MainActivity) context).selectTab(TAB_MAIN);
+        }
+
         tutorialController.startTutorial();
     }
 }
