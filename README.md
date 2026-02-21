@@ -69,7 +69,7 @@ MyFinance — это современное и интуитивно понятн
 
 </tr>
 
-<tr>
+<tr align="center">
 <td align="center"><b>Авторизация</b></td>
 <td align="center"><b>Регистрация</b></td>
 
