@@ -1,4 +1,4 @@
-(Пет-проект) MyFinance: Приложение для учёта личных финансов
+MyFinance: Приложение для учёта личных финансов
 =======
 MyFinance: Приложение для учёта личных финансов
 
@@ -35,6 +35,53 @@ MyFinance — это современное и интуитивно понятн
 Облачные сервисы: Firebase (Authentication, Firestore)
 
 Потоки: Kotlin Coroutines (для асинхронных операций с базой данных)
+
+📱 Скриншоты
+
+<div align="center">
+<table>
+<tr>
+<td align="center"><b>Главная</b></td>
+<td align="center"><b>Анализ</b></td>
+<td align="center"><b>Профиль</b></td>
+
+</tr>
+<tr>
+<td><img src="screenshots/main.jpg" width="220" /></td>
+<td><img src="screenshots/analiz.jpg" width="220" /></td>
+<td><img src="screenshots/profile.jpg" width="220" /></td>
+
+</tr>
+<tr>
+<td align="center"><b>Настройки аккаунта</b></td>
+<td align="center"><b>Настройки приложения</b></td>
+<td align="center"><b>Шаблоны</b></td>
+<td align="center"><b>Детали баланса</b></td>
+<td align="center"><b>История</b></td>
+
+</tr>
+<tr>
+<td><img src="screenshots/accaunt_settings.jpg" width="220" /></td>
+<td><img src="screenshots/app_settings.jpg" width="220" /></td>
+<td><img src="screenshots/patterns.jpg" width="220" /></td>
+<td><img src="screenshots/balance_detail.jpg" width="220" /></td>
+<td><img src="screenshots/history.jpg" width="220" /></td>
+
+</tr>
+
+<tr>
+<td align="center"><b>Авторизация</b></td>
+<td align="center"><b>Регистрация</b></td>
+
+</tr>
+<tr>
+<td><img src="screenshots/auth.jpg" width="220" /></td>
+<td><img src="screenshots/registration.jpg" width="220" /></td>
+
+</tr>
+
+</table>
+</div>
 
 ---
 **Установка и запуск**
