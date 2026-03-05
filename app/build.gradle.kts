@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     id("com.google.gms.google-services")
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
@@ -9,11 +11,13 @@ android {
     buildFeatures {
         buildConfig = true
         viewBinding = true
+        compose = true
     }
+
     defaultConfig {
         applicationId = "com.example.myfinance"
         minSdk = 28
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "0.9.3"
 
@@ -31,13 +35,30 @@ android {
             )
         }
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
+    }
+
+
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+//    kotlinOptions {
+//        jvmTarget = "11"
+//    }
 }
 
 dependencies {
+    implementation(libs.navigation.compose)
+    implementation(platform(libs.compose.bom))
+    implementation(libs.ui)
+    implementation(libs.material3)
+    implementation(libs.ui.tooling.preview)
+    implementation(libs.core.ktx)
+    debugImplementation(libs.ui.tooling)
+
     implementation(libs.material.tap.target.prompt)
 
     implementation (libs.taptargetview)

@@ -1,23 +1,28 @@
 [versions]
 agp = "8.13.2"
-firebaseBom = "34.7.0"
+composeBom = "2026.02.01"
+firebaseBom = "34.10.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
-appcompat = "1.6.1"
+appcompat = "1.7.1"
 lifecycle = "2.10.0"
 material = "1.13.0"
-activity = "1.12.2"
+activity = "1.12.4"
 constraintlayout = "2.2.1"
 materialTapTargetPrompt = "3.3.2"
 mpandroidchart = "v3.1.0"
+navigationCompose = "2.9.7"
 room = "2.8.4"
 taptargetview = "1.15.0"
-transition = "1.6.0"
+transition = "1.7.0"
 viewpager2 = "1.1.0"
 firebaseAuth = "24.0.1"
+kotlin = "2.3.10"
+coreKtx = "1.17.0"
 
 [libraries]
+compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -30,7 +35,9 @@ material = { group = "com.google.android.material", name = "material", version.r
 activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 material-tap-target-prompt = { module = "uk.co.samuelwall:material-tap-target-prompt", version.ref = "materialTapTargetPrompt" }
+material3 = { module = "androidx.compose.material3:material3" }
 mpandroidchart = { module = "com.github.PhilJay:MPAndroidChart", version.ref = "mpandroidchart" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-paging = { module = "androidx.room:room-paging", version.ref = "room" }
@@ -38,8 +45,14 @@ room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-testing = { module = "androidx.room:room-testing", version.ref = "room" }
 taptargetview = { module = "com.getkeepsafe.taptargetview:taptargetview", version.ref = "taptargetview" }
 transition = { module = "androidx.transition:transition", version.ref = "transition" }
+ui = { module = "androidx.compose.ui:ui" }
+ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
+ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 viewpager2 = { module = "androidx.viewpager2:viewpager2", version.ref = "viewpager2" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
+core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
