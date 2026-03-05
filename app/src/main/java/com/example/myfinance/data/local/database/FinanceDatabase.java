@@ -1,4 +1,4 @@
-package com.example.myfinance.data;
+package com.example.myfinance.data.local.database;
 
 import android.content.Context;
 
@@ -7,7 +7,8 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
-import com.example.myfinance.DAO.DAOFinances;
+import com.example.myfinance.data.Finances;
+import com.example.myfinance.data.local.dao.DAOFinances;
 import com.example.myfinance.Prevalent.DateConverter;
 
 import java.util.concurrent.ExecutorService;

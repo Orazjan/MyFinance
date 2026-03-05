@@ -25,7 +25,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myfinance.Adapters.CategoryViewAdapter;
-import com.example.myfinance.Models.CategoryViewModel;
+import com.example.myfinance.ui.profile.CategoryViewModel;
 import com.example.myfinance.Prevalent.CategoryItem;
 import com.example.myfinance.R;
 import com.example.myfinance.data.Categories;

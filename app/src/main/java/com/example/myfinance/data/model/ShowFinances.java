@@ -1,4 +1,4 @@
-package com.example.myfinance.Models;
+package com.example.myfinance.data.model;
 
 import androidx.annotation.NonNull;
 

@@ -1,4 +1,4 @@
-package com.example.myfinance.Models;
+package com.example.myfinance.ui.profile;
 
 import android.app.Application;
 
@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.myfinance.MyApplication;
 import com.example.myfinance.data.Categories;
-import com.example.myfinance.data.CategoryRepository;
+import com.example.myfinance.data.repository.CategoryRepository;
 import com.google.android.gms.tasks.Task;
 
 import java.util.List;

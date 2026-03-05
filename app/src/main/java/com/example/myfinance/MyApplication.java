@@ -3,12 +3,12 @@ package com.example.myfinance;
 import android.app.Application;
 import android.util.Log;
 
-import com.example.myfinance.data.AmountDatabase;
-import com.example.myfinance.data.AmountRepository;
-import com.example.myfinance.data.CategoryDataBase;
-import com.example.myfinance.data.CategoryRepository;
-import com.example.myfinance.data.FinanceDatabase;
-import com.example.myfinance.data.FinanceRepository;
+import com.example.myfinance.data.local.database.AmountDatabase;
+import com.example.myfinance.data.repository.AmountRepository;
+import com.example.myfinance.data.local.database.CategoryDataBase;
+import com.example.myfinance.data.repository.CategoryRepository;
+import com.example.myfinance.data.local.database.FinanceDatabase;
+import com.example.myfinance.data.repository.FinanceRepository;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.firestore.FirebaseFirestore;
 

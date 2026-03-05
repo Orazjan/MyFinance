@@ -3,6 +3,7 @@ plugins {
     id("com.google.gms.google-services")
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -42,15 +43,17 @@ android {
 
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
-//    kotlinOptions {
-//        jvmTarget = "11"
-//    }
+    kotlin {
+        jvmToolchain(21)
+    }
 }
 
 dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.navigation.compose)
     implementation(platform(libs.compose.bom))
     implementation(libs.ui)

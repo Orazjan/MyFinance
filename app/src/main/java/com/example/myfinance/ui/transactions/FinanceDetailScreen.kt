@@ -1,4 +1,4 @@
-package com.example.myfinance.ui.main
+package com.example.myfinance.ui.transactions
 
 class FinanceDetailScreen(onBackClick: () -> Unit) {
 }

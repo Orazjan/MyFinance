@@ -1,11 +1,11 @@
-package com.example.myfinance.Models;
+package com.example.myfinance.ui.transactions;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.myfinance.data.FinanceRepository;
+import com.example.myfinance.data.repository.FinanceRepository;
 import com.example.myfinance.data.Finances;
 
 import java.util.List;

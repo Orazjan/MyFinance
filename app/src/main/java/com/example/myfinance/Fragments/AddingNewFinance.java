@@ -22,13 +22,13 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.myfinance.Models.CategoryViewModel;
-import com.example.myfinance.Models.FinanceViewModel;
+import com.example.myfinance.ui.profile.CategoryViewModel;
+import com.example.myfinance.ui.transactions.FinanceViewModel;
 import com.example.myfinance.MyApplication;
 import com.example.myfinance.Prevalent.DateFormatter;
 import com.example.myfinance.R;
 import com.example.myfinance.data.Categories;
-import com.example.myfinance.data.FinanceRepository;
+import com.example.myfinance.data.repository.FinanceRepository;
 import com.example.myfinance.data.Finances;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;

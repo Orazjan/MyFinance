@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
 
-import com.example.myfinance.Models.ShowFinances;
+import com.example.myfinance.data.model.ShowFinances;
 import com.example.myfinance.R;
 
 import java.util.ArrayList;

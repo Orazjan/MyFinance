@@ -1,10 +1,11 @@
-package com.example.myfinance.data;
+package com.example.myfinance.data.repository;
 
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 
-import com.example.myfinance.DAO.DAOcategories;
+import com.example.myfinance.data.local.dao.DAOcategories;
+import com.example.myfinance.data.Categories;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;

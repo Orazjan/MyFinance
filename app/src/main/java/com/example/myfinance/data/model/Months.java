@@ -1,4 +1,4 @@
-package com.example.myfinance.Prevalent;
+package com.example.myfinance.data.model;
 
 public class Months {
 

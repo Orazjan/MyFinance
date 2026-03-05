@@ -1,4 +1,4 @@
-package com.example.myfinance.Models;
+package com.example.myfinance.ui.analiz;
 
 import android.app.Application;
 
@@ -11,7 +11,7 @@ import androidx.lifecycle.Transformations;
 import com.example.myfinance.MyApplication;
 import com.example.myfinance.Prevalent.DateFormatter;
 import com.example.myfinance.data.DateSum;
-import com.example.myfinance.data.FinanceRepository;
+import com.example.myfinance.data.repository.FinanceRepository;
 import com.example.myfinance.data.Finances;
 import com.github.mikephil.charting.data.PieEntry;
 

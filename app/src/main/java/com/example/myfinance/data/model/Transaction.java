@@ -1,4 +1,4 @@
-package com.example.myfinance.Models;
+package com.example.myfinance.data.model;
 
 import java.io.Serializable;
 

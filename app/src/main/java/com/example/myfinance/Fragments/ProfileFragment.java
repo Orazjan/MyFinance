@@ -15,10 +15,10 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.myfinance.MainActivity;
-import com.example.myfinance.Models.FinanceChartViewModel;
+import com.example.myfinance.ui.analiz.FinanceChartViewModel;
 import com.example.myfinance.Prevalent.TutorialController;
 import com.example.myfinance.R;
-import com.example.myfinance.data.FinanceRepository;
+import com.example.myfinance.data.repository.FinanceRepository;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -59,87 +59,87 @@ public class ProfileFragment extends Fragment {
 
         VERSIONOFAPP.setText(AppVersion);
 
-        if (getActivity() instanceof MainActivity) {
-            MainActivity mainActivity = (MainActivity) getActivity();
-            TutorialController tutorialController = mainActivity.getTutorialController();
-
-            if (tutorialController != null) {
-                // "Изменить профиль"
-                tutorialController.addStep(
-                        btnProfileChange,
-                        "Нажмите, чтобы изменить данные своего профиля.",
-                        "Изменение профиля",
-                        -1
-                );
-
-                // "Настройки"
-                tutorialController.addStep(
-                        btnSettings,
-                        "Здесь вы можете изменить настройки приложения, например, тему.",
-                        "Настройки",
-                        -1
-                );
-
-                // "Шаблон"
-                tutorialController.addStep(
-                        btnPattern,
-                        "Управление шаблонами для быстрого добавления операций.",
-                        "Шаблоны",
-                        -1
-                );
-
-                // "Синхронизация"
-                tutorialController.addStep(
-                        btnSync,
-                        "Синхронизация данных с облаком.",
-                        "Синхронизация",
-                        -1
-                );
-
-                // "Выход"
-                tutorialController.addStep(
-                        btnEsc,
-                        "Кнопка для выхода из учетной записи.",
-                        "Выход",
-                        -1
-                );
-            }
-
-            if (btnProfileChange != null) {
-                btnProfileChange.setOnClickListener(v -> {
-                    mainActivity.openSecondaryFragment(new ProfileChangeFragment(), "ProfileChange");
-                });
-            }
-
-            if (VERSIONOFAPP != null) {
-                VERSIONOFAPP.setOnClickListener(v -> {
-                    clickCount++;
-                    if (clickCount == 3) {
-                        mainActivity.openSecondaryFragment(new VersionInfoFragment(), "VersionInfo");
-                        clickCount = 0;
-                    } else {
-                        new android.os.Handler().postDelayed(() -> {
-                            if (clickCount < 3) {
-                                clickCount = 0;
-                            }
-                        }, RESET_CLICK_COUNT_DELAY);
-                    }
-                });
-            }
-
-            if (btnSettings != null) {
-                btnSettings.setOnClickListener(v -> {
-                    mainActivity.openSecondaryFragment(new SettingsFragment(), "Settings");
-                });
-            }
-
-            if (btnPattern != null) {
-                btnPattern.setOnClickListener(v -> {
-                    mainActivity.openSecondaryFragment(new PatternFragment(), "Pattern");
-                });
-            }
-        } else {
-        }
+//        if (getActivity() instanceof MainActivity) {
+//            MainActivity mainActivity = (MainActivity) getActivity();
+//            TutorialController tutorialController = mainActivity.getTutorialController();
+//
+//            if (tutorialController != null) {
+//                // "Изменить профиль"
+//                tutorialController.addStep(
+//                        btnProfileChange,
+//                        "Нажмите, чтобы изменить данные своего профиля.",
+//                        "Изменение профиля",
+//                        -1
+//                );
+//
+//                // "Настройки"
+//                tutorialController.addStep(
+//                        btnSettings,
+//                        "Здесь вы можете изменить настройки приложения, например, тему.",
+//                        "Настройки",
+//                        -1
+//                );
+//
+//                // "Шаблон"
+//                tutorialController.addStep(
+//                        btnPattern,
+//                        "Управление шаблонами для быстрого добавления операций.",
+//                        "Шаблоны",
+//                        -1
+//                );
+//
+//                // "Синхронизация"
+//                tutorialController.addStep(
+//                        btnSync,
+//                        "Синхронизация данных с облаком.",
+//                        "Синхронизация",
+//                        -1
+//                );
+//
+//                // "Выход"
+//                tutorialController.addStep(
+//                        btnEsc,
+//                        "Кнопка для выхода из учетной записи.",
+//                        "Выход",
+//                        -1
+//                );
+//            }
+//
+//            if (btnProfileChange != null) {
+//                btnProfileChange.setOnClickListener(v -> {
+//                    mainActivity.openSecondaryFragment(new ProfileChangeFragment(), "ProfileChange");
+//                });
+//            }
+//
+//            if (VERSIONOFAPP != null) {
+//                VERSIONOFAPP.setOnClickListener(v -> {
+//                    clickCount++;
+//                    if (clickCount == 3) {
+//                        mainActivity.openSecondaryFragment(new VersionInfoFragment(), "VersionInfo");
+//                        clickCount = 0;
+//                    } else {
+//                        new android.os.Handler().postDelayed(() -> {
+//                            if (clickCount < 3) {
+//                                clickCount = 0;
+//                            }
+//                        }, RESET_CLICK_COUNT_DELAY);
+//                    }
+//                });
+//            }
+//
+//            if (btnSettings != null) {
+//                btnSettings.setOnClickListener(v -> {
+//                    mainActivity.openSecondaryFragment(new SettingsFragment(), "Settings");
+//                });
+//            }
+//
+//            if (btnPattern != null) {
+//                btnPattern.setOnClickListener(v -> {
+//                    mainActivity.openSecondaryFragment(new PatternFragment(), "Pattern");
+//                });
+//            }
+//        } else {
+//        }
 
         btnSync.setOnClickListener(v -> {
             Toast.makeText(getContext(), "Синхронизация", Toast.LENGTH_SHORT).show();

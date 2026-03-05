@@ -25,18 +25,17 @@ import androidx.transition.TransitionInflater;
 import com.example.myfinance.Adapters.CategorySummary;
 import com.example.myfinance.Adapters.ShowFinancesAdapter;
 import com.example.myfinance.MainActivity;
-import com.example.myfinance.Models.AmountViewModel;
-import com.example.myfinance.Models.FinanceViewModel;
-import com.example.myfinance.Models.ShowFinances;
+import com.example.myfinance.ui.main.AmountViewModel;
+import com.example.myfinance.ui.transactions.FinanceViewModel;
+import com.example.myfinance.data.model.ShowFinances;
 import com.example.myfinance.MyApplication;
 import com.example.myfinance.Prevalent.AddSettingToDataStoreManager;
-import com.example.myfinance.Prevalent.AppTutorialManager;
 import com.example.myfinance.Prevalent.DateFormatter;
-import com.example.myfinance.Prevalent.Months;
+import com.example.myfinance.data.model.Months;
 import com.example.myfinance.R;
-import com.example.myfinance.data.AmountDatabase;
-import com.example.myfinance.data.AmountRepository;
-import com.example.myfinance.data.FinanceRepository;
+import com.example.myfinance.data.local.database.AmountDatabase;
+import com.example.myfinance.data.repository.AmountRepository;
+import com.example.myfinance.data.repository.FinanceRepository;
 import com.example.myfinance.data.Finances;
 import com.example.myfinance.data.TotalAmount;
 
@@ -117,14 +116,14 @@ public class MainFragment extends Fragment {
             mainCheck.setAdapter(financeAdapter);
         }
 
-        if (ivHelp != null) {
-            ivHelp.setOnClickListener(v -> {
-                if (getActivity() instanceof MainActivity) {
-                    // Запускаем туториал принудительно
-                    ((MainActivity) getActivity()).getAppTutorialManager().forceStartTutorial();
-                }
-            });
-        }
+//        if (ivHelp != null) {
+//            ivHelp.setOnClickListener(v -> {
+//                if (getActivity() instanceof MainActivity) {
+//                    // Запускаем туториал принудительно
+//                    ((MainActivity) getActivity()).getAppTutorialManager().forceStartTutorial();
+//                }
+//            });
+//        }
 
         getParentFragmentManager().setFragmentResultListener("ValueSumAndType", getViewLifecycleOwner(), (requestKey, bundle) -> {
             if (requestKey.equals("ValueSumAndType")) {
@@ -165,17 +164,17 @@ public class MainFragment extends Fragment {
             showDialogForChangingData(clickedItem);
             return true;
         });
-
-        if (getActivity() instanceof MainActivity) {
-            // Настройка шагов
-            ((MainActivity) getActivity()).getAppTutorialManager().setupMainFragmentTutorial(view);
-
-            view.post(() -> {
-                if (isAdded() && getActivity() != null) {
-                    ((MainActivity) getActivity()).getAppTutorialManager().triggerMainFragmentTutorial();
-                }
-            });
-        }
+//
+//        if (getActivity() instanceof MainActivity) {
+//            // Настройка шагов
+//            ((MainActivity) getActivity()).getAppTutorialManager().setupMainFragmentTutorial(view);
+//
+//            view.post(() -> {
+//                if (isAdded() && getActivity() != null) {
+//                    ((MainActivity) getActivity()).getAppTutorialManager().triggerMainFragmentTutorial();
+//                }
+//            });
+//        }
     }
 
     /**

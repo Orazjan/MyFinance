@@ -21,8 +21,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.myfinance.Models.FinanceChartViewModel;
-import com.example.myfinance.Prevalent.Months;
+import com.example.myfinance.ui.analiz.FinanceChartViewModel;
+import com.example.myfinance.data.model.Months;
 import com.example.myfinance.R;
 import com.example.myfinance.data.DateSum;
 import com.example.myfinance.data.Finances;

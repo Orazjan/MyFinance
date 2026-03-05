@@ -1,11 +1,11 @@
-package com.example.myfinance.Models;
+package com.example.myfinance.ui.main;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.myfinance.data.AmountRepository;
+import com.example.myfinance.data.repository.AmountRepository;
 import com.example.myfinance.data.TotalAmount;
 
 public class AmountViewModel extends ViewModel {

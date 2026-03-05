@@ -1,6 +1,8 @@
 package com.example.myfinance.navigation
 
-sealed class Graph(val route: String) {
-    object Auth : Graph("auth_graph")
-    object Main : Graph("main_graph")
+object Graph {
+    const val Auth = "auth_graph"
+    const val Main = "main_graph"
+    const val Profile = "profile_graph"
+    const val Analiz = "analiz_graph"
 }

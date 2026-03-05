@@ -1,4 +1,4 @@
-package com.example.myfinance.DAO;
+package com.example.myfinance.data.local.dao;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;

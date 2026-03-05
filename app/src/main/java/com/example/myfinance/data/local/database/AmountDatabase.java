@@ -1,4 +1,4 @@
-package com.example.myfinance.data;
+package com.example.myfinance.data.local.database;
 
 import android.content.Context;
 
@@ -6,7 +6,8 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-import com.example.myfinance.DAO.DAOTotalAmount;
+import com.example.myfinance.data.TotalAmount;
+import com.example.myfinance.data.local.dao.DAOTotalAmount;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

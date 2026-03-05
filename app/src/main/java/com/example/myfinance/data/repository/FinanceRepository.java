@@ -1,11 +1,14 @@
-package com.example.myfinance.data;
+package com.example.myfinance.data.repository;
 
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Transformations;
 
-import com.example.myfinance.DAO.DAOFinances;
+import com.example.myfinance.data.local.dao.DAOFinances;
+import com.example.myfinance.data.CategorySum;
+import com.example.myfinance.data.DateSum;
+import com.example.myfinance.data.Finances;
 import com.github.mikephil.charting.data.PieEntry;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;

@@ -1,10 +1,11 @@
-package com.example.myfinance.data;
+package com.example.myfinance.data.repository;
 
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 
-import com.example.myfinance.DAO.DAOTotalAmount;
+import com.example.myfinance.data.local.dao.DAOTotalAmount;
+import com.example.myfinance.data.TotalAmount;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
