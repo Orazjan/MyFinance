@@ -38,7 +38,7 @@ fun PrimaryCard(
 
 @Preview(showBackground = true)
 @Composable
-fun PrimaryCardPreview() {
+private fun PrimaryCardPreview() {
     MyFinanceTheme {
         Column(modifier = Modifier.padding(16.dp)) {
             PrimaryCard(modifier = Modifier.fillMaxWidth()) {

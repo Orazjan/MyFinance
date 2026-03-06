@@ -53,7 +53,7 @@ fun TopNavBar(
 
 @Preview(showBackground = true)
 @Composable
-fun TopNavBarPreview() {
+private fun TopNavBarPreview() {
     MyFinanceTheme {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             TopNavBar(title = "Главная")

@@ -32,7 +32,7 @@ fun PrimaryText(
 
 @Preview(showBackground = true)
 @Composable
-fun PrimaryTextPreview() {
+private fun PrimaryTextPreview() {
     MyFinanceTheme {
         Column(
             modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)

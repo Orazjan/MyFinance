@@ -54,6 +54,6 @@ fun PrimaryButton(
 
 @Composable
 @Preview(showBackground = true)
-fun ShowPrimaryButton() {
+private fun ShowPrimaryButton() {
     PrimaryButton(text = "text", onClick = { null }, modifier = Modifier)
 }

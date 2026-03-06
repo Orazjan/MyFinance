@@ -64,7 +64,7 @@ fun PrimaryOutlinedTextField(
 
 @Preview(showBackground = true)
 @Composable
-fun CustomTextFieldPreview() {
+private fun CustomTextFieldPreview() {
     MyFinanceTheme {
         Column(
             modifier = Modifier.padding(16.dp),
