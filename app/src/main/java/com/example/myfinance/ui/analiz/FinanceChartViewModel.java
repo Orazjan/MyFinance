@@ -9,7 +9,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 
 import com.example.myfinance.MyApplication;
-import com.example.myfinance.Prevalent.DateFormatter;
+import com.example.myfinance.prevalent.DateFormatter;
 import com.example.myfinance.data.DateSum;
 import com.example.myfinance.data.repository.FinanceRepository;
 import com.example.myfinance.data.Finances;

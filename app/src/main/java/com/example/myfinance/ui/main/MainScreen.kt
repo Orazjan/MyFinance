@@ -9,6 +9,6 @@ import androidx.compose.ui.Modifier
 @Composable
 fun MainScreen() {
     Column(modifier = Modifier.fillMaxSize()) {
-        Text("Общий баланс: 100 000 ₽")
+        Text("Главный экран")
     }
 }

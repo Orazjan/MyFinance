@@ -9,7 +9,7 @@ import androidx.room.TypeConverters;
 
 import com.example.myfinance.data.Finances;
 import com.example.myfinance.data.local.dao.DAOFinances;
-import com.example.myfinance.Prevalent.DateConverter;
+import com.example.myfinance.prevalent.DateConverter;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

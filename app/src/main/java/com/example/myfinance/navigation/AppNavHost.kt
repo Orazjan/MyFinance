@@ -6,8 +6,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.myfinance.MainFlowScreen
 import com.example.myfinance.navigation.routes.AuthRoute
+import com.example.myfinance.ui.MainFlowScreen
 
 @Composable
 fun AppNavHost(
