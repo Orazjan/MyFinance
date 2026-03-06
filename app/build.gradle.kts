@@ -52,8 +52,9 @@ android {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-    implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.foundation)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.material.icons.extended)
     implementation(libs.navigation.compose)
     implementation(platform(libs.compose.bom))
     implementation(libs.ui)

@@ -6,7 +6,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.example.myfinance.navigation.Graph
 import com.example.myfinance.ui.profile.ProfileScreen
-import kotlinx.serialization.Serializable
 
 fun NavGraphBuilder.ProfileRoute(navController: NavHostController) {
     navigation(startDestination = "profile_screen", route = Graph.Profile) {

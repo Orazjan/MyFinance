@@ -4,11 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.myfinance.navigation.routes.AnalizRoute
+import com.example.myfinance.MainFlowScreen
 import com.example.myfinance.navigation.routes.AuthRoute
-import com.example.myfinance.navigation.routes.MainRoute
-import com.example.myfinance.navigation.routes.ProfileRoute
 
 @Composable
 fun AppNavHost(
@@ -19,8 +18,9 @@ fun AppNavHost(
         navController = navController, startDestination = Graph.Main, modifier = modifier
     ) {
         AuthRoute(navController)
-        MainRoute(navController)
-        ProfileRoute(navController)
-        AnalizRoute(navController)
+
+        composable("main_graph") {
+            MainFlowScreen()
+        }
     }
 }
