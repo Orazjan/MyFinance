@@ -29,17 +29,22 @@ fun MainFlowScreen() {
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(bottomBar = {
-        NavigationBar() {
+        NavigationBar {
             val navItemColors = NavigationBarItemDefaults.colors(
-                selectedTextColor = MaterialTheme.colorScheme.primary,
-                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                selectedTextColor = MaterialTheme.colorScheme.primary,    //Текст
+                indicatorColor = MaterialTheme.colorScheme.primary,         //Обводка
+                selectedIconColor = MaterialTheme.colorScheme.onPrimary,    //Когда выделено
                 unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
             NavigationBarItem(
                 selected = pagerState.currentPage == 0,
                 onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } },
-                icon = { Icon(Icons.Default.Analytics, contentDescription = "Analiz Icon") },
+                icon = {
+                    Icon(
+                        Icons.Default.Analytics, contentDescription = "Analiz Icon"
+                    )
+                },
                 label = { Text("Аналитика") },
                 colors = navItemColors
             )
@@ -63,14 +68,20 @@ fun MainFlowScreen() {
     }) { padding ->
         HorizontalPager(
             state = pagerState, modifier = Modifier
-                .padding(padding)
+                .padding(
+                    bottom = padding.calculateBottomPadding()
+                )
                 .fillMaxSize(),
 
             ) { page ->
             when (page) {
-                0 -> AnalizScreen()
+                0 -> AnalizScreen(
+                    onGoToMain = { coroutineScope.launch { pagerState.animateScrollToPage(1) } })
                 1 -> MainScreen()
-                2 -> ProfileScreen()
+                2 -> ProfileScreen(
+                    onGoToMain = {
+                        coroutineScope.launch { pagerState.animateScrollToPage(1) }
+                    })
             }
         }
     }
