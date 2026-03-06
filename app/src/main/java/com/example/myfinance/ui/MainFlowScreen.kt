@@ -9,8 +9,10 @@ import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,24 +29,36 @@ fun MainFlowScreen() {
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(bottomBar = {
-        NavigationBar {
+        NavigationBar() {
+            val navItemColors = NavigationBarItemDefaults.colors(
+                selectedTextColor = MaterialTheme.colorScheme.primary,
+                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
             NavigationBarItem(
                 selected = pagerState.currentPage == 0,
                 onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } },
                 icon = { Icon(Icons.Default.Analytics, contentDescription = "Analiz Icon") },
-                label = { Text("Аналитика") })
+                label = { Text("Аналитика") },
+                colors = navItemColors
+            )
 
             NavigationBarItem(
                 selected = pagerState.currentPage == 1,
                 onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
                 icon = { Icon(Icons.Default.Home, contentDescription = "Home Icon") },
-                label = { Text("Главная") })
+                label = { Text("Главная") },
+                colors = navItemColors
+            )
 
             NavigationBarItem(
                 selected = pagerState.currentPage == 2,
                 onClick = { coroutineScope.launch { pagerState.animateScrollToPage(2) } },
                 icon = { Icon(Icons.Default.Person, contentDescription = "Profile Icon") },
-                label = { Text("Профиль") })
+                label = { Text("Профиль") },
+                colors = navItemColors
+            )
         }
     }) { padding ->
         HorizontalPager(
