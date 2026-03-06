@@ -1,5 +1,7 @@
 package com.example.myfinance.ui.components
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -11,6 +13,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.example.myfinance.ui.theme.MyFinanceTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,4 +49,16 @@ fun TopNavBar(
             actionIconContentColor = MaterialTheme.colorScheme.onBackground
         )
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TopNavBarPreview() {
+    MyFinanceTheme {
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            TopNavBar(title = "Главная")
+
+            TopNavBar(title = "Редактировать профиль", onBackClick = {})
+        }
+    }
 }
