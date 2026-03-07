@@ -6,7 +6,7 @@ val White = Color(0xFFFFFFFF)
 val Black = Color(0xFF000000)
 
 val PrimaryBlueVariant = Color(0xFF1976D2)
-val PrimaryBlue = Color(0xFF2980B9)
+val PrimaryBlue = Color(0xFF90CAF9)
 val ButtonPrimaryBackground = Color(0xFF2196F3)
 
 val AccentGreen = Color(0xFF4CAF50)
