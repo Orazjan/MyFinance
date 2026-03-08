@@ -121,11 +121,15 @@ fun MainScreen() {
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                item {
+                stickyHeader {
                     Text(
                         text = "История операций",
                         style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        modifier = Modifier
+                            .padding(bottom = 8.dp)
+                            .background(MaterialTheme.colorScheme.background)
+                            .fillMaxWidth()
+                            .padding(10.dp)
                     )
                 }
 

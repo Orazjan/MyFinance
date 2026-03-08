@@ -93,7 +93,7 @@ fun PrimaryLazyColumnPreview() {
                                 )
                                 .size(30.dp)
                         )
-                        Column() {
+                        Column {
                             Text(text = "Покупка продуктов ${index + 1}")
                             Text(text = "Расход")
                         }
