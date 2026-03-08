@@ -58,21 +58,21 @@ fun MainScreen() {
                 ) {
                 Row(
                     modifier = Modifier
-                        .padding(16.dp)
+                        .padding(26.dp)
                         .fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     PrimaryText(
                         text = "Остаток $:",
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
                     )
                     Spacer(Modifier.weight(1f))
 
                     PrimaryText(
                         text = "150 000 000 ₽",
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = MaterialTheme.colorScheme.secondary,
 
                         )
                 }
@@ -86,27 +86,28 @@ fun MainScreen() {
                 ) {
                 Row(
                     modifier = Modifier
-                        .padding(16.dp)
+                        .padding(26.dp)
                         .fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     PrimaryText(
                         text = "Расходы:",
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
                     )
                     Spacer(Modifier.weight(1f))
 
                     PrimaryText(
                         text = "150 000 000 ₽",
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = MaterialTheme.colorScheme.error,
 
                         )
                 }
             }
             val months = Months.entries.map { it.displayName }
             var selectedMonth: Months by remember { mutableStateOf(Months.ALL_PERIOD) }
+
             PrimarySpinner(
                 options = months,
                 selectedOption = selectedMonth.displayName,
@@ -121,19 +122,8 @@ fun MainScreen() {
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                stickyHeader {
-                    Text(
-                        text = "История операций",
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier
-                            .padding(bottom = 8.dp)
-                            .background(MaterialTheme.colorScheme.background)
-                            .fillMaxWidth()
-                            .padding(10.dp)
-                    )
-                }
 
-                items(10) { index ->
+            items(10) { index ->
                     PrimaryCard(
                         modifier = Modifier.fillMaxWidth()
                     ) {
