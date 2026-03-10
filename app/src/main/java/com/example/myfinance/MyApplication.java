@@ -22,7 +22,7 @@ public class MyApplication extends Application {
         super.onCreate();
         try {
             FirebaseApp.initializeApp(this);
-            FirebaseFirestore.setLoggingEnabled(true); // для детального логирования Firestore
+            FirebaseFirestore.setLoggingEnabled(true);
         } catch (IllegalStateException e) {
             Log.e("MyApplication", "FirebaseApp already initialized or failed to initialize: " + e.getMessage());
         }

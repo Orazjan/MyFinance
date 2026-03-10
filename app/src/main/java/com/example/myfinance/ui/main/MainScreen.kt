@@ -123,7 +123,7 @@ fun MainScreen() {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
 
-            items(10) { index ->
+                items(10) { index ->
                     PrimaryCard(
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -141,7 +141,7 @@ fun MainScreen() {
                                     )
                                     .size(30.dp)
                             )
-                            Column() {
+                            Column {
                                 Text(text = "Покупка продуктов ${index + 1}")
                                 Text(text = "Расход")
                             }

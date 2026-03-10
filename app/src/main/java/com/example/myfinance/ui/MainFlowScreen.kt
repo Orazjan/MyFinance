@@ -10,9 +10,9 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Analytics
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.twotone.BarChart
+import androidx.compose.material.icons.twotone.Home
+import androidx.compose.material.icons.twotone.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -25,6 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.example.myfinance.navigation.Graph
 import com.example.myfinance.ui.analiz.AnalizScreen
 import com.example.myfinance.ui.components.PrimaryText
 import com.example.myfinance.ui.main.MainScreen
@@ -32,7 +34,7 @@ import com.example.myfinance.ui.profile.ProfileScreen
 import kotlinx.coroutines.launch
 
 @Composable
-fun MainFlowScreen() {
+fun MainFlowScreen(navController: NavController) {
     val pagerState = rememberPagerState(initialPage = 1, pageCount = { 3 })
     val coroutineScope = rememberCoroutineScope()
 
@@ -66,7 +68,7 @@ fun MainFlowScreen() {
                 onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } },
                 icon = {
                     Icon(
-                        Icons.Default.Analytics,
+                        Icons.TwoTone.BarChart,
                         contentDescription = "Analiz Icon",
                         modifier = Modifier.size(20.dp)
                     )
@@ -83,7 +85,7 @@ fun MainFlowScreen() {
                 selected = pagerState.currentPage == 1,
                 onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } }, icon = {
                     Icon(
-                        Icons.Default.Home,
+                        Icons.TwoTone.Home,
                         contentDescription = "Home Icon",
                         modifier = Modifier.size(20.dp)
                     )
@@ -100,7 +102,7 @@ fun MainFlowScreen() {
                 selected = pagerState.currentPage == 2,
                 onClick = { coroutineScope.launch { pagerState.animateScrollToPage(2) } }, icon = {
                     Icon(
-                        Icons.Default.Person,
+                        Icons.TwoTone.Person,
                         contentDescription = "Profile Icon",
                         modifier = Modifier.size(20.dp)
                     )
@@ -124,6 +126,10 @@ fun MainFlowScreen() {
                 2 -> ProfileScreen(
                     onGoToMain = {
                         coroutineScope.launch { pagerState.animateScrollToPage(1) }
+                    }, goToPattern = {
+                        navController.navigate(Graph.Templates)
+                    }, goToSettings = {
+                        navController.navigate(Graph.Settings)
                     })
             }
         }

@@ -9,7 +9,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.myfinance.navigation.RootScreen
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
+import com.example.myfinance.navigation.AppNavHost
 import com.example.myfinance.ui.theme.MyFinanceTheme
 
 class MainActivity : ComponentActivity() {
@@ -18,7 +20,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyFinanceTheme {
-                RootScreen()
+                AppNavHost(modifier = Modifier.fillMaxSize())
             }
         }
     }
