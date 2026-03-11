@@ -1,8 +1,6 @@
 package com.example.myfinance.ui.profile
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,8 +12,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.ChevronRight
+import androidx.compose.material.icons.twotone.Person
 import androidx.compose.material.icons.twotone.Settings
-import androidx.compose.material.icons.twotone.SettingsPower
 import androidx.compose.material.icons.twotone.Style
 import androidx.compose.material.icons.twotone.Sync
 import androidx.compose.material3.Icon
@@ -27,10 +25,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import com.example.myfinance.ui.components.PrimaryButton
-import com.example.myfinance.ui.components.PrimaryCard
 import com.example.myfinance.ui.components.PrimaryText
 import com.example.myfinance.ui.components.TopNavBar
 
@@ -50,52 +47,46 @@ fun ProfileScreen(
         val autherised by remember { mutableStateOf(true) }
         var username: String
         var email: String
-        var regDate: String
         if (autherised) {
-            username = "username"
-            email = "Email"
-            regDate = "21.05.2025"
+            username = "Oraz Atanyazov"
+            email = "orazjanov11@gmail.com"
         } else {
             username = "Нажмите для регистрации"
             email = ""
-            regDate = ""
         }
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .padding(innerPadding)
+                .padding(top = 50.dp)
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            PrimaryCard(
+            Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(enabled = true, onClick = {})
-                    .padding(horizontal = 16.dp, vertical = 10.dp)
-                    .shadow(2.dp),
-                border = BorderStroke(2.dp, color = MaterialTheme.colorScheme.primary),
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
-                Row(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (autherised) {
-                        Column(Modifier.weight(1f)) {
-                            PrimaryText(
-                                text = username,
-                                style = MaterialTheme.typography.labelLarge,
-                            )
-                            PrimaryText(
-                                text = email,
-                                style = MaterialTheme.typography.labelLarge,
-                            )
-                            PrimaryText(
-                                text = regDate,
-                                style = MaterialTheme.typography.labelLarge,
-                            )
-                        }
+                if (autherised) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        PrimaryText(
+                            text = username,
+                            style = MaterialTheme.typography.displayMedium
+                        )
+                        PrimaryText(
+                            text = email,
+                            modifier = Modifier.alpha(0.5f),
+                            style = MaterialTheme.typography.labelLarge,
+                        )
+                        Spacer(Modifier.height(15.dp))
+                        PrimaryText(
+                            text = "* Бесплатная версия",
+                            modifier = Modifier.alpha(0.5f),
+                            style = MaterialTheme.typography.titleSmall,
+                        )
                     }
                 }
             }
@@ -103,10 +94,14 @@ fun ProfileScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                    .padding(bottom = 100.dp)
+                    .padding(
+                        start = 16.dp, end = 16.dp, top = 20.dp, bottom = 100.dp
+                    ),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
+
                 PrimaryButton(
                     "", onClick = { goToSettings() }, modifier = Modifier.fillMaxWidth()
                 ) {
@@ -178,14 +173,22 @@ fun ProfileScreen(
                             contentDescription = "",
                             modifier = Modifier.align(Alignment.CenterEnd)
                         )
-
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+
+                    .background(MaterialTheme.colorScheme.background),
+                horizontalAlignment = Alignment.CenterHorizontally
+
+            ) {
                 PrimaryButton(
                     "Вход", onClick = { goToPattern() }, modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(Icons.TwoTone.SettingsPower, contentDescription = "")
+                    Icon(Icons.TwoTone.Person, contentDescription = "")
                 }
             }
         }

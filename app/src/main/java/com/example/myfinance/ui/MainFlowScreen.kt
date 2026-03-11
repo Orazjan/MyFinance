@@ -45,10 +45,11 @@ fun MainFlowScreen(navController: NavController) {
                 .fillMaxWidth()
                 .size(100.dp)
                 .padding(
-                    vertical = 16.dp, horizontal = 50.dp
+                    vertical = 16.dp, horizontal = 40.dp
                 ), contentAlignment = Alignment.Center
         ) {
             NavigationBar(
+                containerColor = MaterialTheme.colorScheme.background,
                 tonalElevation = 0.dp,
                 modifier = Modifier
                     .height(60.dp)
@@ -63,7 +64,6 @@ fun MainFlowScreen(navController: NavController) {
             )
             NavigationBarItem(
                 modifier = Modifier.size(24.dp),
-
                 selected = pagerState.currentPage == 0,
                 onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } },
                 icon = {

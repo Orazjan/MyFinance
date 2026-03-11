@@ -47,10 +47,12 @@ fun MainScreen() {
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxSize()
-                .padding(top = 10.dp, start = 10.dp, end = 10.dp)
-                .background(MaterialTheme.colorScheme.background)
         ) {
+            Column(
+                modifier = Modifier
+                    .padding(top = 10.dp, start = 10.dp, end = 10.dp)
+                    .background(MaterialTheme.colorScheme.primary)
+            ) {
             PrimaryCard(
                 modifier = Modifier.fillMaxWidth(),
                 border = BorderStroke(5.dp, MaterialTheme.colorScheme.primary),
@@ -105,6 +107,11 @@ fun MainScreen() {
                         )
                 }
             }
+            }
+            Column(
+                modifier = Modifier.padding(top = 10.dp, start = 16.dp, end = 16.dp)
+
+            ) {
             val months = Months.entries.map { it.displayName }
             var selectedMonth: Months by remember { mutableStateOf(Months.ALL_PERIOD) }
 
@@ -153,6 +160,7 @@ fun MainScreen() {
                         }
                     }
                 }
+            }
             }
         }
     }
