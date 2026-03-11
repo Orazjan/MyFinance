@@ -16,7 +16,6 @@ import androidx.compose.material.icons.twotone.ChevronLeft
 import androidx.compose.material.icons.twotone.Clear
 import androidx.compose.material.icons.twotone.Lock
 import androidx.compose.material.icons.twotone.Login
-import androidx.compose.material.icons.twotone.Person
 import androidx.compose.material.icons.twotone.Visibility
 import androidx.compose.material.icons.twotone.VisibilityOff
 import androidx.compose.material3.Icon
@@ -60,7 +59,6 @@ private fun AuthScreenContent(
     onNavigateToRegistration: () -> Unit,
     onNavigateResetPassword: () -> Unit
 ) {
-    var nameUser by remember { mutableStateOf("") }
     val emailPattern = Patterns.EMAIL_ADDRESS
     var email by remember { mutableStateOf("") }
     val isError = email.isNotEmpty() && !emailPattern.matcher(email).matches()
@@ -106,29 +104,6 @@ private fun AuthScreenContent(
                     Column(
 
                     ) {
-                        PrimaryOutlinedTextField(
-                            value = nameUser, onValueChange = { it ->
-                                nameUser = it
-                            }, label = {
-                                PrimaryText(
-                                    "Имя", color = MaterialTheme.colorScheme.primary.copy(0.5f)
-                                )
-                            }, leadingIcon = {
-                                Icon(
-                                    Icons.TwoTone.Person, contentDescription = "Name"
-                                )
-                            }, trailingIcon = {
-                                Icon(
-                                    Icons.TwoTone.Clear,
-                                    contentDescription = "Name",
-                                    modifier = Modifier.clickable(true, onClick = { nameUser = "" })
-                                )
-                            }, keyboardOptions = KeyboardOptions(
-                                autoCorrect = false,
-                                capitalization = KeyboardCapitalization.Words,
-                                showKeyboardOnFocus = true
-                            ), shape = OutlinedTextFieldDefaults.shape
-                        )
                         Spacer(Modifier.height(5.dp))
                         PrimaryOutlinedTextField(
                             value = email,

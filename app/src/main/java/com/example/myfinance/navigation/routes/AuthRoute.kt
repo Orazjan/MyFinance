@@ -22,8 +22,9 @@ fun NavGraphBuilder.AuthRoute(navController: NavHostController) {
             }
         }
         composable(route = Graph.Registration) {
-            RegistrationScreen {
-                navController.popBackStack()
+            RegistrationScreen(
+                onBackNavigation = { navController.popBackStack() }) {
+
             }
         }
     }

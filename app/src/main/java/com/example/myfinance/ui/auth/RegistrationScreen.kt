@@ -1,23 +1,202 @@
 package com.example.myfinance.ui.auth
 
+import android.util.Patterns
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.twotone.ChevronLeft
+import androidx.compose.material.icons.twotone.Clear
+import androidx.compose.material.icons.twotone.Lock
+import androidx.compose.material.icons.twotone.Login
+import androidx.compose.material.icons.twotone.Person
+import androidx.compose.material.icons.twotone.Visibility
+import androidx.compose.material.icons.twotone.VisibilityOff
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.example.myfinance.ui.components.TopNavBar
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
+import com.example.myfinance.ui.components.PrimaryButton
+import com.example.myfinance.ui.components.PrimaryOutlinedTextField
+import com.example.myfinance.ui.components.PrimaryText
 
 @Composable
 fun RegistrationScreen(
-    onBackNavigation: () -> Unit
+    onBackNavigation: () -> Unit,
+    function: () -> Unit
+
 ) {
+    var nameUser by remember { mutableStateOf("") }
+    val emailPattern = Patterns.EMAIL_ADDRESS
+    var email by remember { mutableStateOf("") }
+    val isError = email.isNotEmpty() && !emailPattern.matcher(email).matches()
+    var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
     Scaffold(
-        topBar = {
-            TopNavBar(
-                title = "Регистрация", onBackClick = { onBackNavigation() })
-        }) { innerPadding ->
+        modifier = Modifier.fillMaxSize()
 
-        Text("Регистрационная страница", modifier = Modifier.padding(innerPadding))
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            Row(
+                modifier = Modifier.padding(10.dp),
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Icon(
+                    Icons.TwoTone.ChevronLeft,
+                    contentDescription = "",
+                    modifier = Modifier.clickable(true, onClick = { onBackNavigation() })
+                )
+                PrimaryText("Назад")
+            }
 
+
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                PrimaryText(
+                    "Сохраните свои данные", style = MaterialTheme.typography.headlineMedium
+                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 20.dp, horizontal = 50.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Column(
+
+                    ) {
+                        PrimaryOutlinedTextField(
+                            value = nameUser, onValueChange = { it ->
+                                nameUser = it
+                            }, label = {
+                                PrimaryText(
+                                    "Имя", color = MaterialTheme.colorScheme.primary.copy(0.5f)
+                                )
+                            }, leadingIcon = {
+                                Icon(
+                                    Icons.TwoTone.Person, contentDescription = "Name"
+                                )
+                            }, trailingIcon = {
+                                Icon(
+                                    Icons.TwoTone.Clear,
+                                    contentDescription = "Name",
+                                    modifier = Modifier.clickable(true, onClick = { nameUser = "" })
+                                )
+                            }, keyboardOptions = KeyboardOptions(
+                                autoCorrect = false,
+                                capitalization = KeyboardCapitalization.Words,
+                                showKeyboardOnFocus = true
+                            ), shape = OutlinedTextFieldDefaults.shape
+                        )
+                        Spacer(Modifier.height(5.dp))
+                        PrimaryOutlinedTextField(
+                            value = email,
+                            onValueChange = { it ->
+                                email = it
+                            },
+                            isError = isError,
+                            errorMessage = "Некорректный формат почты",
+                            label = {
+                                PrimaryText(
+                                    "Email", color = MaterialTheme.colorScheme.primary.copy(0.5f)
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.TwoTone.Login, contentDescription = "Name"
+                                )
+                            },
+                            trailingIcon = {
+                                Icon(
+                                    Icons.TwoTone.Clear,
+                                    contentDescription = "Name",
+                                    modifier = Modifier.clickable(
+                                        true, onClick = { email = "" })
+                                )
+                            },
+                            keyboardOptions = KeyboardOptions(
+                                autoCorrect = false,
+                                capitalization = KeyboardCapitalization.Words,
+                                showKeyboardOnFocus = true
+                            ),
+                            shape = OutlinedTextFieldDefaults.shape
+                        )
+                        Spacer(Modifier.height(5.dp))
+                        PrimaryOutlinedTextField(
+                            value = password,
+                            onValueChange = { password = it },
+                            isError = isError,
+                            errorMessage = "Некорректный пароль",
+                            label = {
+                                PrimaryText(
+                                    text = "Пароль",
+                                    color = MaterialTheme.colorScheme.primary.copy(0.5f)
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.TwoTone.Lock, contentDescription = "Password Icon"
+                                )
+                            },
+                            trailingIcon = {
+                                val icon =
+                                    if (passwordVisible) Icons.TwoTone.Visibility else Icons.TwoTone.VisibilityOff
+                                val description =
+                                    if (passwordVisible) "Скрыть пароль" else "Показать пароль"
+
+                                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                    Icon(imageVector = icon, contentDescription = description)
+                                }
+                            },
+                            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            keyboardOptions = KeyboardOptions(
+                                autoCorrect = false,
+                                keyboardType = KeyboardType.Password,
+                                capitalization = KeyboardCapitalization.None,
+                                imeAction = ImeAction.Done
+                            ),
+                            shape = OutlinedTextFieldDefaults.shape,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    Spacer(Modifier.height(10.dp))
+                    PrimaryButton(
+                        "Зарегестрироваться",
+                        onClick = { },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                }
+            }
+        }
     }
 }
