@@ -131,9 +131,10 @@ private fun AuthScreenContent(
                                 )
                             },
                             keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Email,
                                 autoCorrect = false,
-                                capitalization = KeyboardCapitalization.Words,
-                                showKeyboardOnFocus = true
+                                capitalization = KeyboardCapitalization.None,
+                                imeAction = ImeAction.Next
                             ),
                             shape = OutlinedTextFieldDefaults.shape
                         )

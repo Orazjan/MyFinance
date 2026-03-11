@@ -43,8 +43,7 @@ import com.example.myfinance.ui.components.PrimaryText
 
 @Composable
 fun RegistrationScreen(
-    onBackNavigation: () -> Unit,
-    function: () -> Unit
+    onBackNavigation: () -> Unit
 
 ) {
     var nameUser by remember { mutableStateOf("") }
@@ -113,7 +112,8 @@ fun RegistrationScreen(
                             }, keyboardOptions = KeyboardOptions(
                                 autoCorrect = false,
                                 capitalization = KeyboardCapitalization.Words,
-                                showKeyboardOnFocus = true
+                                showKeyboardOnFocus = true,
+                                imeAction = ImeAction.Next
                             ), shape = OutlinedTextFieldDefaults.shape
                         )
                         Spacer(Modifier.height(5.dp))
@@ -144,8 +144,10 @@ fun RegistrationScreen(
                             },
                             keyboardOptions = KeyboardOptions(
                                 autoCorrect = false,
+                                keyboardType = KeyboardType.Email,
                                 capitalization = KeyboardCapitalization.Words,
-                                showKeyboardOnFocus = true
+                                showKeyboardOnFocus = true,
+                                imeAction = ImeAction.Next
                             ),
                             shape = OutlinedTextFieldDefaults.shape
                         )
