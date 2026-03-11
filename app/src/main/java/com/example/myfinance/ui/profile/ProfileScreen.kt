@@ -33,9 +33,7 @@ import com.example.myfinance.ui.components.TopNavBar
 
 @Composable
 fun ProfileScreen(
-    onGoToMain: () -> Unit,
-    goToPattern: () -> Unit,
-    goToSettings: () -> Unit,
+    onGoToMain: () -> Unit, goToPattern: () -> Unit, goToSettings: () -> Unit, goToAuth: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -47,12 +45,15 @@ fun ProfileScreen(
         val autherised by remember { mutableStateOf(true) }
         var username: String
         var email: String
+        var typeOfVersion: String
         if (autherised) {
-            username = "Oraz Atanyazov"
+            username = "OrazXan"
             email = "orazjanov11@gmail.com"
+            typeOfVersion = "* Бесплатная версия"
         } else {
-            username = "Нажмите для регистрации"
-            email = ""
+            username = "Гость"
+            email = "Войдите или зарегестрируйтесь"
+            typeOfVersion = "Пробная версия"
         }
 
         Column(
@@ -83,7 +84,7 @@ fun ProfileScreen(
                         )
                         Spacer(Modifier.height(15.dp))
                         PrimaryText(
-                            text = "* Бесплатная версия",
+                            text = typeOfVersion,
                             modifier = Modifier.alpha(0.5f),
                             style = MaterialTheme.typography.titleSmall,
                         )
@@ -180,13 +181,12 @@ fun ProfileScreen(
             Column(
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
-
                     .background(MaterialTheme.colorScheme.background),
                 horizontalAlignment = Alignment.CenterHorizontally
 
             ) {
                 PrimaryButton(
-                    "Вход", onClick = { goToPattern() }, modifier = Modifier.fillMaxWidth()
+                    "Вход", onClick = { goToAuth() }, modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(Icons.TwoTone.Person, contentDescription = "")
                 }

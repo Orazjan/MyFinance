@@ -130,6 +130,8 @@ fun MainFlowScreen(navController: NavController) {
                         navController.navigate(Graph.Templates)
                     }, goToSettings = {
                         navController.navigate(Graph.Settings)
+                    }, goToAuth = {
+                        navController.navigate(Graph.Auth)
                     })
             }
         }
