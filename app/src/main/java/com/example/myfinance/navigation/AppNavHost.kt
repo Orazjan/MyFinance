@@ -16,7 +16,7 @@ fun AppNavHost(
     navController: NavHostController = rememberNavController(), modifier: Modifier
 ) {
     NavHost(
-        navController = navController, startDestination = Graph.Main, modifier = modifier
+        navController = navController, startDestination = Graph.Auth, modifier = modifier
     ) {
         AuthRoute(navController)
 

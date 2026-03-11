@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import com.example.myfinance.ui.components.PrimaryButton
+import com.example.myfinance.ui.components.PrimaryCard
 import com.example.myfinance.ui.components.PrimaryText
 import com.example.myfinance.ui.components.TopNavBar
 
@@ -46,14 +47,18 @@ fun ProfileScreen(
         var username: String
         var email: String
         var typeOfVersion: String
+        var enterText: String
         if (autherised) {
             username = "OrazXan"
             email = "orazjanov11@gmail.com"
             typeOfVersion = "* Бесплатная версия"
+            enterText = "Выйти"
         } else {
             username = "Гость"
             email = "Войдите или зарегестрируйтесь"
             typeOfVersion = "Пробная версия"
+            enterText = "Войти"
+
         }
 
         Column(
@@ -83,11 +88,13 @@ fun ProfileScreen(
                             style = MaterialTheme.typography.labelLarge,
                         )
                         Spacer(Modifier.height(15.dp))
-                        PrimaryText(
-                            text = typeOfVersion,
-                            modifier = Modifier.alpha(0.5f),
-                            style = MaterialTheme.typography.titleSmall,
-                        )
+                        PrimaryCard {
+                            PrimaryText(
+                                text = typeOfVersion,
+                                modifier = Modifier.alpha(0.5f),
+                                style = MaterialTheme.typography.titleSmall,
+                            )
+                        }
                     }
                 }
             }
@@ -186,7 +193,7 @@ fun ProfileScreen(
 
             ) {
                 PrimaryButton(
-                    "Вход", onClick = { goToAuth() }, modifier = Modifier.fillMaxWidth()
+                    enterText, onClick = { goToAuth() }, modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(Icons.TwoTone.Person, contentDescription = "")
                 }
