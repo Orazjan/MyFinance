@@ -38,6 +38,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.myfinance.R
 import com.example.myfinance.navigation.Graph
@@ -50,9 +51,9 @@ import com.example.myfinance.ui.components.PrimaryText
 fun AuthScreen(
     navController: NavHostController, viewModel: AuthViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     AuthScreenContent(
-        email = viewModel.email,
-        password = viewModel.password,
+        state = uiState,
         onEmailChange = { viewModel.onEmailChanged(it) },
         onPasswordChange = { viewModel.onPasswordChanged(it) },
         onLoginClick = {
@@ -63,26 +64,18 @@ fun AuthScreen(
         onNavigateToRegistration = { navController.navigate(Graph.Registration) },
         onNavigateResetPassword = { navController.navigate(Graph.ResetPassword) },
         onBackClick = { navController.popBackStack() },
-        emailError = viewModel.emailError,
-        passwordError = viewModel.passwordError,
-        generalError = viewModel.generalError,
-        isLoading = viewModel.isLoading
-    )
+
+        )
 }
 @Composable
 private fun AuthScreenContent(
-    email: String,
-    password: String,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onLoginClick: () -> Unit,
     onBackClick: () -> Unit,
     onNavigateToRegistration: () -> Unit,
     onNavigateResetPassword: () -> Unit,
-    emailError: String?,
-    passwordError: String?,
-    generalError: String?,
-    isLoading: Boolean
+    state: AuthUiState,
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
 
@@ -136,10 +129,10 @@ private fun AuthScreenContent(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         PrimaryOutlinedTextField(
-                            value = email,
+                            value = state.email,
                             onValueChange = onEmailChange,
-                            isError = emailError != null,
-                            errorMessage = emailError ?: "",
+                            isError = state.emailError != null,
+                            errorMessage = state.emailError ?: "",
                             label = {
                                 PrimaryText(
                                     "Email", color = MaterialTheme.colorScheme.primary.copy(0.5f)
@@ -167,10 +160,10 @@ private fun AuthScreenContent(
                         Spacer(Modifier.height(10.dp))
 
                         PrimaryOutlinedTextField(
-                            value = password,
+                            value = state.password,
                             onValueChange = onPasswordChange,
-                            isError = passwordError != null,
-                            errorMessage = passwordError ?: "",
+                            isError = state.passwordError != null,
+                            errorMessage = state.passwordError ?: "",
                             label = {
                                 PrimaryText(
                                     text = "Пароль",
@@ -215,9 +208,9 @@ private fun AuthScreenContent(
 
                         Spacer(Modifier.height(15.dp))
 
-                        if (generalError != null) {
+                        if (state.generalError != null) {
                             PrimaryText(
-                                text = generalError,
+                                text = state.generalError,
                                 color = MaterialTheme.colorScheme.error,
                                 style = MaterialTheme.typography.titleSmall,
                                 modifier = Modifier.padding(bottom = 8.dp)
@@ -227,8 +220,8 @@ private fun AuthScreenContent(
                         Spacer(Modifier.height(10.dp))
 
                         PrimaryButton(
-                            text = if (isLoading) "Загрузка..." else "Войти",
-                            enabled = !isLoading && emailError == null && passwordError == null,
+                            text = if (state.isLoading) "Загрузка..." else "Войти",
+                            enabled = !state.isLoading && state.emailError == null && state.passwordError == null,
                             onClick = { onLoginClick() },
                             modifier = Modifier.fillMaxWidth()
                         )

@@ -8,6 +8,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myfinance.data.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -15,52 +19,76 @@ import javax.inject.Inject
 class AuthViewModel @Inject constructor(
     private val repository: AuthRepository
 ) : ViewModel() {
-
-    var email by mutableStateOf("")
-    var password by mutableStateOf("")
-
-    var emailError by mutableStateOf<String?>(null)
-    var passwordError by mutableStateOf<String?>(null)
-    var generalError by mutableStateOf<String?>(null)
+    private val _uiState = MutableStateFlow(AuthUiState())
+    val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     var isLoading by mutableStateOf(false)
 
     fun onEmailChanged(newValue: String) {
-        email = newValue
-        emailError =
-            if (newValue.isNotEmpty() && !Patterns.EMAIL_ADDRESS.matcher(newValue).matches()) {
-                "Некорректный формат почты"
-            } else {
-                null
-            }
+        _uiState.update {
+            it.copy(
+                email = newValue,
+                emailError = if (newValue.isNotEmpty() && !Patterns.EMAIL_ADDRESS.matcher(newValue)
+                        .matches()
+                ) {
+                    "Некорректный формат почты"
+                } else null
+            )
+        }
+
     }
 
     fun onPasswordChanged(newValue: String) {
-        password = newValue
-        passwordError = if (newValue.isNotEmpty() && newValue.length < 6) {
-            "Пароль слишком короткий"
-        } else {
-            null
+        _uiState.update {
+            it.copy(
+                password = newValue,
+                passwordError = if (newValue.isNotEmpty() && newValue.length < 6) {
+                    "Пароль слишком короткий"
+                } else null
+            )
         }
     }
 
     fun login(onSuccess: () -> Unit) {
-        generalError = null
+        val currentState = _uiState.value
+        if (currentState.email.isEmpty() || currentState.emailError != null) {
+            _uiState.update {
+                it.copy(
+                    generalError = "Проверьте правильность почты"
+                )
+            }
+            return
+        }
 
-        if (emailError != null || passwordError != null || email.isEmpty() || password.isEmpty()) {
-            generalError = "Пожалуйста, исправьте ошибки в полях"
+        if (currentState.password.isEmpty() || currentState.passwordError != null) {
+            _uiState.update {
+                it.copy(
+                    generalError = "Проверьте правильность почты"
+                )
+            }
             return
         }
 
         viewModelScope.launch {
-            isLoading = true
-            val result = repository.login(email, password)
-            isLoading = false
-
+            _uiState.update {
+                it.copy(
+                    isLoading = true, generalError = null
+                )
+            }
+            val result = repository.login(currentState.email, currentState.password)
+            _uiState.update {
+                it.copy(
+                    isLoading = false
+                )
+            }
             result.onSuccess {
                 onSuccess()
             }.onFailure { exception ->
-                generalError = exception.message ?: "Произошла неизвестная ошибка"
+                _uiState.update {
+                    it.copy(
+                        generalError = exception.message ?: "Произошла неизвестная ошибка"
+                    )
+                }
             }
         }
     }

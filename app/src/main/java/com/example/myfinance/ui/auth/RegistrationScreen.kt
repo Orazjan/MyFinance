@@ -24,7 +24,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,42 +54,30 @@ import com.example.myfinance.ui.components.PrimaryText
 fun RegistrationScreen(
     navController: NavHostController, viewModel: RegistrationViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsState()
     RegistrationScreenContent(
-        nameUser = viewModel.nameUser,
-        nameUserError = viewModel.nameUserError,
-        email = viewModel.email,
-        emailError = viewModel.emailError,
-        passwordError = viewModel.passwordError,
-        password = viewModel.password,
+        state = uiState,
+
         onEmailChange = { viewModel.onChangeEmail(it) },
         onPasswordChange = { viewModel.onChangePassword(it) },
         onNameChange = { viewModel.onChangeUserName(it) },
         onRegClick = { viewModel.onRegClick({ navController.navigate(Graph.Main) }) },
-        isLoading = viewModel.isLoading,
-        generalError = viewModel.generalError,
         onBackNavigation = { navController.popBackStack() },
     )
 }
 
 @Composable
 fun RegistrationScreenContent(
-    nameUser: String,
-    nameUserError: String?,
-    email: String,
-    emailError: String?,
-    passwordError: String?,
-    password: String,
+    state: RegistrationUiState, onNameChange: (String) -> Unit,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
-    onNameChange: (String) -> Unit,
     onRegClick: () -> Unit,
-    isLoading: Boolean,
-    generalError: String?,
     onBackNavigation: () -> Unit
-
 ) {
 
     var passwordVisible by remember { mutableStateOf(false) }
+    val snackBarHostState = remember { SnackbarHostState() }
+
     Scaffold(
         modifier = Modifier.fillMaxSize()
 
@@ -140,10 +131,10 @@ fun RegistrationScreenContent(
 
                     ) {
                         PrimaryOutlinedTextField(
-                            value = nameUser,
+                            value = state.userName,
                             onValueChange = onNameChange,
-                            isError = nameUserError != null,
-                            errorMessage = nameUserError ?: "",
+                            isError = state.userNameError != null,
+                            errorMessage = state.userNameError ?: "",
                             label = {
                                 PrimaryText(
                                     "Имя", color = MaterialTheme.colorScheme.primary.copy(0.5f)
@@ -172,10 +163,10 @@ fun RegistrationScreenContent(
                         Spacer(Modifier.height(10.dp))
 
                         PrimaryOutlinedTextField(
-                            value = email,
+                            value = state.email,
                             onValueChange = onEmailChange,
-                            isError = emailError != null,
-                            errorMessage = emailError ?: "",
+                            isError = state.emailError != null,
+                            errorMessage = state.emailError ?: "",
                             label = {
                                 PrimaryText(
                                     "Email", color = MaterialTheme.colorScheme.primary.copy(0.5f)
@@ -205,10 +196,10 @@ fun RegistrationScreenContent(
                         Spacer(Modifier.height(10.dp))
 
                         PrimaryOutlinedTextField(
-                            value = password,
+                            value = state.password,
                             onValueChange = onPasswordChange,
-                            isError = passwordError != null,
-                            errorMessage = passwordError ?: "",
+                            isError = state.passwordError != null,
+                            errorMessage = state.passwordError ?: "",
                             label = {
                                 PrimaryText(
                                     text = "Пароль",
@@ -244,19 +235,16 @@ fun RegistrationScreenContent(
 
                         Spacer(Modifier.height(10.dp))
 
-                        if (generalError != null) {
-                            PrimaryText(
-                                text = generalError,
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.titleSmall,
-                                modifier = Modifier.padding(8.dp)
-                            )
+                        LaunchedEffect(state.generalError) {
+                            state.generalError?.let {
+                                snackBarHostState.showSnackbar(it)
+                            }
                         }
                         Spacer(Modifier.height(10.dp))
                         PrimaryButton(
-                            text = if (isLoading) "Загрузка..." else "Зарегестрироваться",
+                            text = if (state.isLoading) "Загрузка..." else "Зарегестрироваться",
                             onClick = onRegClick,
-                            enabled = !isLoading && emailError == null && nameUserError == null && passwordError == null,
+                            enabled = !state.isLoading && state.emailError == null && state.userNameError == null && state.passwordError == null,
                             modifier = Modifier.fillMaxWidth()
                         )
                         Spacer(Modifier.height(10.dp))

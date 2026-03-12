@@ -1,13 +1,14 @@
 package com.example.myfinance.ui.auth
 
 import android.util.Patterns
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myfinance.data.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -15,56 +16,94 @@ import javax.inject.Inject
 class RegistrationViewModel @Inject constructor(
     private val repository: AuthRepository
 ) : ViewModel() {
-
-    var nameUser by mutableStateOf("")
-    val emailPattern = Patterns.EMAIL_ADDRESS
-    var email by mutableStateOf("")
-    var emailError by mutableStateOf<String?>(null)
-    var nameUserError by mutableStateOf<String?>(null)
-    var passwordError by mutableStateOf<String?>(null)
-    var password by mutableStateOf("")
-    var isLoading by mutableStateOf(false)
-    var generalError by mutableStateOf<String?>(null)
+    private val _uiState = MutableStateFlow(RegistrationUiState())
+    val uiState: StateFlow<RegistrationUiState> = _uiState.asStateFlow()
 
     fun onChangeUserName(newValue: String) {
-        nameUser = newValue
-        nameUserError = if (nameUser.isNotEmpty() && nameUser.length <= 2) {
-            "Имя не может быть меньше 2х символом"
-        } else {
-            null
+        _uiState.update {
+            it.copy(
+                userName = newValue,
+                userNameError = if (newValue.isNotEmpty() && newValue.length <= 2) {
+                    "Имя не может быть меньше 2х символом"
+                } else {
+                    null
+                }
+            )
         }
+
     }
 
     fun onChangeEmail(newValue: String) {
-        email = newValue
-        emailError = if (email.isNotEmpty() && !emailPattern.matcher(email).matches()) {
-            "Неверный формат почты"
-        } else {
-            null
+        _uiState.update {
+            it.copy(
+                email = newValue,
+                emailError = if (newValue.isNotEmpty() && !Patterns.EMAIL_ADDRESS.matcher(newValue)
+                        .matches()
+                ) {
+                    "Неверный формат почты"
+                } else {
+                    null
+                }
+            )
         }
+
     }
 
     fun onChangePassword(newValue: String) {
-        password = newValue
-        passwordError = if (password.isNotEmpty() && password.length <= 7) {
-            "Пароль должен иметь 8 или больше символов"
-        } else null
+        _uiState.update {
+            it.copy(
+                password = newValue,
+                passwordError = if (newValue.isNotEmpty() && newValue.length <= 7) {
+                    "Пароль должен иметь 8 или больше символов"
+                } else null
+
+
+            )
+        }
+
     }
 
     fun onRegClick(onSuccess: () -> Unit) {
-        generalError = null
-
-        if (emailError != null || passwordError != null || nameUserError != null || password.isEmpty() || email.isEmpty() || nameUser.isEmpty()) {
-            generalError = "Пожалуйста, исправьте ошибки в полях"
+        val currentState = _uiState.value
+        if (currentState.email.isEmpty() || currentState.emailError != null) {
+            _uiState.update {
+                it.copy(
+                    generalError = "Проверьте данные почты"
+                )
+            }
+            return
+        }
+        if (currentState.userName.isEmpty() || currentState.userNameError != null) {
+            _uiState.update {
+                it.copy(
+                    generalError = "Проверьте данные имени"
+                )
+            }
+            return
+        }
+        if (currentState.password.isEmpty() || currentState.passwordError != null) {
+            _uiState.update {
+                it.copy(
+                    generalError = "Проверьте данные пароля"
+                )
+            }
             return
         }
 
         viewModelScope.launch {
-            isLoading = true
-            val result = repository.registration(email, password)
-            isLoading = false
+            _uiState.update {
+                it.copy(
+                    isLoading = true, generalError = null
+                )
+            }
+            val result = repository.registration(currentState.email, currentState.password)
+            _uiState.update { it.copy(isLoading = false) }
             result.onSuccess { onSuccess() }.onFailure { exception ->
-                generalError = exception.message ?: "Произошла неизвестная ошибка"
+                _uiState.update {
+                    it.copy(
+                        generalError = exception.message ?: "Произошла неизвестная ошибка"
+                    )
+                }
             }
         }
     }
