@@ -13,4 +13,18 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
         }
     }
 
+    override suspend fun registration(
+        email: String, password: String
+    ): Result<Unit> {
+        return if (email == "test@test.com" && password == "12345678") {
+            Result.success(Unit)
+        } else {
+            Result.failure(Exception("Неверно"))
+        }
+    }
+
+    override suspend fun resetPassword(email: String): Result<Unit> {
+        return Result.success(Unit)
+    }
+
 }

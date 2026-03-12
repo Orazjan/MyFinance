@@ -30,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -38,6 +39,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.example.myfinance.R
 import com.example.myfinance.navigation.Graph
 import com.example.myfinance.ui.components.PrimaryButton
 import com.example.myfinance.ui.components.PrimaryCard
@@ -98,11 +100,13 @@ private fun AuthScreenContent(
                 horizontalArrangement = Arrangement.Start
             ) {
                 Icon(
-                    Icons.TwoTone.ChevronLeft,
-                    contentDescription = "Назад",
+                    Icons.TwoTone.ChevronLeft, contentDescription = stringResource(R.string.back),
                     modifier = Modifier.clickable(onClick = { onBackClick() })
                 )
-                PrimaryText("Назад")
+                PrimaryText(
+                    stringResource(R.string.back),
+                    modifier = Modifier.clickable(true, onClick = { onBackClick() })
+                )
             }
 
             Column(
@@ -215,6 +219,7 @@ private fun AuthScreenContent(
                             PrimaryText(
                                 text = generalError,
                                 color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.titleSmall,
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
                         }

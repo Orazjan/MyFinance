@@ -16,7 +16,6 @@ class AuthViewModel @Inject constructor(
     private val repository: AuthRepository
 ) : ViewModel() {
 
-    // Данные ввода
     var email by mutableStateOf("")
     var password by mutableStateOf("")
 

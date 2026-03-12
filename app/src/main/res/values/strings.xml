@@ -1,5 +1,4 @@
 <resources>
     <string name="app_name">My Finance</string>
-    <!-- Strings related to login -->
-    <!-- TODO: Remove or change this placeholder text -->
+    <string name="back">Назад</string>
 </resources>

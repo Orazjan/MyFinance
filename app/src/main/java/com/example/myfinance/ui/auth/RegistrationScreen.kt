@@ -1,6 +1,6 @@
 package com.example.myfinance.ui.auth
 
-import android.util.Patterns
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,32 +31,61 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.example.myfinance.R
+import com.example.myfinance.navigation.Graph
 import com.example.myfinance.ui.components.PrimaryButton
+import com.example.myfinance.ui.components.PrimaryCard
 import com.example.myfinance.ui.components.PrimaryOutlinedTextField
 import com.example.myfinance.ui.components.PrimaryText
 
 @Composable
-fun RegistrationScreen(navController: NavHostController) {
-    RegistrationScreenContent(onBackNavigation = { navController.popBackStack() })
+fun RegistrationScreen(
+    navController: NavHostController, viewModel: RegistrationViewModel = hiltViewModel()
+) {
+    RegistrationScreenContent(
+        nameUser = viewModel.nameUser,
+        nameUserError = viewModel.nameUserError,
+        email = viewModel.email,
+        emailError = viewModel.emailError,
+        passwordError = viewModel.passwordError,
+        password = viewModel.password,
+        onEmailChange = { viewModel.onChangeEmail(it) },
+        onPasswordChange = { viewModel.onChangePassword(it) },
+        onNameChange = { viewModel.onChangeUserName(it) },
+        onRegClick = { viewModel.onRegClick({ navController.navigate(Graph.Main) }) },
+        isLoading = viewModel.isLoading,
+        generalError = viewModel.generalError,
+        onBackNavigation = { navController.popBackStack() },
+    )
 }
 
 @Composable
 fun RegistrationScreenContent(
+    nameUser: String,
+    nameUserError: String?,
+    email: String,
+    emailError: String?,
+    passwordError: String?,
+    password: String,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onNameChange: (String) -> Unit,
+    onRegClick: () -> Unit,
+    isLoading: Boolean,
+    generalError: String?,
     onBackNavigation: () -> Unit
 
 ) {
-    var nameUser by remember { mutableStateOf("") }
-    val emailPattern = Patterns.EMAIL_ADDRESS
-    var email by remember { mutableStateOf("") }
-    val isError = email.isNotEmpty() && !emailPattern.matcher(email).matches()
-    var password by remember { mutableStateOf("") }
+
     var passwordVisible by remember { mutableStateOf(false) }
     Scaffold(
         modifier = Modifier.fillMaxSize()
@@ -77,59 +106,76 @@ fun RegistrationScreenContent(
                     contentDescription = "",
                     modifier = Modifier.clickable(true, onClick = { onBackNavigation() })
                 )
-                PrimaryText("Назад")
+                PrimaryText(
+                    stringResource(R.string.back),
+                    modifier = Modifier.clickable(true, onClick = { onBackNavigation() })
+                )
             }
 
 
             Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(horizontal = 30.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
                 PrimaryText(
                     "Сохраните свои данные", style = MaterialTheme.typography.headlineMedium
                 )
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 20.dp, horizontal = 50.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Spacer(Modifier.height(40.dp))
+
+                PrimaryCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.large,
+                    elevation = 12.dp,
+                    border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary.copy(0.5f))
                 ) {
                     Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
 
                     ) {
                         PrimaryOutlinedTextField(
-                            value = nameUser, onValueChange = { it ->
-                                nameUser = it
-                            }, label = {
+                            value = nameUser,
+                            onValueChange = onNameChange,
+                            isError = nameUserError != null,
+                            errorMessage = nameUserError ?: "",
+                            label = {
                                 PrimaryText(
                                     "Имя", color = MaterialTheme.colorScheme.primary.copy(0.5f)
                                 )
-                            }, leadingIcon = {
+                            },
+                            leadingIcon = {
                                 Icon(
                                     Icons.TwoTone.Person, contentDescription = "Name"
                                 )
-                            }, trailingIcon = {
+                            },
+                            trailingIcon = {
                                 Icon(
                                     Icons.TwoTone.Clear,
-                                    contentDescription = "Name",
-                                    modifier = Modifier.clickable(true, onClick = { nameUser = "" })
+                                    contentDescription = "Name", modifier = Modifier.clickable(
+                                        true, onClick = { onNameChange("") })
                                 )
-                            }, keyboardOptions = KeyboardOptions(
+                            },
+                            keyboardOptions = KeyboardOptions(
                                 autoCorrect = false,
                                 capitalization = KeyboardCapitalization.Words,
                                 showKeyboardOnFocus = true,
                                 imeAction = ImeAction.Next
-                            ), shape = OutlinedTextFieldDefaults.shape
+                            ),
+                            shape = OutlinedTextFieldDefaults.shape
                         )
-                        Spacer(Modifier.height(5.dp))
+                        Spacer(Modifier.height(10.dp))
+
                         PrimaryOutlinedTextField(
                             value = email,
-                            onValueChange = { it ->
-                                email = it
-                            },
-                            isError = isError,
-                            errorMessage = "Некорректный формат почты",
+                            onValueChange = onEmailChange,
+                            isError = emailError != null,
+                            errorMessage = emailError ?: "",
                             label = {
                                 PrimaryText(
                                     "Email", color = MaterialTheme.colorScheme.primary.copy(0.5f)
@@ -142,27 +188,27 @@ fun RegistrationScreenContent(
                             },
                             trailingIcon = {
                                 Icon(
-                                    Icons.TwoTone.Clear,
-                                    contentDescription = "Name",
+                                    Icons.TwoTone.Clear, contentDescription = "Clear",
                                     modifier = Modifier.clickable(
-                                        true, onClick = { email = "" })
+                                        true, onClick = { onEmailChange("") })
                                 )
                             },
                             keyboardOptions = KeyboardOptions(
                                 autoCorrect = false,
                                 keyboardType = KeyboardType.Email,
-                                capitalization = KeyboardCapitalization.Words,
+                                capitalization = KeyboardCapitalization.None,
                                 showKeyboardOnFocus = true,
                                 imeAction = ImeAction.Next
                             ),
                             shape = OutlinedTextFieldDefaults.shape
                         )
-                        Spacer(Modifier.height(5.dp))
+                        Spacer(Modifier.height(10.dp))
+
                         PrimaryOutlinedTextField(
                             value = password,
-                            onValueChange = { password = it },
-                            isError = isError,
-                            errorMessage = "Некорректный пароль",
+                            onValueChange = onPasswordChange,
+                            isError = passwordError != null,
+                            errorMessage = passwordError ?: "",
                             label = {
                                 PrimaryText(
                                     text = "Пароль",
@@ -194,15 +240,27 @@ fun RegistrationScreenContent(
                             shape = OutlinedTextFieldDefaults.shape,
                             modifier = Modifier.fillMaxWidth()
                         )
+
+
+                        Spacer(Modifier.height(10.dp))
+
+                        if (generalError != null) {
+                            PrimaryText(
+                                text = generalError,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.titleSmall,
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
+                        Spacer(Modifier.height(10.dp))
+                        PrimaryButton(
+                            text = if (isLoading) "Загрузка..." else "Зарегестрироваться",
+                            onClick = onRegClick,
+                            enabled = !isLoading && emailError == null && nameUserError == null && passwordError == null,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(Modifier.height(10.dp))
                     }
-
-                    Spacer(Modifier.height(10.dp))
-                    PrimaryButton(
-                        "Зарегестрироваться",
-                        onClick = { },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
                 }
             }
         }
