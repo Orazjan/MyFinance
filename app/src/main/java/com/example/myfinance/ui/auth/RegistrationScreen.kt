@@ -123,13 +123,8 @@ fun RegistrationScreenContent(
                     elevation = 12.dp,
                     border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary.copy(0.5f))
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-
-                    ) {
+                    Column {
+                        Spacer(Modifier.height(5.dp))
                         PrimaryOutlinedTextField(
                             value = state.userName,
                             onValueChange = onNameChange,

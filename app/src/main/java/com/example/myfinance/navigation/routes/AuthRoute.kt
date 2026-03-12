@@ -17,9 +17,10 @@ fun NavGraphBuilder.AuthRoute(navController: NavHostController) {
             )
         }
         composable(route = Graph.ResetPassword) {
-            ResetPasswordScreen {
-                navController.popBackStack()
-            }
+            ResetPasswordScreen(
+                navController = navController
+            )
+
         }
         composable(route = Graph.Registration) {
             RegistrationScreen(
