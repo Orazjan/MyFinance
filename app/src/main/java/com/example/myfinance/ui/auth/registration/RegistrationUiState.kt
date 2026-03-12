@@ -1,4 +1,4 @@
-package com.example.myfinance.ui.auth
+package com.example.myfinance.ui.auth.registration
 
 data class RegistrationUiState(
     val userName: String = "",

@@ -1,4 +1,4 @@
-package com.example.myfinance.ui.auth
+package com.example.myfinance.ui.auth.login
 
 data class AuthUiState(
     val email: String = "",

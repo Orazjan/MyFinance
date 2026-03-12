@@ -1,4 +1,4 @@
-package com.example.myfinance.ui.auth
+package com.example.myfinance.ui.auth.registration
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -45,6 +45,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.myfinance.R
 import com.example.myfinance.navigation.Graph
+import com.example.myfinance.ui.auth.registration.RegistrationUiState
+import com.example.myfinance.ui.auth.registration.RegistrationViewModel
 import com.example.myfinance.ui.components.PrimaryButton
 import com.example.myfinance.ui.components.PrimaryCard
 import com.example.myfinance.ui.components.PrimaryOutlinedTextField

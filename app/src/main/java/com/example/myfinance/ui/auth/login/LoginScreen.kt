@@ -1,4 +1,4 @@
-package com.example.myfinance.ui.auth
+package com.example.myfinance.ui.auth.login
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable

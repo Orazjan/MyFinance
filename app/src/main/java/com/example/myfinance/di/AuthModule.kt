@@ -1,7 +1,7 @@
 package com.example.myfinance.di
 
-import com.example.myfinance.data.AuthRepository
-import com.example.myfinance.data.AuthRepositoryImpl
+import com.example.myfinance.domain.repository.AuthRepository
+import com.example.myfinance.data.repository.AuthRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

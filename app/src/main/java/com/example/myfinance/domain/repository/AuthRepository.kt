@@ -1,4 +1,4 @@
-package com.example.myfinance.data
+package com.example.myfinance.domain.repository
 
 interface AuthRepository {
     suspend fun login(email: String, password: String): Result<Unit>

@@ -1,5 +1,6 @@
-package com.example.myfinance.data
+package com.example.myfinance.data.repository
 
+import com.example.myfinance.domain.repository.AuthRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext

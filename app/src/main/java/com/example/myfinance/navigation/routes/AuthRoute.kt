@@ -5,9 +5,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.example.myfinance.navigation.Graph
-import com.example.myfinance.ui.auth.AuthScreen
-import com.example.myfinance.ui.auth.RegistrationScreen
-import com.example.myfinance.ui.auth.ResetPasswordScreen
+import com.example.myfinance.ui.auth.login.AuthScreen
+import com.example.myfinance.ui.auth.registration.RegistrationScreen
+import com.example.myfinance.ui.auth.resetPassword.ResetPasswordScreen
 
 fun NavGraphBuilder.AuthRoute(navController: NavHostController) {
     navigation(startDestination = Graph.AuthScreenRoot, route = Graph.Auth) {

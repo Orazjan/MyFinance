@@ -1,4 +1,4 @@
-package com.example.myfinance.ui.auth
+package com.example.myfinance.ui.auth.resetPassword
 
 data class ResetPasswordUiState(
     val email: String = "",
