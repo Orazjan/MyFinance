@@ -1,6 +1,5 @@
 package com.example.myfinance.ui.auth
 
-import android.util.Patterns
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,6 +35,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.myfinance.navigation.Graph
 import com.example.myfinance.ui.components.PrimaryButton
@@ -43,26 +43,46 @@ import com.example.myfinance.ui.components.PrimaryOutlinedTextField
 import com.example.myfinance.ui.components.PrimaryText
 
 @Composable
-fun AuthScreen(navController: NavHostController) {
-    AuthScreenContent(onNavigateToRegistration = {
-        navController.navigate(Graph.Registration)
-    }, onBackClick = {
-        navController.popBackStack()
-    }, onNavigateResetPassword = {
-        navController.navigate(Graph.ResetPassword)
-    })
+fun AuthScreen(
+    navController: NavHostController, viewModel: AuthViewModel = hiltViewModel()
+) {
+    AuthScreenContent(
+        email = viewModel.email,
+        password = viewModel.password,
+        onEmailChange = { viewModel.onEmailChanged(it) },
+        onPasswordChange = { viewModel.onPasswordChanged(it) },
+        onLoginClick = {
+            viewModel.login {
+                navController.navigate(Graph.Main)
+            }
+        },
+        onNavigateToRegistration = { navController.navigate(Graph.Registration) },
+        onNavigateResetPassword = { navController.navigate(Graph.ResetPassword) },
+        onBackClick = { navController.popBackStack() },
+        emailError = viewModel.emailError,
+        passwordError = viewModel.passwordError,
+        generalError = viewModel.generalError,
+        isLoading = viewModel.isLoading
+    )
 }
 
 @Composable
 private fun AuthScreenContent(
+    email: String,
+    password: String,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onLoginClick: () -> Unit,
     onBackClick: () -> Unit,
     onNavigateToRegistration: () -> Unit,
-    onNavigateResetPassword: () -> Unit
+    onNavigateResetPassword: () -> Unit,
+    emailError: String?,
+    passwordError: String?,
+    generalError: String?,
+    isLoading: Boolean
 ) {
-    val emailPattern = Patterns.EMAIL_ADDRESS
-    var email by remember { mutableStateOf("") }
-    val isError = email.isNotEmpty() && !emailPattern.matcher(email).matches()
-    var password by remember { mutableStateOf("") }
+
+
     var passwordVisible by remember { mutableStateOf(false) }
     Scaffold(
         modifier = Modifier.fillMaxSize()
@@ -107,11 +127,9 @@ private fun AuthScreenContent(
                         Spacer(Modifier.height(5.dp))
                         PrimaryOutlinedTextField(
                             value = email,
-                            onValueChange = { it ->
-                                email = it
-                            },
-                            isError = isError,
-                            errorMessage = "Некорректный формат почты",
+                            onValueChange = onEmailChange,
+                            isError = emailError != null,
+                            errorMessage = emailError ?: "",
                             label = {
                                 PrimaryText(
                                     "Email", color = MaterialTheme.colorScheme.primary.copy(0.5f)
@@ -127,7 +145,7 @@ private fun AuthScreenContent(
                                     Icons.TwoTone.Clear,
                                     contentDescription = "Name",
                                     modifier = Modifier.clickable(
-                                        true, onClick = { email = "" })
+                                        true, onClick = { onEmailChange("") })
                                 )
                             },
                             keyboardOptions = KeyboardOptions(
@@ -141,9 +159,9 @@ private fun AuthScreenContent(
                         Spacer(Modifier.height(5.dp))
                         PrimaryOutlinedTextField(
                             value = password,
-                            onValueChange = { password = it },
-                            isError = isError,
-                            errorMessage = "Некорректный пароль",
+                            onValueChange = onPasswordChange,
+                            isError = passwordError != null,
+                            errorMessage = passwordError ?: "",
                             label = {
                                 PrimaryText(
                                     text = "Пароль",
@@ -188,8 +206,21 @@ private fun AuthScreenContent(
 
 
                     Spacer(Modifier.height(20.dp))
+                    if (generalError != null) {
+                        PrimaryText(
+                            text = generalError,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                    }
+
+                    Spacer(Modifier.height(10.dp))
                     PrimaryButton(
-                        "Войти", onClick = { }, modifier = Modifier.fillMaxWidth()
+                        text = if (isLoading) "Загрузка..." else "Войти",
+                        enabled =
+                            !isLoading && emailError == null && passwordError == null,
+                        onClick = { onLoginClick() },
+                        modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(Modifier.height(10.dp))
                     PrimaryButton(
