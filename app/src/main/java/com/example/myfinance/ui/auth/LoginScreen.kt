@@ -1,5 +1,6 @@
 package com.example.myfinance.ui.auth
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,6 +40,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.myfinance.navigation.Graph
 import com.example.myfinance.ui.components.PrimaryButton
+import com.example.myfinance.ui.components.PrimaryCard
 import com.example.myfinance.ui.components.PrimaryOutlinedTextField
 import com.example.myfinance.ui.components.PrimaryText
 
@@ -65,7 +67,6 @@ fun AuthScreen(
         isLoading = viewModel.isLoading
     )
 }
-
 @Composable
 private fun AuthScreenContent(
     email: String,
@@ -81,12 +82,10 @@ private fun AuthScreenContent(
     generalError: String?,
     isLoading: Boolean
 ) {
-
-
     var passwordVisible by remember { mutableStateOf(false) }
+
     Scaffold(
         modifier = Modifier.fillMaxSize()
-
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -100,31 +99,38 @@ private fun AuthScreenContent(
             ) {
                 Icon(
                     Icons.TwoTone.ChevronLeft,
-                    contentDescription = "",
-                    modifier = Modifier.clickable(true, onClick = { onBackClick() })
+                    contentDescription = "Назад",
+                    modifier = Modifier.clickable(onClick = { onBackClick() })
                 )
                 PrimaryText("Назад")
             }
 
-
             Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(horizontal = 30.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
                 PrimaryText(
                     "Сохраните свои данные", style = MaterialTheme.typography.headlineMedium
                 )
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 20.dp, horizontal = 50.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+
+                Spacer(Modifier.height(40.dp))
+
+                PrimaryCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.large,
+                    elevation = 12.dp,
+                    border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary.copy(0.5f))
                 ) {
                     Column(
-
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Spacer(Modifier.height(5.dp))
                         PrimaryOutlinedTextField(
                             value = email,
                             onValueChange = onEmailChange,
@@ -136,16 +142,13 @@ private fun AuthScreenContent(
                                 )
                             },
                             leadingIcon = {
-                                Icon(
-                                    Icons.TwoTone.Login, contentDescription = "Name"
-                                )
+                                Icon(Icons.TwoTone.Login, contentDescription = "Email Icon")
                             },
                             trailingIcon = {
                                 Icon(
                                     Icons.TwoTone.Clear,
-                                    contentDescription = "Name",
-                                    modifier = Modifier.clickable(
-                                        true, onClick = { onEmailChange("") })
+                                    contentDescription = "Clear",
+                                    modifier = Modifier.clickable(onClick = { onEmailChange("") })
                                 )
                             },
                             keyboardOptions = KeyboardOptions(
@@ -156,7 +159,9 @@ private fun AuthScreenContent(
                             ),
                             shape = OutlinedTextFieldDefaults.shape
                         )
-                        Spacer(Modifier.height(5.dp))
+
+                        Spacer(Modifier.height(10.dp))
+
                         PrimaryOutlinedTextField(
                             value = password,
                             onValueChange = onPasswordChange,
@@ -169,9 +174,7 @@ private fun AuthScreenContent(
                                 )
                             },
                             leadingIcon = {
-                                Icon(
-                                    Icons.TwoTone.Lock, contentDescription = "Password Icon"
-                                )
+                                Icon(Icons.TwoTone.Lock, contentDescription = "Password Icon")
                             },
                             trailingIcon = {
                                 val icon =
@@ -193,43 +196,59 @@ private fun AuthScreenContent(
                             shape = OutlinedTextFieldDefaults.shape,
                             modifier = Modifier.fillMaxWidth()
                         )
+
+                        Spacer(Modifier.height(5.dp))
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
                         ) {
                             PrimaryText(
-                                "Забыли пароль?", modifier = Modifier.clickable(
-                                    true, onClick = { onNavigateResetPassword() })
+                                "Забыли пароль?",
+                                modifier = Modifier.clickable(onClick = { onNavigateResetPassword() })
                             )
                         }
-                    }
 
+                        Spacer(Modifier.height(15.dp))
 
-                    Spacer(Modifier.height(20.dp))
-                    if (generalError != null) {
-                        PrimaryText(
-                            text = generalError,
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.padding(bottom = 8.dp)
+                        if (generalError != null) {
+                            PrimaryText(
+                                text = generalError,
+                                color = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                        }
+
+                        Spacer(Modifier.height(10.dp))
+
+                        PrimaryButton(
+                            text = if (isLoading) "Загрузка..." else "Войти",
+                            enabled = !isLoading && emailError == null && passwordError == null,
+                            onClick = { onLoginClick() },
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
-
-                    Spacer(Modifier.height(10.dp))
-                    PrimaryButton(
-                        text = if (isLoading) "Загрузка..." else "Войти",
-                        enabled =
-                            !isLoading && emailError == null && passwordError == null,
-                        onClick = { onLoginClick() },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(Modifier.height(10.dp))
-                    PrimaryButton(
-                        "Зарегестрироваться",
-                        onClick = { onNavigateToRegistration() },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
                 }
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 30.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                PrimaryText(
+                    "Нет аккаунта? ",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.clickable(onClick = { onNavigateToRegistration() })
+                )
+                PrimaryText(
+                    "Создать",
+                    color = MaterialTheme.colorScheme.inverseOnSurface,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.clickable(onClick = { onNavigateToRegistration() })
+                )
             }
         }
     }

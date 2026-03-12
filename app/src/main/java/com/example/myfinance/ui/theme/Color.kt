@@ -13,6 +13,7 @@ val ErrorLight =
 val OnErrorLight = Color(0xFFFFFFFF)          // Белый текст на плашке ошибки
 val TextPrimaryLight = Color(0xFF111111)      // Основной текст (глубокий черный для читаемости)
 val TextSecondaryLight = Color(0xFF00E676)
+val TextThird = Color(0xFF2196F3)
 
 // Dark Theme Colors
 val PrimaryDark = Color(0xFFE5B3A1)
@@ -25,3 +26,4 @@ val ErrorDark = Color(0xFFFF4D6D)
 val OnErrorDark = Color(0xFFFFFFFF)
 val TextPrimaryDark = Color(0xFFFFFFFF)
 val TextSecondaryDark = Color(0xFF00E676)
+val TextThirdDark = Color(0xFF2196F3)

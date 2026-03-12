@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.myfinance.ui.theme.MyFinanceTheme
 
@@ -21,6 +22,7 @@ fun PrimaryCard(
     modifier: Modifier = Modifier,
     shape: Shape = MaterialTheme.shapes.medium,
     border: BorderStroke? = null,
+    elevation: Dp = 8.dp,
     containerColor: Color = MaterialTheme.colorScheme.surface,
     content: @Composable ColumnScope.() -> Unit
 
@@ -29,7 +31,7 @@ fun PrimaryCard(
         modifier = modifier, shape = shape, border = border, colors = CardDefaults.cardColors(
             containerColor = containerColor
         ), elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp
+            defaultElevation = elevation
         )
     ) {
         content()
