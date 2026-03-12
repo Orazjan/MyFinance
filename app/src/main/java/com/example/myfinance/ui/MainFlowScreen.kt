@@ -115,7 +115,7 @@ fun MainFlowScreen(navController: NavController) {
             )
         }
         }
-    }) { padding ->
+    }) {
         HorizontalPager(
             state = pagerState
         ) { page ->

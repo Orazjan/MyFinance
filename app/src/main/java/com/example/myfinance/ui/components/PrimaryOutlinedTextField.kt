@@ -30,7 +30,6 @@ fun PrimaryOutlinedTextField(
     trailingIcon: @Composable (() -> Unit)? = null,
     placeholder: String? = null,
     isError: Boolean = false,
-    isPasswordField: Boolean = false,
     errorMessage: String? = null,
     readOnly: Boolean = false,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
