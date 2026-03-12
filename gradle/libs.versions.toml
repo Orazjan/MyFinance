@@ -1,6 +1,8 @@
 [versions]
 agp = "8.13.2"
+firebaseBom = "34.10.0"
 kotlin = "2.3.10"
+kotlinxCoroutinesPlayServices = "1.10.2"
 ksp = "2.3.5"
 composeBom = "2026.02.01"
 coreKtx = "1.17.0"
@@ -16,6 +18,8 @@ hilt = "2.58"
 hiltNavigationCompose = "1.2.0"
 
 [libraries]
+firebase-auth = { module = "com.google.firebase:firebase-auth" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
 hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
@@ -23,6 +27,7 @@ compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeB
 foundation = { module = "androidx.compose.foundation:foundation" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServices" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }

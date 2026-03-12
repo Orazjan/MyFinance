@@ -62,6 +62,11 @@ dependencies {
     implementation(libs.material.icons.extended)
     debugImplementation(libs.ui.tooling)
     implementation(libs.navigation.compose)
+    implementation(libs.kotlinx.coroutines.play.services)
+
+    //  firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
 
 
     // AndroidX & Material

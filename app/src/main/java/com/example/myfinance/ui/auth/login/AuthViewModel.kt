@@ -1,9 +1,6 @@
 package com.example.myfinance.ui.auth.login
 
 import android.util.Patterns
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myfinance.domain.repository.AuthRepository
@@ -21,8 +18,6 @@ class AuthViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
-
-    var isLoading by mutableStateOf(false)
 
     fun onEmailChanged(newValue: String) {
         _uiState.update {
