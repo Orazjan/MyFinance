@@ -1,19 +1,15 @@
 plugins {
     alias(libs.plugins.android.application)
-    id("com.google.gms.google-services")
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt.android)
+    id("com.google.gms.google-services")
 }
-
 android {
     namespace = "com.example.myfinance"
     compileSdk = 36
-    buildFeatures {
-        buildConfig = true
-        viewBinding = true
-        compose = true
-    }
 
     defaultConfig {
         applicationId = "com.example.myfinance"
@@ -23,7 +19,6 @@ android {
         versionName = "0.9.3"
 
         buildConfigField("boolean", "FIREBASE_DEBUG", "true")
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -36,9 +31,6 @@ android {
             )
         }
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14"
-    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
@@ -47,47 +39,40 @@ android {
     kotlin {
         jvmToolchain(21)
     }
+
+    buildFeatures {
+        compose = true
+        buildConfig = true
+        viewBinding = true
+    }
+
 }
 
 dependencies {
-    implementation(libs.foundation)
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.material.icons.extended)
-    implementation(libs.navigation.compose)
+    //hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
+    // Compose
     implementation(platform(libs.compose.bom))
+    implementation(libs.foundation)
     implementation(libs.ui)
     implementation(libs.material3)
     implementation(libs.ui.tooling.preview)
-    implementation(libs.core.ktx)
+    implementation(libs.material.icons.extended)
     debugImplementation(libs.ui.tooling)
+    implementation(libs.navigation.compose)
 
-    implementation(libs.material.tap.target.prompt)
 
-    implementation (libs.taptargetview)
-
-    implementation(libs.transition)
-
-    implementation(libs.room.runtime)
-
-    annotationProcessor(libs.room.compiler)
-    implementation(libs.room.ktx)
-    implementation(libs.room.paging)
-    testImplementation(libs.room.testing)
-
-    implementation (libs.mpandroidchart)
-
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore)
-
+    // AndroidX & Material
     implementation(libs.material)
-    implementation (libs.viewpager2)
-    implementation (libs.lifecycle.viewmodel)
-    implementation (libs.lifecycle.livedata)
     implementation(libs.appcompat)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation(libs.core.ktx)
+    implementation(libs.transition)
+    implementation(libs.material.tap.target.prompt)
+
+    // Testing
     testImplementation(libs.junit)
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.espresso.core)
 }

@@ -37,12 +37,18 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.example.myfinance.ui.components.PrimaryButton
 import com.example.myfinance.ui.components.PrimaryOutlinedTextField
 import com.example.myfinance.ui.components.PrimaryText
 
 @Composable
-fun RegistrationScreen(
+fun RegistrationScreen(navController: NavHostController) {
+    RegistrationScreenContent(onBackNavigation = { navController.popBackStack() })
+}
+
+@Composable
+fun RegistrationScreenContent(
     onBackNavigation: () -> Unit
 
 ) {
