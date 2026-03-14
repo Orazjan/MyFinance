@@ -16,12 +16,12 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun PrimaryButton(
-    text: String,
+    text: String?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     isLoading: Boolean = false,
-    icon: (@Composable () -> Unit)? = null
+    icon: @Composable (() -> Unit)? = null
 
 ) {
     Button(
@@ -44,7 +44,7 @@ fun PrimaryButton(
                 Spacer(Modifier.width(8.dp))
             }
             Text(
-                text = text, style = MaterialTheme.typography.titleMedium
+                text = text ?: "Не забудь текст", style = MaterialTheme.typography.titleMedium
             )
         }
     }

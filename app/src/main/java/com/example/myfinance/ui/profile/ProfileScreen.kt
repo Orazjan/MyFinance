@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.ChevronRight
 import androidx.compose.material.icons.twotone.Person
@@ -20,13 +21,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.myfinance.ui.components.PrimaryButton
 import com.example.myfinance.ui.components.PrimaryCard
 import com.example.myfinance.ui.components.PrimaryText
@@ -34,7 +35,31 @@ import com.example.myfinance.ui.components.TopNavBar
 
 @Composable
 fun ProfileScreen(
-    onGoToMain: () -> Unit, goToPattern: () -> Unit, goToSettings: () -> Unit, goToAuth: () -> Unit
+    viewModel: ProfileViewModel = hiltViewModel(),
+    onGoToMain: () -> Unit,
+    goToPattern: () -> Unit,
+    goToSettings: () -> Unit,
+    goToAuth: () -> Unit
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    ProfileScreenContent(
+        state = uiState,
+        onGoToMain = { onGoToMain() },
+        goToPattern = { goToPattern() },
+        goToSettings = { goToSettings() },
+        logOut = { viewModel.logOut() },
+        goToAuth = { goToAuth() },
+    )
+}
+
+@Composable
+fun ProfileScreenContent(
+    onGoToMain: () -> Unit,
+    goToPattern: () -> Unit,
+    goToSettings: () -> Unit,
+    goToAuth: () -> Unit,
+    logOut: () -> Unit,
+    state: ProfileUiState,
 ) {
     Scaffold(
         topBar = {
@@ -43,25 +68,10 @@ fun ProfileScreen(
                 onBackClick = { onGoToMain() }
             )
         }) { innerPadding ->
-        val autherised by remember { mutableStateOf(true) }
-        var username: String
-        var email: String
-        var typeOfVersion: String
-        var enterText: String
-        if (autherised) {
-            username = "OrazXan"
-            email = "orazjanov11@gmail.com"
-            typeOfVersion = "* Бесплатная версия"
-            enterText = "Выйти"
-        } else {
-            username = "Гость"
-            email = "Войдите или зарегестрируйтесь"
-            typeOfVersion = "Пробная версия"
-            enterText = "Войти"
 
-        }
 
         Column(
+
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .padding(innerPadding)
@@ -76,27 +86,29 @@ fun ProfileScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                if (autherised) {
+
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         PrimaryText(
-                            text = username,
+                            text = state.userName,
                             style = MaterialTheme.typography.displayMedium
                         )
                         PrimaryText(
-                            text = email,
+                            text = state.email,
                             modifier = Modifier.alpha(0.5f),
                             style = MaterialTheme.typography.labelLarge,
                         )
                         Spacer(Modifier.height(15.dp))
                         PrimaryCard {
                             PrimaryText(
-                                text = typeOfVersion,
-                                modifier = Modifier.alpha(0.5f),
+                                text = state.plan,
+                                modifier = Modifier
+                                    .alpha(0.5f)
+                                    .padding(5.dp),
                                 style = MaterialTheme.typography.titleSmall,
                             )
                         }
                     }
-                }
+
             }
 
             Column(
@@ -190,10 +202,11 @@ fun ProfileScreen(
                     .padding(horizontal = 16.dp)
                     .background(MaterialTheme.colorScheme.background),
                 horizontalAlignment = Alignment.CenterHorizontally
-
             ) {
                 PrimaryButton(
-                    enterText, onClick = { goToAuth() }, modifier = Modifier.fillMaxWidth()
+                    state.textForAuthButton,
+                    onClick = { if (state.isAuth == true) logOut() else goToAuth() },
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(Icons.TwoTone.Person, contentDescription = "")
                 }

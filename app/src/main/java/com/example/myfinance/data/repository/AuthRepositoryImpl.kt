@@ -2,6 +2,7 @@ package com.example.myfinance.data.repository
 
 import com.example.myfinance.domain.repository.AuthRepository
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -46,4 +47,11 @@ class AuthRepositoryImpl @Inject constructor(private val auth: FirebaseAuth) : A
         }
     }
 
+    override suspend fun getCurrentUser(): Result<FirebaseUser?> {
+        return withContext(Dispatchers.IO) { Result.success(auth.currentUser) }
+    }
+
+    override suspend fun logOut(): Result<Unit> {
+        return withContext(Dispatchers.IO) { Result.success(auth.signOut()) }
+    }
 }

@@ -45,8 +45,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.myfinance.R
 import com.example.myfinance.navigation.Graph
-import com.example.myfinance.ui.auth.registration.RegistrationUiState
-import com.example.myfinance.ui.auth.registration.RegistrationViewModel
 import com.example.myfinance.ui.components.PrimaryButton
 import com.example.myfinance.ui.components.PrimaryCard
 import com.example.myfinance.ui.components.PrimaryOutlinedTextField
@@ -125,7 +123,12 @@ fun RegistrationScreenContent(
                     elevation = 12.dp,
                     border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary.copy(0.5f))
                 ) {
-                    Column {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
                         Spacer(Modifier.height(5.dp))
                         PrimaryOutlinedTextField(
                             value = state.userName,
@@ -228,6 +231,7 @@ fun RegistrationScreenContent(
                             shape = OutlinedTextFieldDefaults.shape,
                             modifier = Modifier.fillMaxWidth()
                         )
+
 
 
                         Spacer(Modifier.height(10.dp))

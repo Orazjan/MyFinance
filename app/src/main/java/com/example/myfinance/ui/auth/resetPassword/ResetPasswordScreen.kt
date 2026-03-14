@@ -36,8 +36,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.myfinance.R
 import com.example.myfinance.navigation.Graph
-import com.example.myfinance.ui.auth.resetPassword.ResetPasswordUiState
-import com.example.myfinance.ui.auth.resetPassword.ResetPasswordViewModel
 import com.example.myfinance.ui.components.PrimaryButton
 import com.example.myfinance.ui.components.PrimaryCard
 import com.example.myfinance.ui.components.PrimaryOutlinedTextField

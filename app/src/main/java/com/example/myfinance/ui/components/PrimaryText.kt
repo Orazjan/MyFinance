@@ -16,18 +16,20 @@ import com.example.myfinance.ui.theme.MyFinanceTheme
 
 @Composable
 fun PrimaryText(
-    text: String,
+    text: String?,
     modifier: Modifier = Modifier,
     color: Color = Color.Unspecified,
     style: TextStyle = MaterialTheme.typography.titleMedium
 ) {
-    Text(
-        text = text,
-        modifier = modifier,
-        color = color,
-        style = style,
-        overflow = TextOverflow.Ellipsis
-    )
+    if (text != null) {
+        Text(
+            text = text,
+            modifier = modifier,
+            color = color,
+            style = style,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
 }
 
 @Preview(showBackground = true)
