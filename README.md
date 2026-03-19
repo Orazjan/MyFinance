@@ -43,7 +43,7 @@ MyFinance — это современное и интуитивно понятн
 ---
 На данный момент проект находится на стадии переписания на jetpack compose.
 Вы можете присоедениться к разработке.
-GitHub на compose: [https://github.com/Orazjan/MyFinance/tree/features/compose-migrate](MyFinance)
+GitHub на compose: [MyFinance -> Jetpack Compose](https://github.com/Orazjan/MyFinance/tree/features/compose-migrate)
 
 ---
 
@@ -113,6 +113,6 @@ GitHub на compose: [https://github.com/Orazjan/MyFinance/tree/features/compose
 ---
 **Контакты**
 
-GitHub: [https://github.com/Orazjan](Orazjan)
+GitHub: [https://github.com/Orazjan](https://github.com/Orazjan)
 
 Email: [orazjanov11@gmail.com](orazjanov11@gmail.com)
