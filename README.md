@@ -2,6 +2,13 @@ MyFinance: Приложение для учёта личных финансов
 =======
 MyFinance: Приложение для учёта личных финансов
 
+
+***Проект на данный момент находится на стадии перехода от:***
+* Java -> XML(Activity&Fragment)-> LiveData
+на:
+* Kotlin -> Jetpack Compose -> StateFlow -> Coroutines -> Hilt
+
+
 ***О проекте***
 
 MyFinance — это современное и интуитивно понятное Android-приложение, разработанное для эффективного управления личными финансами. Проект позволяет пользователям легко отслеживать доходы и расходы, категоризировать транзакции и надёжно хранить данные в облаке, обеспечивая доступ с любого устройства.
@@ -12,29 +19,25 @@ MyFinance — это современное и интуитивно понятн
 **Ключевые функции**
 Управление транзакциями: Удобное добавление и просмотр всех финансовых операций.
 
-Категоризация: Возможность создавать и настраивать категории для детального анализа бюджета.
-
-Локальное хранилище: Использование Room Database для быстрого и надёжного доступа к данным в автономном режиме.
-
-Облачная синхронизация: Синхронизация данных в реальном времени с помощью Firebase Firestore для безопасного хранения и доступа с любого устройства.
-
 Настраиваемый интерфейс: Возможность переключаться между светлой и тёмной темой.
 
 ---
 **Используемые технологии и архитектура**
 Проект разработан с использованием архитектуры MVVM (Model-View-ViewModel), что обеспечивает чистоту кода, его тестируемость и удобство поддержки.
 
-Язык: Java
+Язык: Kotlin
 
 Мобильная платформа: Android SDK
 
-Архитектурный паттерн: MVVM (ViewModel, LiveData, Repository)
+Архитектура: MVVM (ViewModel, StateFlow, Repository)
 
 Локальное хранилище: Room
 
 Облачные сервисы: Firebase (Authentication, Firestore)
 
-Потоки: Kotlin Coroutines (для асинхронных операций с базой данных)
+Внедрение зависимостей: Hilt 
+
+Потоки: Kotlin Coroutines
 
 📱 Скриншоты
 
@@ -50,22 +53,6 @@ MyFinance — это современное и интуитивно понятн
 <td><img src="screenshots/main.jpg" width="220" /></td>
 <td><img src="screenshots/analiz.jpg" width="220" /></td>
 <td><img src="screenshots/profile.jpg" width="220" /></td>
-
-</tr>
-<tr>
-<td align="center"><b>Настройки аккаунта</b></td>
-<td align="center"><b>Настройки приложения</b></td>
-<td align="center"><b>Шаблоны</b></td>
-<td align="center"><b>Детали баланса</b></td>
-<td align="center"><b>История</b></td>
-
-</tr>
-<tr>
-<td><img src="screenshots/accaunt_settings.jpg" width="220" /></td>
-<td><img src="screenshots/app_settings.jpg" width="220" /></td>
-<td><img src="screenshots/patterns.jpg" width="220" /></td>
-<td><img src="screenshots/balance_detail.jpg" width="220" /></td>
-<td><img src="screenshots/history.jpg" width="220" /></td>
 
 </tr>
 
@@ -89,7 +76,7 @@ MyFinance — это современное и интуитивно понятн
 
 1. Клонируйте репозиторий:
 
-    git clone   [Ссылка на репозиторий](https://github.com/Orazjan/MyFinance.git)
+    git clone [https://github.com/Orazjan/MyFinance/tree/features/compose-migrate](https://github.com/Orazjan/MyFinance/tree/features/compose-migrate)
 
 2. Откройте проект в Android Studio.
 
@@ -102,6 +89,6 @@ MyFinance — это современное и интуитивно понятн
 ---
 **Контакты**
 
-GitHub: [https://github.com/Orazjan](Orazjan)
+GitHub: [https://github.com/Orazjan](https://github.com/Orazjan)
 
 Email: [orazjanov11@gmail.com](orazjanov11@gmail.com)
