@@ -1,10 +1,19 @@
 MyFinance: Приложение для учёта личных финансов
 =======
-MyFinance: Приложение для учёта личных финансов
 
 ---
 
-***О проекте***
+# Оглавление
+
+1. [О проекте](#о-проекте)
+2. [Ключевые функции](#ключевые-функции)
+3. [Используемые технологии](#используемые-технологии-и-архитектура)
+4. [Стадия разработки](#стадия-разработки)
+5. [Скриншоты](#скриншоты)
+6. [Усиановка м запуск](#установка-и-запуск)
+7. [Контакты](#контакты)
+
+# О проекте
 
 MyFinance — это современное и интуитивно понятное Android-приложение, разработанное для эффективного управления личными финансами. Проект позволяет пользователям легко отслеживать доходы и расходы, категоризировать транзакции и надёжно хранить данные в облаке, обеспечивая доступ с любого устройства.
 
@@ -12,7 +21,8 @@ MyFinance — это современное и интуитивно понятн
 
 
 ---
-**Ключевые функции**
+
+# Ключевые функции
 Управление транзакциями: Удобное добавление и просмотр всех финансовых операций.
 
 Категоризация: Возможность создавать и настраивать категории для детального анализа бюджета.
@@ -24,30 +34,31 @@ MyFinance — это современное и интуитивно понятн
 Настраиваемый интерфейс: Возможность переключаться между светлой и тёмной темой.
 
 ---
-**Используемые технологии и архитектура**
+
+# Используемые технологии и архитектура
 Проект разработан с использованием архитектуры MVVM (Model-View-ViewModel), что обеспечивает чистоту кода, его тестируемость и удобство поддержки.
 
-Язык: Java
+* **Язык:** Java
 
-Мобильная платформа: Android SDK
+* **Мобильная платформа:** Android SDK
 
-Архитектурный паттерн: MVVM (ViewModel, LiveData, Repository)
+* **Архитектурный паттерн:** MVVM (ViewModel, LiveData, Repository)
 
-Локальное хранилище: Room
+* **Локальное хранилище:** Room
 
-Облачные сервисы: Firebase (Authentication, Firestore)
+* **Облачные сервисы:** Firebase (Authentication, Firestore)
 
-Потоки: Kotlin Coroutines (для асинхронных операций с базой данных)
+* **Потоки:** Kotlin Coroutines (для асинхронных операций с базой данных)
 
-***Стадия разработки***
 ---
-На данный момент проект находится на стадии переписания на jetpack compose.
-Вы можете присоедениться к разработке.
+
+# Стадия разработки
+Проект находится в процессе активного рефакторинга и перехода на современный стек:Вы можете присоедениться к разработке.
 GitHub на compose: [MyFinance -> Jetpack Compose](https://github.com/Orazjan/MyFinance/tree/features/compose-migrate)
 
 ---
 
-📱 Скриншоты
+# Скриншоты
 
 <div align="center">
 <table>
@@ -76,13 +87,13 @@ GitHub на compose: [MyFinance -> Jetpack Compose](https://github.com/Orazjan/M
 <td><img src="screenshots/app_settings.jpg" width="220" /></td>
 <td><img src="screenshots/patterns.jpg" width="220" /></td>
 <td><img src="screenshots/balance_detail.jpg" width="220" /></td>
-<td><img src="screenshots/history.jpg" width="220" /></td>
+<td><img src="screenshots/history.jpg" width="220" /></td><td></td>
 
 </tr>
 
 <tr align="center">
 <td align="center"><b>Авторизация</b></td>
-<td align="center"><b>Регистрация</b></td>
+<td align="center"><b>Регистрация</b></td><td></td>
 
 </tr>
 <tr>
@@ -95,12 +106,13 @@ GitHub на compose: [MyFinance -> Jetpack Compose](https://github.com/Orazjan/M
 </div>
 
 ---
-**Установка и запуск**
+
+# Установка и запуск
 Чтобы запустить проект локально, следуйте этим простым шагам:
 
 1. Клонируйте репозиторий:
 
-    git clone   [Ссылка на репозиторий](https://github.com/Orazjan/MyFinance.git)
+   git clone   [https://github.com/Orazjan/MyFinance.git](https://github.com/Orazjan/MyFinance.git)
 
 2. Откройте проект в Android Studio.
 
@@ -111,8 +123,12 @@ GitHub на compose: [MyFinance -> Jetpack Compose](https://github.com/Orazjan/M
 5. Запустите приложение на эмуляторе или физическом устройстве.
 
 ---
-**Контакты**
+
+# Контакты
 
 GitHub: [https://github.com/Orazjan](https://github.com/Orazjan)
 
-Email: [orazjanov11@gmail.com](orazjanov11@gmail.com)
+Email: [orazjanov11@gmail.com](mailto:orazjanov11@gmail.com)
+
+
+[⬆ Наверх](#оглавление)
