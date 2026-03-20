@@ -1,4 +1,4 @@
-package com.example.myfinance.ui.profile
+package com.example.myfinance.ui.profile.profile
 
 data class ProfileUiState(
     val userName: String? = "Гость",

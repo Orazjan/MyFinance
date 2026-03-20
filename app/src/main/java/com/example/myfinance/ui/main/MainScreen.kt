@@ -27,7 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.example.myfinance.ui.Months
+import com.example.myfinance.domain.model.Months
 import com.example.myfinance.ui.components.PrimaryCard
 import com.example.myfinance.ui.components.PrimaryLazyColumn
 import com.example.myfinance.ui.components.PrimarySpinner
@@ -52,11 +52,10 @@ fun MainScreen() {
             Column(
                 modifier = Modifier
                     .padding(top = 10.dp, start = 10.dp, end = 10.dp)
-                    .background(MaterialTheme.colorScheme.primary)
             ) {
             PrimaryCard(
                 modifier = Modifier.fillMaxWidth(),
-                border = BorderStroke(5.dp, MaterialTheme.colorScheme.primary),
+                border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
 
                 ) {
                 Row(
@@ -75,17 +74,19 @@ fun MainScreen() {
                     PrimaryText(
                         text = "150 000 000 ₽",
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.secondary,
+                        color = MaterialTheme.colorScheme.secondaryContainer,
 
                         )
                 }
             }
+
                 Spacer(Modifier.height(10.dp))
-            PrimaryCard(
+
+                PrimaryCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 10.dp),
-                border = BorderStroke(5.dp, MaterialTheme.colorScheme.primary),
+                border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
 
                 ) {
                 Row(

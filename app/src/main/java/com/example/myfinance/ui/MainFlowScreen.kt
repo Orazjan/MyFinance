@@ -30,7 +30,7 @@ import com.example.myfinance.navigation.Graph
 import com.example.myfinance.ui.analiz.AnalizScreen
 import com.example.myfinance.ui.components.PrimaryText
 import com.example.myfinance.ui.main.MainScreen
-import com.example.myfinance.ui.profile.ProfileScreen
+import com.example.myfinance.ui.profile.profile.ProfileScreen
 import kotlinx.coroutines.launch
 
 @Composable

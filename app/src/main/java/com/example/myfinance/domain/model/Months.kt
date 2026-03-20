@@ -1,4 +1,4 @@
-package com.example.myfinance.ui
+package com.example.myfinance.domain.model
 
 enum class Months(val displayName: String) {
     ALL_PERIOD("За весь период"), JANUARY("Январь"), FEBRUARY("Феварь"), MARCH("Март"), APRIL("Апрель"), MAY(

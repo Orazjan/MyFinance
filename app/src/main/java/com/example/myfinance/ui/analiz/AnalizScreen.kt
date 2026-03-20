@@ -15,7 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.myfinance.ui.Months
+import com.example.myfinance.domain.model.Months
 import com.example.myfinance.ui.components.PrimarySpinner
 import com.example.myfinance.ui.components.TopNavBar
 

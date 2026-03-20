@@ -8,8 +8,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.myfinance.navigation.routes.AuthRoute
 import com.example.myfinance.ui.MainFlowScreen
-import com.example.myfinance.ui.profile.PatternScreen
-import com.example.myfinance.ui.profile.SettingsScreen
+import com.example.myfinance.ui.profile.templates.PatternScreen
+import com.example.myfinance.ui.profile.settings.SettingsScreen
 
 
 @Composable

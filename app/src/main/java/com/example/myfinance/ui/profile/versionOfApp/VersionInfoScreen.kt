@@ -1,4 +1,4 @@
-package com.example.myfinance.ui.profile
+package com.example.myfinance.ui.profile.versionOfApp
 
 import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme

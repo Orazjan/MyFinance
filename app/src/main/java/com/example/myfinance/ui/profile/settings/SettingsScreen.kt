@@ -1,4 +1,4 @@
-package com.example.myfinance.ui.profile
+package com.example.myfinance.ui.profile.settings
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
