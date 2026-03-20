@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Fastfood
@@ -21,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,6 +31,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myfinance.domain.model.TypeOfOperation
 import com.example.myfinance.ui.components.PrimaryButton
 import com.example.myfinance.ui.components.PrimaryCard
@@ -41,7 +42,8 @@ import com.example.myfinance.ui.components.PrimaryText
 import com.example.myfinance.ui.components.TopNavBar
 
 @Composable
-fun PatternScreen(onBackClick: () -> Unit) {
+fun PatternScreen(onBackClick: () -> Unit, viewModel: TemplatesViewModel = viewModel()) {
+    val state by viewModel.uiState.collectAsState()
     Scaffold(
         topBar = {
             TopNavBar(
@@ -56,18 +58,13 @@ fun PatternScreen(onBackClick: () -> Unit) {
                 .padding(16.dp)
 
         ) {
-            val patterns = mutableMapOf<String, Int>()
-            patterns.put("Другое", 200) // Пока для теста. Потом добавлю ROOM
-            patterns.put("Еда", 200)
-
-            val patternList = patterns.entries.toList()
 
             PrimaryText("Сохранённые шаблоны", style = MaterialTheme.typography.labelLarge)
             PrimaryLazyColumn(
                 Modifier.padding(10.dp)
 
             ) {
-                items(patternList) { entry ->
+                items(2) { entry ->
                     PrimaryCard(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -92,13 +89,13 @@ fun PatternScreen(onBackClick: () -> Unit) {
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                PrimaryText("id")
+                                PrimaryText(entry.toString())
                                 Column {
-                                    PrimaryText(entry.key)
+                                    PrimaryText("Другое")
                                     PrimaryText("Расход")
 
                                 }
-                                PrimaryText(entry.value.toString())
+                                PrimaryText("200")
                             }
                         }
                     }
@@ -109,15 +106,13 @@ fun PatternScreen(onBackClick: () -> Unit) {
             PrimaryCard(
                 modifier = Modifier.padding(15.dp)
             ) {
-                var text by remember { mutableStateOf("") }
-                var summa by remember { mutableStateOf("0") }
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.padding(vertical = 10.dp, horizontal = 16.dp)
                 ) {
                     PrimaryOutlinedTextField(
-                        value = text,
-                        onValueChange = { it -> text = it },
+                        value = state.nameInput,
+                        onValueChange = { viewModel.onEvent(TemplateEvent.OnNameChanged(it)) },
                         isError = false,
                         errorMessage = "Не подходит",
                         label = {
@@ -136,7 +131,13 @@ fun PatternScreen(onBackClick: () -> Unit) {
                                 Icons.TwoTone.Clear,
                                 contentDescription = "Name",
                                 modifier = Modifier.clickable(
-                                    true, onClick = { text = "" })
+                                    true, onClick = {
+                                        viewModel.onEvent(
+                                            TemplateEvent.OnNameChanged(
+                                                ""
+                                            )
+                                        )
+                                    })
                             )
                         },
                         keyboardOptions = KeyboardOptions(
@@ -150,8 +151,8 @@ fun PatternScreen(onBackClick: () -> Unit) {
                     Spacer(Modifier.height(10.dp))
                     //
                     PrimaryOutlinedTextField(
-                        value = summa,
-                        onValueChange = { it -> summa = it },
+                        value = state.amountInput,
+                        onValueChange = { viewModel.onEvent(TemplateEvent.OnAmountChanged(it)) },
                         isError = false,
                         errorMessage = "Неn суммы",
                         label = {
@@ -169,7 +170,8 @@ fun PatternScreen(onBackClick: () -> Unit) {
                                 Icons.TwoTone.Clear,
                                 contentDescription = "Name",
                                 modifier = Modifier.clickable(
-                                    true, onClick = { text = "" })
+                                    true,
+                                    onClick = { viewModel.onEvent(TemplateEvent.OnAmountChanged("")) })
                             )
                         },
                         keyboardOptions = KeyboardOptions(
@@ -194,7 +196,11 @@ fun PatternScreen(onBackClick: () -> Unit) {
                     )
                     Spacer(Modifier.height(10.dp))
 
-                    PrimaryButton("Сохранить изменения", onClick = {}, enabled = true)
+                    PrimaryButton(
+                        "Сохранить изменения",
+                        onClick = { viewModel.onEvent(TemplateEvent.OnSaveClick) },
+                        enabled = true
+                    )
                 }
             }
         }
