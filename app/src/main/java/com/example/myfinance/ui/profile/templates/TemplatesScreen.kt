@@ -198,7 +198,7 @@ fun PatternScreen(onBackClick: () -> Unit, viewModel: TemplatesViewModel = viewM
 
                     PrimaryButton(
                         "Сохранить изменения",
-                        onClick = { viewModel.onEvent(TemplateEvent.OnSaveClick) },
+                        onClick = { viewModel.onEvent(TemplateEvent.OnSaveClick { onBackClick() }) },
                         enabled = true
                     )
                 }

@@ -7,6 +7,6 @@ sealed interface TemplateEvent {
     data class OnAmountChanged(val amount: String) : TemplateEvent
     data class OnTypeChanged(val type: TypeOfOperation) : TemplateEvent
 
-    object OnSaveClick : TemplateEvent
+    class OnSaveClick(val onSuccess:()->Unit) : TemplateEvent
     object OnLoad : TemplateEvent
 }

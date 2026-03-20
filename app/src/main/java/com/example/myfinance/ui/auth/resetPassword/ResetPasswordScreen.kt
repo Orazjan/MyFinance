@@ -114,8 +114,7 @@ fun ResetPasswordScreenContent(
                         Spacer(Modifier.height(5.dp))
 
                         PrimaryOutlinedTextField(
-                            value = state.email,
-                            onValueChange = onEmailChange,
+                            value = state.email, onValueChange = { onEmailChange(it) },
                             isError = state.emailError != null,
                             errorMessage = state.emailError ?: "",
                             label = {
@@ -156,7 +155,7 @@ fun ResetPasswordScreenContent(
                     PrimaryButton(
                         text = if (state.isLoading) "Загрузка..." else "Восстановить доступ",
                         onClick = onResetClick,
-                        enabled = !state.isLoading && state.emailError == null,
+                        enabled = !state.isLoading == true && state.emailError == null,
                         modifier = Modifier.fillMaxWidth()
                     )
                         Spacer(Modifier.height(10.dp))

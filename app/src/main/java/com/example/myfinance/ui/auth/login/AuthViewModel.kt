@@ -1,12 +1,15 @@
 package com.example.myfinance.ui.auth.login
 
-import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myfinance.domain.repository.AuthRepository
+import com.example.myfinance.ui.auth.Validate
+import com.example.myfinance.ui.auth.ValidationResult
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -14,77 +17,72 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val repository: AuthRepository
+    private val repository: AuthRepository, private val validate: Validate
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     fun onEmailChanged(newValue: String) {
-        _uiState.update {
-            it.copy(
-                email = newValue,
-                emailError = if (newValue.isNotEmpty() && !Patterns.EMAIL_ADDRESS.matcher(newValue)
-                        .matches()
-                ) {
-                    "Некорректный формат почты"
-                } else null
-            )
+        when (val result = validate.validateEmail(newValue)) {
+            is ValidationResult.Success -> {
+                _uiState.update { it.copy(email = newValue, emailError = null) }
+            }
+
+            is ValidationResult.Error -> {
+                _uiState.update { it.copy(email = newValue, emailError = result.message) }
+            }
         }
 
     }
 
     fun onPasswordChanged(newValue: String) {
-        _uiState.update {
-            it.copy(
-                password = newValue,
-                passwordError = if (newValue.isNotEmpty() && newValue.length < 6) {
-                    "Пароль слишком короткий"
-                } else null
-            )
-        }
-    }
-
-    fun login(onSuccess: () -> Unit) {
-        val currentState = _uiState.value
-        if (currentState.email.isEmpty() || currentState.emailError != null) {
-            _uiState.update {
-                it.copy(
-                    generalError = "Проверьте правильность почты"
-                )
-            }
-            return
-        }
-
-        if (currentState.password.isEmpty() || currentState.passwordError != null) {
-            _uiState.update {
-                it.copy(
-                    generalError = "Проверьте правильность почты"
-                )
-            }
-            return
-        }
-
-        viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    isLoading = true, generalError = null
-                )
-            }
-            val result = repository.login(currentState.email, currentState.password)
-            _uiState.update {
-                it.copy(
-                    isLoading = false
-                )
-            }
-            result.onSuccess {
-                onSuccess()
-            }.onFailure { exception ->
+        when (val result = validate.validatePassword(newValue)) {
+            is ValidationResult.Success -> {
                 _uiState.update {
                     it.copy(
-                        generalError = exception.message ?: "Произошла неизвестная ошибка"
+                        password = newValue, passwordError = null
+                    )
+                }
+            }
+
+            is ValidationResult.Error -> {
+                _uiState.update {
+                    it.copy(
+                        password = newValue, passwordError = result.message
                     )
                 }
             }
         }
+    }
+
+    fun login(onSuccess: () -> Unit) {
+        val result = validate.validateAuth(_uiState.value.email, _uiState.value.password)
+
+        when (result) {
+            is ValidationResult.Error -> {
+                _uiState.update {
+                    it.copy(
+                        generalError = result.message
+                    )
+                }
+            }
+
+            is ValidationResult.Success -> {
+                viewModelScope.launch {
+                    _uiState.update { it.copy(isLoading = true, generalError = null) }
+                    val result = repository.login(_uiState.value.email, _uiState.value.password)
+                    _uiState.update { it.copy(isLoading = false) }
+
+                    result.onSuccess { onSuccess() }.onFailure { ex ->
+                        _uiState.update {
+                            it.copy(
+                                generalError = ex.message ?: "Неизвестная ошибка"
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
     }
 }
