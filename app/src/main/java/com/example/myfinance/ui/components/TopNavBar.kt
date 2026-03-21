@@ -2,6 +2,7 @@ package com.example.myfinance.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.ChevronLeft
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -28,7 +29,7 @@ fun TopNavBar(
     actions: @Composable () -> Unit = {}
 ) {
     CenterAlignedTopAppBar(
-        modifier = modifier, title = {
+        modifier = modifier.height(80.dp), title = {
             Text(
                 text = title, style = MaterialTheme.typography.titleMedium
             )

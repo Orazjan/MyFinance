@@ -1,5 +1,30 @@
 package com.example.myfinance.ui.theme
 
+import BackgroundDark
+import BackgroundLight
+import ErrorLight
+import OnPrimaryDark
+import OnPrimaryLight
+import OutlineVariantDark
+import OutlineVariantLight
+import PrimaryContainerDark
+import PrimaryContainerLight
+import PrimaryDark
+import PrimaryLight
+import SurfaceContainerDark
+import SurfaceContainerHighestDark
+import SurfaceContainerHighestLight
+import SurfaceContainerLight
+import SurfaceContainerLowDark
+import SurfaceContainerLowLight
+import SurfaceContainerLowestDark
+import SurfaceContainerLowestLight
+import SurfaceDark
+import SurfaceLight
+import TextPrimaryDark
+import TextPrimaryLight
+import TextSecondaryDark
+import TextSecondaryLight
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -14,33 +39,38 @@ import androidx.core.view.WindowCompat
 private val DarkColorScheme = darkColorScheme(
     primary = PrimaryDark,
     onPrimary = OnPrimaryDark,
-    secondary = SecondaryDark,
-    onSecondary = OnSecondaryDark,
+    primaryContainer = PrimaryContainerDark,
     background = BackgroundDark,
     onBackground = TextPrimaryDark,
     surface = SurfaceDark,
     onSurface = TextPrimaryDark,
-    error = ErrorDark,
-    onError = OnErrorDark,
-    secondaryContainer = TextSecondaryDark,
-    inverseOnSurface = TextThirdDark
+    onSurfaceVariant = TextSecondaryDark,
+    surfaceContainerLow = SurfaceContainerLowDark,
+    surfaceContainer = SurfaceContainerDark,
+    surfaceContainerHighest = SurfaceContainerHighestDark,
+    surfaceContainerLowest = SurfaceContainerLowestDark,
+    outlineVariant = OutlineVariantDark,
+    error = ErrorLight,
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = PrimaryLight,
     onPrimary = OnPrimaryLight,
-    secondary = SecondaryLight,
-    onSecondary = OnSecondaryLight,
+    primaryContainer = PrimaryContainerLight,
+
     background = BackgroundLight,
     onBackground = TextPrimaryLight,
+
     surface = SurfaceLight,
     onSurface = TextPrimaryLight,
+    onSurfaceVariant = TextSecondaryLight,
+    surfaceContainerLow = SurfaceContainerLowLight,
+    surfaceContainer = SurfaceContainerLight,
+    surfaceContainerHighest = SurfaceContainerHighestLight,
+    surfaceContainerLowest = SurfaceContainerLowestLight,
+    outlineVariant = OutlineVariantLight,
     error = ErrorLight,
-    onError = OnErrorLight,
-    secondaryContainer = TextSecondaryLight,
-    inverseOnSurface = TextThird
 )
-
 @Composable
 fun MyFinanceTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

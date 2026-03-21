@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
@@ -21,6 +22,8 @@ fun PrimaryButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     isLoading: Boolean = false,
+    containerColor: Color = MaterialTheme.colorScheme.primary,
+    contentColor: Color = MaterialTheme.colorScheme.onPrimary,
     icon: @Composable (() -> Unit)? = null
 
 ) {
@@ -28,8 +31,8 @@ fun PrimaryButton(
         onClick = onClick,
         modifier = modifier.height(50.dp), enabled = enabled && !isLoading,
         colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
+            containerColor = containerColor,
+            contentColor = contentColor
         )
     ) {
         if (isLoading) {
@@ -54,5 +57,11 @@ fun PrimaryButton(
 @Composable
 @Preview(showBackground = true)
 private fun ShowPrimaryButton() {
-    PrimaryButton(text = "text", onClick = { null }, modifier = Modifier)
+    PrimaryButton(
+        text = "text",
+        onClick = { null },
+        modifier = Modifier,
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary
+    )
 }

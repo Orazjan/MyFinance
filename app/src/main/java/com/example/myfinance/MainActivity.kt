@@ -11,6 +11,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
+import androidx.core.view.WindowCompat
 import com.example.myfinance.navigation.AppNavHost
 import com.example.myfinance.ui.theme.MyFinanceTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -22,6 +23,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyFinanceTheme {
+                WindowCompat.setDecorFitsSystemWindows(window, false)
                 AppNavHost(modifier = Modifier.fillMaxSize())
             }
         }

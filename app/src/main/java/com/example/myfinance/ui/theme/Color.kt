@@ -1,29 +1,32 @@
-package com.example.myfinance.ui.theme
-
 import androidx.compose.ui.graphics.Color
 
-val PrimaryLight = Color(0xFF111111)          // Глубокий черный (для главных кнопок и акцентов)
-val OnPrimaryLight = Color(0xFFFFFFFF)        // Чисто белый текст на черном фоне
-val SecondaryLight = Color(0xFFEEEEEE)        // Светло-серый (для вторичных кнопок и тегов)
-val OnSecondaryLight = Color(0xFF111111)      // Черный текст на светло-сером
-val BackgroundLight = Color(0xFFFFFFFF)       // Абсолютно белый фон приложения
-val SurfaceLight = Color(0xFFF7F7F7)          // Едва заметный светло-серый для карточек транзакций
-val ErrorLight =
-    Color(0xFFFF4D6D)          // В ч/б логике ошибку выделяем черным цветом + иконкой
-val OnErrorLight = Color(0xFFFFFFFF)          // Белый текст на плашке ошибки
-val TextPrimaryLight = Color(0xFF111111)      // Основной текст (глубокий черный для читаемости)
-val TextSecondaryLight = Color(0xFF00E676)
-val TextThird = Color(0xFF2196F3)
+val PrimaryDark = Color(0xFF7AD7C6)
+val OnPrimaryDark = Color(0xFF003830)
+val PrimaryContainerDark = Color(0xFF00796B)
+val BackgroundDark = Color(0xFF0E1417)
+val SurfaceDark = Color(0xFF0E1417)
+val SurfaceContainerLowDark = Color(0xFF161C1F)
+val SurfaceContainerDark = Color(0xFF1A2024)
+val SurfaceContainerHighestDark = Color(0xFF303639)
+val SurfaceContainerLowestDark = Color(0xFF090F12)
+val TextPrimaryDark = Color(0xFFDEE3E7)
+val TextSecondaryDark = Color(0xFFBDC9C5)
+val OutlineVariantDark = Color(0xFF3E4946)
+val ErrorDark = Color(0xFFFFB4AB)
+val SurfaceBrightDark = Color(0xFF343A3D)
 
-// Dark Theme Colors
-val PrimaryDark = Color(0xFFE5B3A1)
-val OnPrimaryDark = Color(0xFF000000)
-val SecondaryDark = Color(0xFFD49A89)
-val OnSecondaryDark = Color(0xFF000000)
-val BackgroundDark = Color(0xFF0A0E1A)
-val SurfaceDark = Color(0xFF161B2A)
-val ErrorDark = Color(0xFFFF4D6D)
-val OnErrorDark = Color(0xFFFFFFFF)
-val TextPrimaryDark = Color(0xFFFFFFFF)
-val TextSecondaryDark = Color(0xFF00E676)
-val TextThirdDark = Color(0xFF2196F3)
+
+val PrimaryLight = Color(0xFF006A60)
+val OnPrimaryLight = Color(0xFFFFFFFF)
+val PrimaryContainerLight = Color(0xFF7AD7C6)
+val BackgroundLight = Color(0xFFF6F9F8)
+val SurfaceLight = Color(0xFFF6F9F8)
+val SurfaceContainerLowLight = Color(0xFFEFF3F1)
+val SurfaceContainerLight = Color(0xFFE5EBE9)
+val SurfaceContainerHighestLight = Color(0xFFDDE4E1)
+val SurfaceContainerLowestLight = Color(0xFFFFFFFF)
+val TextPrimaryLight = Color(0xFF161C1F)
+val TextSecondaryLight = Color(0xFF50605D)
+val OutlineVariantLight = Color(0xFFBFC9C5)
+val ErrorLight = Color(0xFFBA1A1A)
+val SurfaceBrightLight = Color(0xFFF0F5F3)
