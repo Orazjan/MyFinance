@@ -1,8 +1,5 @@
 package com.example.myfinance.ui.main
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -45,10 +41,9 @@ import com.example.myfinance.ui.components.PrimaryLazyColumn
 import com.example.myfinance.ui.components.PrimarySpinner
 import com.example.myfinance.ui.components.PrimaryText
 import com.example.myfinance.ui.components.TopNavBar
-import com.example.myfinance.ui.components.rememberScrollingDirection
 
 @Composable
-fun MainScreen(scrollState: LazyListState) {
+fun MainScreen(goToAddTransActions: () -> Unit, scrollState: LazyListState) {
     Scaffold(
         topBar = {
             TopNavBar(
@@ -60,9 +55,10 @@ fun MainScreen(scrollState: LazyListState) {
             )
         }, floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* TODO */ },
+                onClick = { goToAddTransActions() },
+                modifier = Modifier.padding(bottom = 50.dp),
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = Color.White,
+                contentColor = MaterialTheme.colorScheme.surfaceContainer,
                 shape = CircleShape
             ) {
                 Icon(Icons.TwoTone.Add, contentDescription = "Добавить")
@@ -189,8 +185,6 @@ fun MainScreen(scrollState: LazyListState) {
                                 Text(text = "Покупка продуктов ${index + 1}")
                                 Text(text = "Расход")
                             }
-
-
                             Text(
                                 text = "- 1 500 ₽", color = MaterialTheme.colorScheme.error
                             )

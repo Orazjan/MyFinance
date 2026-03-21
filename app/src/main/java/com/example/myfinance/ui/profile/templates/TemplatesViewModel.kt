@@ -24,7 +24,6 @@ class TemplatesViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(TemplateUiState())
     val uiState: StateFlow<TemplateUiState> = _uiState.asStateFlow()
 
-
     fun onEvent(event: TemplateEvent) {
         when (event) {
             is TemplateEvent.OnNameChanged -> {

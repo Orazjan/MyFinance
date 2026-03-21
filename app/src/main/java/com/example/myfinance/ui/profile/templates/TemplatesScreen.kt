@@ -1,49 +1,43 @@
 package com.example.myfinance.ui.profile.templates
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Fastfood
-import androidx.compose.material.icons.twotone.Clear
-import androidx.compose.material.icons.twotone.Edit
-import androidx.compose.material.icons.twotone.Money
+import androidx.compose.material.icons.twotone.Add
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.myfinance.domain.model.TypeOfOperation
 import com.example.myfinance.ui.components.PrimaryButton
 import com.example.myfinance.ui.components.PrimaryCard
 import com.example.myfinance.ui.components.PrimaryLazyColumn
-import com.example.myfinance.ui.components.PrimaryOutlinedTextField
-import com.example.myfinance.ui.components.PrimarySpinner
 import com.example.myfinance.ui.components.PrimaryText
 import com.example.myfinance.ui.components.TopNavBar
 
 @Composable
-fun PatternScreen(onBackClick: () -> Unit, viewModel: TemplatesViewModel = viewModel()) {
-    val state by viewModel.uiState.collectAsState()
+fun PatternScreen(
+    onBackClick: () -> Unit,
+    goToAddTemplate: () -> Unit,
+    viewModel: TemplatesViewModel = hiltViewModel()
+) {
     Scaffold(
         topBar = {
             TopNavBar(
@@ -51,30 +45,72 @@ fun PatternScreen(onBackClick: () -> Unit, viewModel: TemplatesViewModel = viewM
                 onBackClick = { onBackClick() },
                 modifier = Modifier.background(MaterialTheme.colorScheme.primary)
             )
+        }, floatingActionButton = {
+            FloatingActionButton(
+                onClick = { goToAddTemplate() },
+                modifier = Modifier.padding(bottom = 10.dp, end = 10.dp),
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.surfaceContainer,
+                shape = CircleShape
+            ) {
+                Icon(Icons.TwoTone.Add, contentDescription = "Добавить")
+            }
         }) { innerpadding ->
         Column(
             modifier = Modifier
                 .padding(innerpadding)
-                .padding(16.dp)
-
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-
-            PrimaryText("Сохранённые шаблоны", style = MaterialTheme.typography.labelLarge)
-            PrimaryLazyColumn(
-                Modifier.padding(10.dp)
-
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.primaryContainer,
+                                MaterialTheme.colorScheme.primary
+                            )
+                        )
+                    )
+                    .padding(16.dp), contentAlignment = Alignment.Center
             ) {
-                items(2) { entry ->
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    PrimaryText(
+                        text = "Чтобы каждый раз не писать, можете создать шаблон и использовать его или изменить при желании",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.surface,
+                    )
+                    PrimaryButton(
+                        onClick = goToAddTemplate,
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        text = "Создать",
+                        enabled = true,
+                        shape = 8.dp,
+                        contentColor = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+            Spacer(Modifier.height(10.dp))
+
+            PrimaryText("Сохранённые шаблоны", style = MaterialTheme.typography.headlineSmall)
+            Spacer(Modifier.height(15.dp))
+            PrimaryLazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(20) { entry ->
                     PrimaryCard(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 5.dp)
-
+                            .padding(vertical = 10.dp)
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp),
+                                .padding(horizontal = 8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -85,122 +121,26 @@ fun PatternScreen(onBackClick: () -> Unit, viewModel: TemplatesViewModel = viewM
                             Row(
                                 modifier = Modifier
                                     .weight(2f)
-                                    .padding(16.dp),
+                                    .padding(8.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 PrimaryText(entry.toString())
                                 Column {
-                                    PrimaryText("Другое")
-                                    PrimaryText("Расход")
+                                    PrimaryText(
+                                        "Другое", style = MaterialTheme.typography.titleMedium
+                                    )
+                                    PrimaryText(
+                                        text = TypeOfOperation.entries[1].nameOfType,
+                                        style = MaterialTheme.typography.titleSmall,
+                                        color = MaterialTheme.colorScheme.error
+                                    )
 
                                 }
                                 PrimaryText("200")
                             }
                         }
                     }
-                }
-            }
-            Spacer(Modifier.height(10.dp))
-            PrimaryText("Создать шаблон", style = MaterialTheme.typography.labelLarge)
-            PrimaryCard(
-                modifier = Modifier.padding(15.dp)
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(vertical = 10.dp, horizontal = 16.dp)
-                ) {
-                    PrimaryOutlinedTextField(
-                        value = state.nameInput,
-                        onValueChange = { viewModel.onEvent(TemplateEvent.OnNameChanged(it)) },
-                        isError = false,
-                        errorMessage = "Не подходит",
-                        label = {
-                            PrimaryText(
-                                "Название шаблона",
-                                color = MaterialTheme.colorScheme.primary.copy(0.5f)
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                Icons.TwoTone.Edit, contentDescription = "Name"
-                            )
-                        },
-                        trailingIcon = {
-                            Icon(
-                                Icons.TwoTone.Clear,
-                                contentDescription = "Name",
-                                modifier = Modifier.clickable(
-                                    true, onClick = {
-                                        viewModel.onEvent(
-                                            TemplateEvent.OnNameChanged(
-                                                ""
-                                            )
-                                        )
-                                    })
-                            )
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            autoCorrect = false,
-                            capitalization = KeyboardCapitalization.Words,
-                            showKeyboardOnFocus = true,
-                            imeAction = ImeAction.Next
-                        ),
-                        shape = OutlinedTextFieldDefaults.shape
-                    )
-                    Spacer(Modifier.height(10.dp))
-                    //
-                    PrimaryOutlinedTextField(
-                        value = state.amountInput,
-                        onValueChange = { viewModel.onEvent(TemplateEvent.OnAmountChanged(it)) },
-                        isError = false,
-                        errorMessage = "Неn суммы",
-                        label = {
-                            PrimaryText(
-                                "Сумма", color = MaterialTheme.colorScheme.primary.copy(0.5f)
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                Icons.TwoTone.Money, contentDescription = "Name"
-                            )
-                        },
-                        trailingIcon = {
-                            Icon(
-                                Icons.TwoTone.Clear,
-                                contentDescription = "Name",
-                                modifier = Modifier.clickable(
-                                    true,
-                                    onClick = { viewModel.onEvent(TemplateEvent.OnAmountChanged("")) })
-                            )
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            autoCorrect = false,
-                            keyboardType = KeyboardType.Number,
-                            showKeyboardOnFocus = true,
-                            imeAction = ImeAction.Next
-                        ),
-                        shape = OutlinedTextFieldDefaults.shape
-                    )
-                    Spacer(Modifier.height(10.dp))
-                    //
-                    val types = TypeOfOperation.entries
-                    var selectedType by remember { mutableStateOf(types[0]) }
-                    PrimarySpinner(
-                        options = types.map { it.nameOfType },
-                        selectedOption = selectedType.nameOfType,
-                        onOptionSelected = { selectedName ->
-                            selectedType = types.find { it.nameOfType == selectedName } ?: types[0]
-                        },
-                        label = "Выберите операцию"
-                    )
-                    Spacer(Modifier.height(10.dp))
-
-                    PrimaryButton(
-                        "Сохранить изменения",
-                        onClick = { viewModel.onEvent(TemplateEvent.OnSaveClick { onBackClick() }) },
-                        enabled = true
-                    )
                 }
             }
         }

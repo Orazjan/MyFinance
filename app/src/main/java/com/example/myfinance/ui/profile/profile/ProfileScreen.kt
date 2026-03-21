@@ -139,7 +139,7 @@ fun ProfileScreenContent(
                     Text(
                         text = "Создайте аккаунт для синхронизации ваших данных",
                         style = MaterialTheme.typography.titleMedium,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.surface,
                         textAlign = TextAlign.Center
                     )
                     Button(
@@ -150,7 +150,7 @@ fun ProfileScreenContent(
                         ),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text(text = "GET STARTED")
+                        Text(text = "Создать")
                     }
                 }
             }

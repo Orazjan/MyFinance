@@ -2,6 +2,8 @@ package com.example.myfinance.ui
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
@@ -56,7 +58,10 @@ fun MainFlowScreen(navController: NavController) {
 
         AnimatedVisibility(
             visible = isBottomBarVisible || pagerState.currentPage != 1,
-            enter = slideInVertically(initialOffsetY = { it }),
+            enter = slideInVertically(
+                initialOffsetY = { it },
+                animationSpec = spring(stiffness = Spring.StiffnessLow)
+            ),
             exit = slideOutVertically(targetOffsetY = { it })
         ) {
         Box(
@@ -144,7 +149,10 @@ fun MainFlowScreen(navController: NavController) {
             when (page) {
                 0 -> AnalizScreen(
                     onGoToMain = { coroutineScope.launch { pagerState.animateScrollToPage(1) } })
-                1 -> MainScreen(mainListScrollState)
+                1 -> MainScreen(
+                    goToAddTransActions = { navController.navigate(Graph.AddTransAction) },
+                    scrollState = mainListScrollState
+                )
                 2 -> ProfileScreen(
                     onGoToMain = {
                         coroutineScope.launch { pagerState.animateScrollToPage(1) }

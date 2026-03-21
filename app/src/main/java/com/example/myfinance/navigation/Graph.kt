@@ -10,4 +10,7 @@ object Graph {
 
     const val Settings = "settings"
     const val Templates = "templates"
+
+    const val AddTemplate = "add_template"
+    const val AddTransAction = "add_transaction"
 }
