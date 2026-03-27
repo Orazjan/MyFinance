@@ -2,7 +2,7 @@ package com.example.myfinance.ui.main.transActions
 
 import androidx.lifecycle.ViewModel
 import com.example.myfinance.domain.model.Templates
-import com.example.myfinance.domain.model.Transactions
+import com.example.myfinance.domain.model.Transaction
 import com.example.myfinance.domain.model.TypeOfOperation
 import com.example.myfinance.domain.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -50,7 +50,7 @@ class AddTransActionViewModel @Inject constructor(
                         nameInput = event.template.name,
                         amountInput = event.template.amount.toString(),
                         typeOfOperation = if (event.template.isIncome)
-                            TypeOfOperation.INCOME
+                            TypeOfOperation.ALL
                         else
                             TypeOfOperation.EXPENSES
                     )
@@ -107,7 +107,7 @@ class AddTransActionViewModel @Inject constructor(
         val amount = state.amountInput.toDoubleOrNull()
             ?: return
 
-        val transaction = Transactions(
+        val transaction = Transaction(
             name = state.nameInput,
             description = state.description,
             type = state.typeOfOperation,

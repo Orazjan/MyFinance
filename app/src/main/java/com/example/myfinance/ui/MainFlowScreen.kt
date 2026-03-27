@@ -27,7 +27,6 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -148,8 +147,9 @@ fun MainFlowScreen(navController: NavController) {
                 0 -> AnalizScreen(
                     onGoToMain = { coroutineScope.launch { pagerState.animateScrollToPage(1) } })
                 1 -> MainScreen(
-                    goToAddTransActions = { navController.navigate(Graph.AddTransAction) },
-                    scrollState = mainListScrollState
+                    scrollState = mainListScrollState,
+                    onNavigateToAddTransaction = { navController.navigate(Graph.AddTransAction) },
+                    onNavigateBack = { navController.popBackStack() }
                 )
                 2 -> ProfileScreen(
                     onGoToMain = {

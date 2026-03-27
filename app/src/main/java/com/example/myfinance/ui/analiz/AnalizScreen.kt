@@ -42,7 +42,7 @@ fun AnalizScreen(
                 val months = Months.entries.map { it.displayName }
                 var selectedMonth: Months by remember { mutableStateOf(Months.ALL_PERIOD) }
                 val types = TypeOfOperation.entries.map { it.nameOfType }
-                var selectedType: TypeOfOperation by remember { mutableStateOf(TypeOfOperation.INCOME) }
+                var selectedType: TypeOfOperation by remember { mutableStateOf(TypeOfOperation.ALL) }
 
 
                 PrimarySpinner(

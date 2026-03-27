@@ -24,18 +24,21 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.myfinance.domain.model.Months
 import com.example.myfinance.domain.model.TypeOfOperation
 import com.example.myfinance.ui.components.PrimaryCard
@@ -45,7 +48,25 @@ import com.example.myfinance.ui.components.PrimaryText
 import com.example.myfinance.ui.components.TopNavBar
 
 @Composable
-fun MainScreen(goToAddTransActions: () -> Unit, scrollState: LazyListState) {
+fun MainScreen(
+    onNavigateToAddTransaction: () -> Unit,
+    onNavigateBack: () -> Unit,
+    scrollState: LazyListState,
+    viewModel: MainViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { events ->
+            when (events) {
+                MainEvent.NavigateToAddTransAction -> onNavigateToAddTransaction()
+                MainEvent.NavigateBack -> onNavigateBack()
+                is MainEvent.ShowSnackbar -> snackbarHostState.showSnackbar(events.message)
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopNavBar(
@@ -55,10 +76,11 @@ fun MainScreen(goToAddTransActions: () -> Unit, scrollState: LazyListState) {
                     .padding(0.dp)
                     .background(MaterialTheme.colorScheme.primary)
             )
-        }, floatingActionButton = {
-
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        floatingActionButton = {
             FloatingActionButton(
-                onClick = { goToAddTransActions() },
+                onClick = { viewModel.onAction(MainAction.OnAddTransactionClick) },
                 modifier = Modifier.padding(bottom = 80.dp),
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -69,11 +91,24 @@ fun MainScreen(goToAddTransActions: () -> Unit, scrollState: LazyListState) {
         },
         floatingActionButtonPosition = FabPosition.EndOverlay,
     ) { innerPadding ->
+        MainScreenContent(
+            modifier = Modifier.padding(innerPadding),
+            state = uiState,
+            scrollState = scrollState,
+            onAction = { action -> viewModel.onAction(action) }
+        )
+    }
+}
+
+@Composable
+fun MainScreenContent(
+    state: MainUiState,
+    modifier: Modifier,
+    scrollState: LazyListState,
+    onAction: (MainAction) -> Unit
+) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp),
+            modifier = modifier.padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Column(modifier = Modifier.padding(top = 16.dp)) {
@@ -85,7 +120,7 @@ fun MainScreen(goToAddTransActions: () -> Unit, scrollState: LazyListState) {
                 Row {
 
                     PrimaryText(
-                        "1500000",
+                        state.totalBalance,
                         style = MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -129,7 +164,7 @@ fun MainScreen(goToAddTransActions: () -> Unit, scrollState: LazyListState) {
                         Row {
 
                             Text(
-                                text = "150 000 000",
+                                text = state.totalExpense,
                                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.SemiBold)
                             )
                             Spacer(Modifier.width(8.dp))
@@ -154,17 +189,15 @@ fun MainScreen(goToAddTransActions: () -> Unit, scrollState: LazyListState) {
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
 
             ) {
-                val types = TypeOfOperation.entries.map { it.nameOfType }
-                var selectedType: TypeOfOperation by remember { mutableStateOf(TypeOfOperation.INCOME) }
-                val months = Months.entries.map { it.displayName }
-                var selectedMonth: Months by remember { mutableStateOf(Months.ALL_PERIOD) }
-
                 PrimarySpinner(
-                    options = types,
-                    selectedOption = selectedType.nameOfType,
-                    onOptionSelected = { navSelection ->
-                        selectedType =
-                            TypeOfOperation.entries.first { it.nameOfType == navSelection }
+                    options = TypeOfOperation.entries.map { it.nameOfType },
+                    selectedOption = state.selectedType.nameOfType,
+                    onOptionSelected = { selectedName ->
+                        val selectedType =
+                            TypeOfOperation.entries.find { it.nameOfType == selectedName }
+                        selectedType?.let {
+                            onAction(MainAction.OnTypeSelected(it))
+                        }
                     },
                     label = "Общее",
                     modifier = Modifier
@@ -172,10 +205,13 @@ fun MainScreen(goToAddTransActions: () -> Unit, scrollState: LazyListState) {
                 )
 
                 PrimarySpinner(
-                    options = months,
-                    selectedOption = selectedMonth.displayName,
-                    onOptionSelected = { navSelection ->
-                        selectedMonth = Months.entries.first { it.displayName == navSelection }
+                    options = Months.entries.map { it.displayName },
+                    selectedOption = state.selectedMonth.displayName,
+                    onOptionSelected = { selectedMonth ->
+                        val selectedMonth = Months.entries.find { it.displayName == selectedMonth }
+                        selectedMonth?.let {
+                            onAction(MainAction.OnMonthSelected(it)) // Пример действия
+                        }
                     },
                     label = "Месяцы",
                     modifier = Modifier
@@ -221,4 +257,3 @@ fun MainScreen(goToAddTransActions: () -> Unit, scrollState: LazyListState) {
             }
         }
     }
-}

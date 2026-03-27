@@ -16,5 +16,7 @@ fun VersionInfoScreen(onBackClick: () -> Unit) {
                 onBackClick = { onBackClick() },
                 modifier = Modifier.background(MaterialTheme.colorScheme.primary)
             )
-        }) {}
+        }) {
+
+    }
 }
