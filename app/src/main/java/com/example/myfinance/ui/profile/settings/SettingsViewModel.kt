@@ -2,6 +2,7 @@ package com.example.myfinance.ui.profile.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myfinance.domain.repository.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +14,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-
+    private val transactionRepository: TransactionRepository
 ) : ViewModel() {
     private val _settingsState = MutableStateFlow(SettingsUiState())
     val settingsState: StateFlow<SettingsUiState> = _settingsState.asStateFlow()
@@ -58,7 +59,9 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun onDeleteTransactionsClick() {
-        emitEvent(SettingsEvent.ShowSnackBar("Заглужка для удаления Транзакций"))
+        viewModelScope.launch {
+            transactionRepository.deleteAllTransactions()
+        }
     }
 
     fun onOpenPrivacyPolicyClick() {

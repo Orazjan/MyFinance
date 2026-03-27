@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.myfinance.domain.model.Months
 import com.example.myfinance.domain.model.TypeOfOperation
 import com.example.myfinance.domain.repository.AuthRepository
+import com.example.myfinance.domain.repository.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
+    private val repository: TransactionRepository,
     private val authRepository: AuthRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainUiState())
@@ -27,11 +28,9 @@ class MainViewModel @Inject constructor(
     private val _events = MutableSharedFlow<MainEvent>()
     val events = _events.asSharedFlow()
 
-    private var fetchJob: Job? = null
-    
     init {
         checkAuthState()
-        loadTransactions()
+        observeTransactions()
     }
 
     fun onAction(actions: MainAction) {
@@ -76,28 +75,23 @@ class MainViewModel @Inject constructor(
 
     private fun onTypeSelected(type: TypeOfOperation) {
         _uiState.update { it.copy(selectedType = type) }
-        loadTransactions()
+        observeTransactions()
     }
 
     private fun onMonthSelected(month: Months) {
         _uiState.update { it.copy(selectedMonth = month) }
-        loadTransactions()
+        observeTransactions()
     }
 
-    private fun loadTransactions() {
-        fetchJob?.cancel()
-
-        fetchJob = viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            try {
-                // Имитация загрузки или вызов репозитория
-                // val data = repository.get(uiState.value.selectedMonth, uiState.value.selectedType)
-                // _uiState.update { it.copy(transactions = data, isLoading = false) }
-            } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false) }
-                emitEvent(MainEvent.ShowSnackbar("Ошибка загрузки"))
+    private fun observeTransactions() {
+        viewModelScope.launch {
+            repository.getAllTransactions().collect { transactions ->
+                _uiState.update {
+                    it.copy(transactions = transactions)
+                }
             }
         }
+
     }
 
     private fun emitEvent(event: MainEvent) {

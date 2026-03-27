@@ -1,4 +1,4 @@
-package com.example.myfinance.ui.main.transActions
+package com.example.myfinance.ui.main.transactions
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -26,6 +26,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.myfinance.domain.model.Templates
+import com.example.myfinance.domain.model.TypeOfOperation
+import com.example.myfinance.ui.components.PrimarySpinner
 import com.example.myfinance.ui.components.TopNavBar
 
 @Composable
@@ -54,15 +56,14 @@ fun AddTransActionScreen(
                 templates = state.templates,
                 selectedIndex = state.selectedIndex,
                 onSelected = {
-                    viewModel.onEvent(TransActionEvent.OnTemplateSelected(it))
+                    viewModel.onAction(TransactionEvent.OnTemplateSelected(it))
                 }
             )
 
             Spacer(Modifier.height(16.dp))
 
             TransactionForm(
-                state = state,
-                onEvent = viewModel::onEvent
+                state = state, onAction = viewModel::onAction
             )
         }
     }
@@ -72,8 +73,7 @@ fun AddTransActionScreen(
 
 @Composable
 fun TransactionForm(
-    state: AddTransActionUiState,
-    onEvent: (TransActionEvent) -> Unit
+    state: AddTransActionUiState, onAction: (TransactionEvent) -> Unit
 ) {
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -81,7 +81,7 @@ fun TransactionForm(
         OutlinedTextField(
             value = state.nameInput,
             onValueChange = {
-                onEvent(TransActionEvent.OnNameChanged(it))
+                onAction(TransactionEvent.OnNameChanged(it))
             },
             label = { Text("Название") },
             modifier = Modifier.fillMaxWidth()
@@ -90,7 +90,7 @@ fun TransactionForm(
         OutlinedTextField(
             value = state.amountInput,
             onValueChange = {
-                onEvent(TransActionEvent.OnAmountChanged(it))
+                onAction(TransactionEvent.OnAmountChanged(it))
             },
             label = { Text("Сумма") },
             modifier = Modifier.fillMaxWidth(),
@@ -100,15 +100,27 @@ fun TransactionForm(
         OutlinedTextField(
             value = state.description,
             onValueChange = {
-                onEvent(TransActionEvent.OnDescriptionChanged(it))
+                onAction(TransactionEvent.OnDescriptionChanged(it))
             },
             label = { Text("Комментарий") },
             modifier = Modifier.fillMaxWidth()
         )
 
+        PrimarySpinner(
+            options = TypeOfOperation.entries.map { it.nameOfType },
+            selectedOption = state.typeOfOperation.nameOfType,
+            onOptionSelected = { selectedName ->
+                TypeOfOperation.fromString(selectedName)?.let { type ->
+                    onAction(TransactionEvent.OnTypeChanged(type))
+                }
+            },
+            label = "Общее",
+            modifier = Modifier.weight(1f)
+        )
+
         Button(
             onClick = {
-                onEvent(TransActionEvent.OnSaveClicked {})
+                onAction(TransactionEvent.OnSaveClicked {})
             },
             modifier = Modifier.fillMaxWidth()
         ) {

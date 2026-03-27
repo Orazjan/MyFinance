@@ -1,39 +1,29 @@
-package com.example.myfinance.ui.main.transActions
+package com.example.myfinance.ui.main.transactions
 
 import androidx.lifecycle.ViewModel
-import com.example.myfinance.domain.model.Templates
-import com.example.myfinance.domain.model.Transaction
+import androidx.lifecycle.viewModelScope
+import com.example.myfinance.data.local.entity.TransactionEntity
 import com.example.myfinance.domain.model.TypeOfOperation
-import com.example.myfinance.domain.repository.AuthRepository
+import com.example.myfinance.domain.repository.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class AddTransActionViewModel @Inject constructor(
-    private val repository: AuthRepository,
+    private val transactionRepository: TransactionRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AddTransActionUiState())
     val uiState: StateFlow<AddTransActionUiState> = _uiState.asStateFlow()
 
-    init {
-        _uiState.update {
-            it.copy(
-                templates = listOf(
-                    Templates(1, "Еда", false, 200.0),
-                    Templates(2, "Зарплата", true, 50000.0),
-                    Templates(3, "Такси", false, 300.0)
-                )
-            )
-        }
-    }
 
-    fun onEvent(event: TransActionEvent) {
+    fun onAction(event: TransactionEvent) {
         when (event) {
-            is TransActionEvent.OnNameChanged -> {
+            is TransactionEvent.OnNameChanged -> {
                 _uiState.update {
                     it.copy(
                         nameInput = event.newName
@@ -41,7 +31,7 @@ class AddTransActionViewModel @Inject constructor(
                 }
             }
 
-            is TransActionEvent.OnTemplateSelected -> {
+            is TransactionEvent.OnTemplateSelected -> {
                 _uiState.update {
                     it.copy(
                         selectedTemplate = event.template,
@@ -58,7 +48,7 @@ class AddTransActionViewModel @Inject constructor(
 
             }
 
-            is TransActionEvent.OnAmountChanged -> {
+            is TransactionEvent.OnAmountChanged -> {
                 _uiState.update {
                     it.copy(
                         amountInput = event.newAmount
@@ -66,7 +56,7 @@ class AddTransActionViewModel @Inject constructor(
                 }
             }
 
-            is TransActionEvent.OnTypeChanged -> {
+            is TransactionEvent.OnTypeChanged -> {
                 _uiState.update {
                     it.copy(
                         typeOfOperation = event.newType
@@ -74,7 +64,7 @@ class AddTransActionViewModel @Inject constructor(
                 }
             }
 
-            is TransActionEvent.OnCategorySelected -> {
+            is TransactionEvent.OnCategorySelected -> {
                 _uiState.update {
                     it.copy(
                         selectedIndex = event.index
@@ -82,7 +72,7 @@ class AddTransActionViewModel @Inject constructor(
                 }
             }
 
-            is TransActionEvent.OnDescriptionChanged -> {
+            is TransactionEvent.OnDescriptionChanged -> {
                 _uiState.update {
                     it.copy(
                         description = event.newDescription
@@ -90,11 +80,11 @@ class AddTransActionViewModel @Inject constructor(
                 }
             }
 
-            is TransActionEvent.DowloadCategories -> {
+            is TransactionEvent.DowloadCategories -> {
                 onDownloadCategories()
             }
 
-            is TransActionEvent.OnSaveClicked -> {
+            is TransactionEvent.OnSaveClicked -> {
                 onSaveClick(event.onSuccess)
             }
         }
@@ -107,20 +97,25 @@ class AddTransActionViewModel @Inject constructor(
         val amount = state.amountInput.toDoubleOrNull()
             ?: return
 
-        val transaction = Transaction(
-            name = state.nameInput,
+        val transaction = TransactionEntity(
+            title = state.nameInput,
             description = state.description,
-            type = state.typeOfOperation,
+            type = state.typeOfOperation.name,
             amount = amount,
-            timeStamp = System.currentTimeMillis()
+            date = System.currentTimeMillis()
         )
+        addTransaction(transaction)
         onSuccess()
 
+    }
+
+    fun addTransaction(transaction: TransactionEntity) {
+        viewModelScope.launch {
+            transactionRepository.insertTransaction(transaction)
+        }
     }
 
     private fun onDownloadCategories() {
         TODO("Not yet implemented")
     }
-
-
 }

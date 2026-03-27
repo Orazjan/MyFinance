@@ -1,4 +1,4 @@
-package com.example.myfinance.data.repository
+package com.example.myfinance.data.repository.auth
 
 import com.example.myfinance.domain.repository.AuthRepository
 import com.google.firebase.auth.FirebaseAuth

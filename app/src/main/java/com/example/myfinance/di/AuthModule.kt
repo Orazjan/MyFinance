@@ -1,6 +1,6 @@
 package com.example.myfinance.di
 
-import com.example.myfinance.data.repository.AuthRepositoryImpl
+import com.example.myfinance.data.repository.auth.AuthRepositoryImpl
 import com.example.myfinance.domain.repository.AuthRepository
 import com.google.firebase.auth.FirebaseAuth
 import dagger.Module

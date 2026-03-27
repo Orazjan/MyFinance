@@ -1,5 +1,6 @@
 package com.example.myfinance.ui.main
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,11 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.twotone.Add
+import androidx.compose.material.icons.twotone.Image
 import androidx.compose.material.icons.twotone.Payments
 import androidx.compose.material.icons.twotone.TrendingDown
 import androidx.compose.material3.FabPosition
@@ -210,7 +212,7 @@ fun MainScreenContent(
                     onOptionSelected = { selectedMonth ->
                         val selectedMonth = Months.entries.find { it.displayName == selectedMonth }
                         selectedMonth?.let {
-                            onAction(MainAction.OnMonthSelected(it)) // Пример действия
+                            onAction(MainAction.OnMonthSelected(it))
                         }
                     },
                     label = "Месяцы",
@@ -222,9 +224,10 @@ fun MainScreenContent(
             PrimaryLazyColumn(
                 state = scrollState,
                 modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(15) { index ->
+                items(state.transactions) { transaction ->
+                    Log.d("CHECK_TYPE", "ID: ${transaction.id}, Type in DB: '${transaction.type}'")
                     PrimaryCard(
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -236,21 +239,44 @@ fun MainScreenContent(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                Icons.Default.Image,
+                                Icons.TwoTone.Image,
                                 contentDescription = "",
                                 modifier = Modifier
                                     .clip(
                                         CircleShape
                                     )
                                     .size(30.dp)
+                                    .padding(end = 10.dp)
                             )
-                            Column {
-                                Text(text = "Покупка продуктов ${index + 1}")
-                                Text(text = "Расход")
+                            Spacer(Modifier.width(12.dp))
+
+                            Column(Modifier.weight(1f)) {
+                                PrimaryText(
+                                    text = transaction.title,
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                                val typeLabel =
+                                    TypeOfOperation.fromString(transaction.type)?.nameOfType
+                                        ?: "Неизвестно"
+                                PrimaryText(
+                                    text = typeLabel,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
-                            Text(
-                                text = "- 1 500 ₽", color = MaterialTheme.colorScheme.error
-                            )
+
+                            Column(horizontalAlignment = Alignment.End) {
+                                PrimaryText(
+                                    text = "${transaction.amount} $",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    color = if (transaction.type == "INCOME") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                                )
+                                PrimaryText(
+                                    text = "ID: ${transaction.id}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.outline
+                                )
+                            }
                         }
                     }
                 }

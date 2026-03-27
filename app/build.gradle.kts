@@ -49,7 +49,11 @@ android {
 }
 
 dependencies {
-    //hilt
+    // room
+    val room_version = "2.8.4"
+    ksp("androidx.room:room-compiler:$room_version")
+    implementation("androidx.room:room-ktx:${room_version}")
+    // hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
