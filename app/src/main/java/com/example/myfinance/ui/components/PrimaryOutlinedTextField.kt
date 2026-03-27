@@ -62,7 +62,7 @@ fun PrimaryOutlinedTextField(
         },
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = MaterialTheme.colorScheme.primary,
-            unfocusedBorderColor = MaterialTheme.colorScheme.outline // Стандартный цвет для контраста
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline
         )
     )
 }

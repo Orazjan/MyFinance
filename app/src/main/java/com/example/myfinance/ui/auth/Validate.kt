@@ -18,7 +18,7 @@ class Validate @Inject constructor() {
     fun validatePassword(password: String): ValidationResult {
         return if (password.isEmpty()) ValidationResult.Error("Пароль не может быть пустым")
         else if (password.length < 8) ValidationResult.Error("Пароль не должен быть меньше 8 знаков")
-        else if (password == "Qwerty") ValidationResult.Error("Пароль не должен быть $password")
+        else if (password.equals("Qwerty")) ValidationResult.Error("Пароль не должен быть $password")
         else ValidationResult.Success
     }
 

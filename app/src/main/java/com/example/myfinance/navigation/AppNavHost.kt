@@ -12,6 +12,7 @@ import com.example.myfinance.ui.main.transActions.AddTransActionScreen
 import com.example.myfinance.ui.profile.settings.SettingsScreen
 import com.example.myfinance.ui.profile.templates.AddTemplateScreen
 import com.example.myfinance.ui.profile.templates.PatternScreen
+import com.example.myfinance.ui.profile.versionOfApp.VersionInfoScreen
 
 
 @Composable
@@ -28,7 +29,7 @@ fun AppNavHost(
         }
         composable(route = Graph.Settings) {
             SettingsScreen(
-                onBackClick = { navController.popBackStack() }
+                navController
             )
         }
         composable(route = Graph.Templates) {
@@ -46,6 +47,11 @@ fun AppNavHost(
             AddTransActionScreen(
                 onBackClick = { navController.popBackStack() }
             )
+        }
+
+        composable(Graph.VersionOfApp) {
+            VersionInfoScreen { navController.popBackStack() }
+
         }
     }
 }
