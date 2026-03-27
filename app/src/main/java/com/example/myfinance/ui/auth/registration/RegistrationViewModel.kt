@@ -6,8 +6,10 @@ import com.example.myfinance.domain.repository.AuthRepository
 import com.example.myfinance.ui.auth.Validate
 import com.example.myfinance.ui.auth.ValidationResult
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -19,6 +21,9 @@ class RegistrationViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(RegistrationUiState())
     val uiState: StateFlow<RegistrationUiState> = _uiState.asStateFlow()
+
+    private val _events = MutableSharedFlow<RegistrationEvents>()
+    val events = _events.asSharedFlow()
 
     fun onChangeUserName(newValue: String) {
 
@@ -54,6 +59,7 @@ class RegistrationViewModel @Inject constructor(
 
     }
 
+
     fun onChangePassword(newValue: String) {
         when (val result = validate.validatePassword(newValue)) {
             is ValidationResult.Success -> {
@@ -75,18 +81,23 @@ class RegistrationViewModel @Inject constructor(
 
     }
 
-    fun onRegClick(onSuccess: () -> Unit) {
+    fun onLoginClick() {
+        viewModelScope.launch {
+            _events.emit(RegistrationEvents.NavigateToLogin)
+        }
+    }
+
+    fun onRegClick() {
         val currentState = _uiState.value
-        val result = validate.validateRegistration(
-            _uiState.value.email,
-            _uiState.value.password,
-            _uiState.value.userName
+        if (currentState.isLoading) return
+        val validationResult = validate.validateRegistration(
+            currentState.email, currentState.password, currentState.userName
         )
-        when (result) {
+        when (validationResult) {
             is ValidationResult.Error -> {
                 _uiState.update {
                     it.copy(
-                        generalError = result.message
+                        generalError = validationResult.message
                     )
                 }
             }
@@ -98,15 +109,21 @@ class RegistrationViewModel @Inject constructor(
                             isLoading = true, generalError = null
                         )
                     }
-                    val result = repository.registration(currentState.email, currentState.password)
+
+                    val resultOfRegistration =
+                        repository.registration(currentState.email, currentState.password)
                     _uiState.update { it.copy(isLoading = false) }
-                    result.onSuccess { onSuccess() }.onFailure { exception ->
-                        _uiState.update {
-                            it.copy(
-                                generalError = exception.message ?: "Произошла неизвестная ошибка"
+
+                    resultOfRegistration.onSuccess { _events.emit(RegistrationEvents.NavigateToMain) }
+                        .onFailure { exception ->
+                            _events.emit(
+                                RegistrationEvents.ShowSnackBar(
+                                    exception.message ?: "Ошибка регистрации"
+                                )
                             )
                         }
-                    }
+
+
                 }
             }
         }

@@ -16,6 +16,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.myfinance.domain.model.Months
+import com.example.myfinance.domain.model.TypeOfOperation
 import com.example.myfinance.ui.components.PrimarySpinner
 import com.example.myfinance.ui.components.TopNavBar
 
@@ -40,13 +41,17 @@ fun AnalizScreen(
             ) {
                 val months = Months.entries.map { it.displayName }
                 var selectedMonth: Months by remember { mutableStateOf(Months.ALL_PERIOD) }
-                val variants = listOf("Общее", "Доходы", "Расходы")
-                var variant by remember { mutableStateOf(variants[0]) }
+                val types = TypeOfOperation.entries.map { it.nameOfType }
+                var selectedType: TypeOfOperation by remember { mutableStateOf(TypeOfOperation.INCOME) }
+
 
                 PrimarySpinner(
-                    options = variants,
-                    selectedOption = variant,
-                    onOptionSelected = { variant = it },
+                    options = types,
+                    selectedOption = selectedType.nameOfType,
+                    onOptionSelected = { navSelection ->
+                        selectedType =
+                            TypeOfOperation.entries.first { it.nameOfType == navSelection }
+                    },
                     label = "Общее",
                     modifier = Modifier
                         .padding(top = 10.dp)

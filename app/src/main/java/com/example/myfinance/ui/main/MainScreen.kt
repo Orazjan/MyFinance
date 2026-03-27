@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.twotone.Add
 import androidx.compose.material.icons.twotone.Payments
 import androidx.compose.material.icons.twotone.TrendingDown
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.myfinance.domain.model.Months
+import com.example.myfinance.domain.model.TypeOfOperation
 import com.example.myfinance.ui.components.PrimaryCard
 import com.example.myfinance.ui.components.PrimaryLazyColumn
 import com.example.myfinance.ui.components.PrimarySpinner
@@ -54,16 +56,18 @@ fun MainScreen(goToAddTransActions: () -> Unit, scrollState: LazyListState) {
                     .background(MaterialTheme.colorScheme.primary)
             )
         }, floatingActionButton = {
+
             FloatingActionButton(
                 onClick = { goToAddTransActions() },
-                modifier = Modifier.padding(bottom = 50.dp),
+                modifier = Modifier.padding(bottom = 80.dp),
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.surfaceContainer,
-                shape = CircleShape
+                shape = CircleShape,
             ) {
                 Icon(Icons.TwoTone.Add, contentDescription = "Добавить")
             }
-        }
+        },
+        floatingActionButtonPosition = FabPosition.EndOverlay,
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -132,7 +136,7 @@ fun MainScreen(goToAddTransActions: () -> Unit, scrollState: LazyListState) {
                             Text(
                                 text = "$",
                                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.SemiBold)
-                        )
+                            )
                         }
                     }
                     Icon(
@@ -143,39 +147,62 @@ fun MainScreen(goToAddTransActions: () -> Unit, scrollState: LazyListState) {
                     )
                 }
             }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
 
-            Column {
-            val months = Months.entries.map { it.displayName }
-            var selectedMonth: Months by remember { mutableStateOf(Months.ALL_PERIOD) }
+            ) {
+                val types = TypeOfOperation.entries.map { it.nameOfType }
+                var selectedType: TypeOfOperation by remember { mutableStateOf(TypeOfOperation.INCOME) }
+                val months = Months.entries.map { it.displayName }
+                var selectedMonth: Months by remember { mutableStateOf(Months.ALL_PERIOD) }
 
-            PrimarySpinner(
-                options = months,
-                selectedOption = selectedMonth.displayName,
-                onOptionSelected = { navSelection ->
-                    selectedMonth = Months.entries.first { it.displayName == navSelection }
-                },
-                label = "Месяцы",
-                modifier = Modifier.padding(top = 10.dp)
-            )
+                PrimarySpinner(
+                    options = types,
+                    selectedOption = selectedType.nameOfType,
+                    onOptionSelected = { navSelection ->
+                        selectedType =
+                            TypeOfOperation.entries.first { it.nameOfType == navSelection }
+                    },
+                    label = "Общее",
+                    modifier = Modifier
+                        .weight(1f)
+                )
+
+                PrimarySpinner(
+                    options = months,
+                    selectedOption = selectedMonth.displayName,
+                    onOptionSelected = { navSelection ->
+                        selectedMonth = Months.entries.first { it.displayName == navSelection }
+                    },
+                    label = "Месяцы",
+                    modifier = Modifier
+                        .weight(1f)
+                )
+            }
 
             PrimaryLazyColumn(
                 state = scrollState,
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(10) { index ->
+                items(15) { index ->
                     PrimaryCard(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp),
+                                .padding(8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                Icons.Default.Image, contentDescription = "", modifier = Modifier
+                                Icons.Default.Image,
+                                contentDescription = "",
+                                modifier = Modifier
                                     .clip(
                                         CircleShape
                                     )
@@ -191,7 +218,6 @@ fun MainScreen(goToAddTransActions: () -> Unit, scrollState: LazyListState) {
                         }
                     }
                 }
-            }
             }
         }
     }

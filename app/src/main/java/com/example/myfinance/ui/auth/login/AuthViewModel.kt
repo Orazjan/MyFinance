@@ -22,6 +22,9 @@ class AuthViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
+    private val _events = MutableSharedFlow<AuthEvents>()
+    val events = _events.asSharedFlow()
+
     fun onEmailChanged(newValue: String) {
         when (val result = validate.validateEmail(newValue)) {
             is ValidationResult.Success -> {
@@ -55,10 +58,22 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun login(onSuccess: () -> Unit) {
-        val result = validate.validateAuth(_uiState.value.email, _uiState.value.password)
+    fun resetPasswordClick() {
+        viewModelScope.launch {
+            _events.emit(AuthEvents.NavigateToResetPassword)
+        }
+    }
 
-        when (result) {
+    fun registrationClick() {
+        viewModelScope.launch {
+            _events.emit(AuthEvents.NavigateToRegistration)
+        }
+    }
+
+    fun login() {
+        if (_uiState.value.isLoading) return
+        val currentState = _uiState.value
+        when (val result = validate.validateAuth(currentState.email, currentState.password)) {
             is ValidationResult.Error -> {
                 _uiState.update {
                     it.copy(
@@ -70,19 +85,14 @@ class AuthViewModel @Inject constructor(
             is ValidationResult.Success -> {
                 viewModelScope.launch {
                     _uiState.update { it.copy(isLoading = true, generalError = null) }
-                    val result = repository.login(_uiState.value.email, _uiState.value.password)
+                    val resultOfAuth = repository.login(currentState.email, currentState.password)
                     _uiState.update { it.copy(isLoading = false) }
-
-                    result.onSuccess { onSuccess() }.onFailure { ex ->
-                        _uiState.update {
-                            it.copy(
-                                generalError = ex.message ?: "Неизвестная ошибка"
-                            )
+                    resultOfAuth.onSuccess { _events.emit(AuthEvents.NavigateToMain) }
+                        .onFailure { ex ->
+                            _uiState.update { it.copy(generalError = ex.message ?: "Ошибка входа") }
                         }
-                    }
                 }
             }
         }
-
     }
 }

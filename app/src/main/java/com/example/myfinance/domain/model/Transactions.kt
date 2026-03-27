@@ -6,5 +6,6 @@ data class Transactions(
     val description: String?,
     val type: TypeOfOperation,
     val amount: Double,
-    val timeStamp: Long
+    val timeStamp: Long,
+    val receiptUri: String? = null
 )

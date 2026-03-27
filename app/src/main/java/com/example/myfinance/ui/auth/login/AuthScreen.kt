@@ -23,7 +23,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,20 +55,45 @@ fun AuthScreen(
     navController: NavHostController, viewModel: AuthViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    AuthScreenContent(
-        state = uiState,
-        onEmailChange = { viewModel.onEmailChanged(it) },
-        onPasswordChange = { viewModel.onPasswordChanged(it) },
-        onLoginClick = {
-            viewModel.login {
-                navController.navigate(Graph.Main)
-            }
-        },
-        onNavigateToRegistration = { navController.navigate(Graph.Registration) },
-        onNavigateResetPassword = { navController.navigate(Graph.ResetPassword) },
-        onBackClick = { navController.popBackStack() },
+    val snackbarHostState = remember { SnackbarHostState() }
 
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+
+            when (event) {
+                AuthEvents.NavigateToMain -> {
+                    navController.navigate(Graph.Main)
+                }
+
+                AuthEvents.NavigateToRegistration -> {
+                    navController.navigate(Graph.Registration)
+                }
+
+                AuthEvents.NavigateToResetPassword -> {
+                    navController.navigate(Graph.ResetPassword)
+                }
+
+                is AuthEvents.ShowSnackBar -> {
+                    snackbarHostState.showSnackbar(event.message)
+                }
+            }
+        }
+    }
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(snackbarHostState) }) { innerPadding ->
+
+        AuthScreenContent(
+            modifier = Modifier.padding(innerPadding),
+        state = uiState,
+            onEmailChange = viewModel::onEmailChanged,
+            onPasswordChange = viewModel::onPasswordChanged,
+            onLoginClick = viewModel::login,
+            onNavigateToRegistration = viewModel::registrationClick,
+            onNavigateResetPassword = viewModel::resetPasswordClick,
+            onBackClick = navController::popBackStack
         )
+    }
 }
 @Composable
 private fun AuthScreenContent(
@@ -76,16 +104,12 @@ private fun AuthScreenContent(
     onNavigateToRegistration: () -> Unit,
     onNavigateResetPassword: () -> Unit,
     state: AuthUiState,
+    modifier: Modifier,
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize()
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
+    Column(
+        modifier = modifier
         ) {
             Row(
                 modifier = Modifier.padding(10.dp),
@@ -142,11 +166,13 @@ private fun AuthScreenContent(
                                 Icon(Icons.TwoTone.Login, contentDescription = "Email Icon")
                             },
                             trailingIcon = {
-                                Icon(
-                                    Icons.TwoTone.Clear,
-                                    contentDescription = "Clear",
-                                    modifier = Modifier.clickable(onClick = { onEmailChange("") })
-                                )
+                                if (state.email.isNotEmpty()) {
+                                    Icon(
+                                        Icons.TwoTone.Clear,
+                                        contentDescription = "Clear",
+                                        modifier = Modifier.clickable(onClick = { onEmailChange("") })
+                                    )
+                                }
                             },
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Email,
@@ -202,7 +228,7 @@ private fun AuthScreenContent(
                         ) {
                             PrimaryText(
                                 "Забыли пароль?",
-                                modifier = Modifier.clickable(onClick = { onNavigateResetPassword() })
+                                modifier = Modifier.clickable(onClick = onNavigateResetPassword)
                             )
                         }
 
@@ -221,8 +247,8 @@ private fun AuthScreenContent(
 
                         PrimaryButton(
                             text = if (state.isLoading) "Загрузка..." else "Войти",
-                            enabled = !state.isLoading && state.emailError == null && state.passwordError == null,
-                            onClick = { onLoginClick() },
+                            enabled = !state.isLoading && state.email.isNotBlank() && state.password.isNotBlank() && state.emailError == null && state.passwordError == null,
+                            onClick = onLoginClick,
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
@@ -243,11 +269,10 @@ private fun AuthScreenContent(
                 )
                 PrimaryText(
                     "Создать",
-                    color = MaterialTheme.colorScheme.inverseOnSurface,
+                    color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.clickable(onClick = { onNavigateToRegistration() })
                 )
             }
         }
     }
-}

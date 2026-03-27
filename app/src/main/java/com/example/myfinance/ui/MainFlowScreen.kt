@@ -53,9 +53,7 @@ fun MainFlowScreen(navController: NavController) {
     val mainListScrollState = rememberLazyListState()
     val isBottomBarVisible = rememberScrollingDirection(mainListScrollState)
 
-    Text("Виден: $isBottomBarVisible", modifier = Modifier.statusBarsPadding())
     Scaffold(contentWindowInsets = WindowInsets(0, 0, 0, 0), bottomBar = {
-
         AnimatedVisibility(
             visible = isBottomBarVisible || pagerState.currentPage != 1,
             enter = slideInVertically(

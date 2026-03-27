@@ -24,10 +24,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +42,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.myfinance.R
 import com.example.myfinance.navigation.Graph
@@ -54,38 +55,62 @@ import com.example.myfinance.ui.components.PrimaryText
 fun RegistrationScreen(
     navController: NavHostController, viewModel: RegistrationViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    RegistrationScreenContent(
-        state = uiState,
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-        onEmailChange = { viewModel.onChangeEmail(it) },
-        onPasswordChange = { viewModel.onChangePassword(it) },
-        onNameChange = { viewModel.onChangeUserName(it) },
-        onRegClick = { viewModel.onRegClick({ navController.navigate(Graph.Main) }) },
-        onBackNavigation = { navController.popBackStack() },
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+
+            when (event) {
+                is RegistrationEvents.NavigateToMain -> {
+                    navController.navigate(Graph.Main)
+                }
+
+                is RegistrationEvents.NavigateToLogin -> {
+                    navController.navigate(Graph.AuthScreenRoot)
+
+                }
+
+                is RegistrationEvents.ShowSnackBar -> {
+                    snackbarHostState.showSnackbar(event.message)
+                }
+
+            }
+        }
+    }
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+    ) { innerPadding ->
+    RegistrationScreenContent(
+        modifier = Modifier.padding(innerPadding),
+        state = uiState,
+        onEmailChange = viewModel::onChangeEmail,
+        onPasswordChange = viewModel::onChangePassword,
+        onNameChange = viewModel::onChangeUserName,
+        onRegClick = viewModel::onRegClick,
+        onLoginNavigation = viewModel::onLoginClick,
+        onBackNavigation = navController::popBackStack
     )
+    }
 }
 
 @Composable
 fun RegistrationScreenContent(
-    state: RegistrationUiState, onNameChange: (String) -> Unit,
+    state: RegistrationUiState,
+    onNameChange: (String) -> Unit,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onRegClick: () -> Unit,
-    onBackNavigation: () -> Unit
+    onBackNavigation: () -> Unit,
+    onLoginNavigation: () -> Unit,
+    modifier: Modifier
 ) {
-
     var passwordVisible by remember { mutableStateOf(false) }
-    val snackBarHostState = remember { SnackbarHostState() }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize()
-
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
+    Column(
+        modifier = modifier
         ) {
             Row(
                 modifier = Modifier.padding(10.dp),
@@ -146,11 +171,13 @@ fun RegistrationScreenContent(
                                 )
                             },
                             trailingIcon = {
-                                Icon(
-                                    Icons.TwoTone.Clear,
-                                    contentDescription = "Name", modifier = Modifier.clickable(
-                                        true, onClick = { onNameChange("") })
-                                )
+                                if (state.userName.isNotEmpty()) {
+                                    Icon(
+                                        Icons.TwoTone.Clear,
+                                        contentDescription = "Name", modifier = Modifier.clickable(
+                                            true, onClick = { onNameChange("") })
+                                    )
+                                }
                             },
                             keyboardOptions = KeyboardOptions(
                                 autoCorrect = false,
@@ -178,11 +205,13 @@ fun RegistrationScreenContent(
                                 )
                             },
                             trailingIcon = {
-                                Icon(
-                                    Icons.TwoTone.Clear, contentDescription = "Clear",
-                                    modifier = Modifier.clickable(
-                                        true, onClick = { onEmailChange("") })
-                                )
+                                if (state.email.isNotEmpty()) {
+                                    Icon(
+                                        Icons.TwoTone.Clear, contentDescription = "Clear",
+                                        modifier = Modifier.clickable(
+                                            true, onClick = { onEmailChange("") })
+                                    )
+                                }
                             },
                             keyboardOptions = KeyboardOptions(
                                 autoCorrect = false,
@@ -231,27 +260,47 @@ fun RegistrationScreenContent(
                             shape = OutlinedTextFieldDefaults.shape,
                             modifier = Modifier.fillMaxWidth()
                         )
+                        Spacer(Modifier.height(15.dp))
 
-
-
-                        Spacer(Modifier.height(10.dp))
-
-                        LaunchedEffect(state.generalError) {
-                            state.generalError?.let {
-                                snackBarHostState.showSnackbar(it)
-                            }
+                        if (state.generalError != null) {
+                            PrimaryText(
+                                text = state.generalError,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.titleSmall,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
                         }
+
                         Spacer(Modifier.height(10.dp))
                         PrimaryButton(
-                            text = if (state.isLoading) "Загрузка..." else "Зарегестрироваться",
+                            text = if (state.isLoading) "Загрузка..." else "Зарегистрироваться",
                             onClick = onRegClick,
-                            enabled = !state.isLoading && state.emailError == null && state.userNameError == null && state.passwordError == null,
+                            enabled = !state.isLoading && state.email.isNotBlank() && state.password.isNotBlank() && state.userName.isNotBlank() && state.emailError == null && state.userNameError == null && state.passwordError == null,
                             modifier = Modifier.fillMaxWidth()
                         )
                         Spacer(Modifier.height(10.dp))
                     }
                 }
             }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 30.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.Bottom
+        ) {
+            PrimaryText(
+                "Есть аккаунт? ",
+                style = MaterialTheme.typography.titleMedium
+            )
+            PrimaryText(
+                "Войти",
+                color = MaterialTheme.colorScheme.surface,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.clickable(
+                    onClick = onLoginNavigation
+                )
+            )
         }
     }
 }
