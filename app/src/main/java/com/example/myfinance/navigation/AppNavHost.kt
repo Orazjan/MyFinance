@@ -10,8 +10,8 @@ import com.example.myfinance.navigation.routes.AuthRoute
 import com.example.myfinance.ui.MainFlowScreen
 import com.example.myfinance.ui.main.transactions.AddTransActionScreen
 import com.example.myfinance.ui.profile.settings.SettingsScreen
-import com.example.myfinance.ui.profile.templates.AddTemplateScreen
-import com.example.myfinance.ui.profile.templates.PatternScreen
+import com.example.myfinance.ui.profile.templates.addTemplate.AddTemplateScreen
+import com.example.myfinance.ui.profile.templates.TemplateScreen
 import com.example.myfinance.ui.profile.versionOfApp.VersionInfoScreen
 
 
@@ -33,7 +33,7 @@ fun AppNavHost(
             )
         }
         composable(route = Graph.Templates) {
-            PatternScreen(
+            TemplateScreen(
                 onBackClick = { navController.popBackStack() },
                 goToAddTemplate = { navController.navigate(Graph.AddTemplate) }
             )

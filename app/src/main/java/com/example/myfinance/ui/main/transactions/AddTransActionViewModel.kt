@@ -20,7 +20,6 @@ class AddTransActionViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(AddTransActionUiState())
     val uiState: StateFlow<AddTransActionUiState> = _uiState.asStateFlow()
 
-
     fun onAction(event: TransactionEvent) {
         when (event) {
             is TransactionEvent.OnNameChanged -> {
@@ -85,13 +84,13 @@ class AddTransActionViewModel @Inject constructor(
             }
 
             is TransactionEvent.OnSaveClicked -> {
-                onSaveClick(event.onSuccess)
+                onSaveClick()
             }
         }
     }
 
 
-    private fun onSaveClick(onSuccess: () -> Unit) {
+    private fun onSaveClick() {
         val state = _uiState.value
 
         val amount = state.amountInput.toDoubleOrNull()
@@ -105,8 +104,6 @@ class AddTransActionViewModel @Inject constructor(
             date = System.currentTimeMillis()
         )
         addTransaction(transaction)
-        onSuccess()
-
     }
 
     fun addTransaction(transaction: TransactionEntity) {

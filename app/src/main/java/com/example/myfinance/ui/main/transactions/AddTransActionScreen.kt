@@ -120,7 +120,7 @@ fun TransactionForm(
 
         Button(
             onClick = {
-                onAction(TransactionEvent.OnSaveClicked {})
+                onAction(TransactionEvent.OnSaveClicked)
             },
             modifier = Modifier.fillMaxWidth()
         ) {

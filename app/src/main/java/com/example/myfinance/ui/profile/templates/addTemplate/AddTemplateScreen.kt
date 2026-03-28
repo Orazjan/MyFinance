@@ -1,4 +1,4 @@
-package com.example.myfinance.ui.profile.templates
+package com.example.myfinance.ui.profile.templates.addTemplate
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -32,9 +32,10 @@ import com.example.myfinance.ui.components.PrimaryCard
 import com.example.myfinance.ui.components.PrimaryOutlinedTextField
 import com.example.myfinance.ui.components.PrimarySpinner
 import com.example.myfinance.ui.components.PrimaryText
+import com.example.myfinance.ui.profile.templates.TemplateEvent
 
 @Composable
-fun AddTemplateScreen(onBackClick: () -> Unit, viewModel: TemplatesViewModel = viewModel()) {
+fun AddTemplateScreen(onBackClick: () -> Unit, viewModel: AddTemplateViewModel = viewModel()) {
     val state by viewModel.uiState.collectAsState()
 
     Spacer(Modifier.height(10.dp))
@@ -46,7 +47,7 @@ fun AddTemplateScreen(onBackClick: () -> Unit, viewModel: TemplatesViewModel = v
         ) {
             PrimaryOutlinedTextField(
                 value = state.nameInput,
-                onValueChange = { viewModel.onEvent(TemplateEvent.OnNameChanged(it)) },
+                onValueChange = { viewModel.onAction(AddTemplateAction.OnNameChanged(it)) },
                 isError = false,
                 errorMessage = "Не подходит",
                 label = {
@@ -66,8 +67,8 @@ fun AddTemplateScreen(onBackClick: () -> Unit, viewModel: TemplatesViewModel = v
                         contentDescription = "Name",
                         modifier = Modifier.clickable(
                             true, onClick = {
-                                viewModel.onEvent(
-                                    TemplateEvent.OnNameChanged(
+                                viewModel.onAction(
+                                    AddTemplateAction.OnNameChanged(
                                         ""
                                     )
                                 )
@@ -86,7 +87,7 @@ fun AddTemplateScreen(onBackClick: () -> Unit, viewModel: TemplatesViewModel = v
             //
             PrimaryOutlinedTextField(
                 value = state.amountInput,
-                onValueChange = { viewModel.onEvent(TemplateEvent.OnAmountChanged(it)) },
+                onValueChange = { viewModel.onAction(AddTemplateAction.OnAmountChanged(it)) },
                 isError = false,
                 errorMessage = "Неn суммы",
                 label = {
@@ -105,7 +106,7 @@ fun AddTemplateScreen(onBackClick: () -> Unit, viewModel: TemplatesViewModel = v
                         contentDescription = "Name",
                         modifier = Modifier.clickable(
                             true,
-                            onClick = { viewModel.onEvent(TemplateEvent.OnAmountChanged("")) })
+                            onClick = { viewModel.onAction(AddTemplateAction.OnAmountChanged("")) })
                     )
                 },
                 keyboardOptions = KeyboardOptions(
@@ -132,7 +133,7 @@ fun AddTemplateScreen(onBackClick: () -> Unit, viewModel: TemplatesViewModel = v
 
             PrimaryButton(
                 "Сохранить изменения",
-                onClick = { viewModel.onEvent(TemplateEvent.OnSaveClick { onBackClick() }) },
+                onClick = { viewModel.onAction(AddTemplateAction.OnSaveClick) },
                 enabled = true
             )
         }

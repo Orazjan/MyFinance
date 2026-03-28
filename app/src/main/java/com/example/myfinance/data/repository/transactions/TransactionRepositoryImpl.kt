@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class TransactionRepositoryImpl @Inject constructor(
-    val dao: TransactionDao
+    private val dao: TransactionDao
 ) : TransactionRepository {
     override fun getAllTransactions(): Flow<List<TransactionEntity>> {
         return dao.getAllTransactions()

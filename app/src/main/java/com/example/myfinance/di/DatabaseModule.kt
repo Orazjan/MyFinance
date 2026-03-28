@@ -1,32 +1,28 @@
 package com.example.myfinance.di
 
-import android.content.Context
-import androidx.room.Room
-import com.example.myfinance.data.local.dao.TransactionDao
-import com.example.myfinance.data.local.database.TransactionDataBase
+import com.example.myfinance.data.repository.templates.TemplateRepositoryImpl
+import com.example.myfinance.data.repository.transactions.TransactionRepositoryImpl
+import com.example.myfinance.domain.repository.TemplateRepository
+import com.example.myfinance.domain.repository.TransactionRepository
+import dagger.Binds
 import dagger.Module
-import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object DatabaseModule {
-    @Provides
+abstract class DatabaseModule {
+
+    @Binds
     @Singleton
-    fun provideDatabase(
-        @ApplicationContext context: Context
-    ): TransactionDataBase {
-        return Room.databaseBuilder(
-            context = context, klass = TransactionDataBase::class.java, name = "my_finance_db"
-        ).build()
+    abstract fun bindTransactionRepository(
+        impl: TransactionRepositoryImpl
+    ): TransactionRepository
 
-    }
-
-    @Provides
-    fun provideTransactionDao(database: TransactionDataBase): TransactionDao {
-        return database.transactionDao()
-    }
+    @Binds
+    @Singleton
+    abstract fun bindTemplateRepository(
+        impl: TemplateRepositoryImpl
+    ): TemplateRepository
 }

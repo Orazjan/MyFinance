@@ -9,7 +9,7 @@ sealed interface TransactionEvent {
     data class OnTypeChanged(val newType: TypeOfOperation) : TransactionEvent
     data class OnDescriptionChanged(val newDescription: String) : TransactionEvent
     data class OnCategorySelected(val index: Int) : TransactionEvent
-    class OnSaveClicked(val onSuccess: () -> Unit) : TransactionEvent
+    data object OnSaveClicked : TransactionEvent
     data class OnTemplateSelected(val template: Templates): TransactionEvent
 
     object DowloadCategories : TransactionEvent
