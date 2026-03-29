@@ -32,5 +32,22 @@ interface TransactionDao {
     @Query("DELETE FROM transactions WHERE id = :id")
     suspend fun deleteTransactionById(id: Long)
 
+    @Query(
+        """
+        SELECT COALESCE(SUM(amount), 0)
+        FROM transactions
+        WHERE type = 'INCOME'
+    """
+    )
+    fun getTotalIncome(): Flow<Double>
+
+    @Query(
+        """
+        SELECT COALESCE(SUM(amount), 0)
+        FROM transactions
+        WHERE type = 'EXPENSE'
+    """
+    )
+    fun getTotalExpense(): Flow<Double>
 
 }

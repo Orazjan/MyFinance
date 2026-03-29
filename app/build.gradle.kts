@@ -49,6 +49,13 @@ android {
 }
 
 dependencies {
+    // dataStore
+    val dataStoreVersion = "1.2.1"
+    implementation("androidx.datastore:datastore-preferences:$dataStoreVersion")
+
+    // Alternatively - without an Android dependency.
+    implementation("androidx.datastore:datastore-preferences-core:$dataStoreVersion")
+
     // room
     val room_version = "2.8.4"
     ksp("androidx.room:room-compiler:$room_version")

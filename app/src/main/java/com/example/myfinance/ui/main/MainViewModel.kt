@@ -2,6 +2,8 @@ package com.example.myfinance.ui.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myfinance.domain.useCase.GetFinanceSummaryUseCase
+import com.example.myfinance.domain.useCase.UpdateCurrentBalanceUseCase
 import com.example.myfinance.domain.model.Months
 import com.example.myfinance.domain.model.TypeOfOperation
 import com.example.myfinance.domain.repository.AuthRepository
@@ -20,7 +22,9 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val repository: TransactionRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val getFinanceSummaryUseCase: GetFinanceSummaryUseCase,
+    private val updateCurrentBalanceUseCase: UpdateCurrentBalanceUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
@@ -31,6 +35,20 @@ class MainViewModel @Inject constructor(
     init {
         checkAuthState()
         observeTransactions()
+        observeFinanceSummary()
+    }
+
+    private fun observeFinanceSummary() {
+        viewModelScope.launch {
+            getFinanceSummaryUseCase().collect { value ->
+                _uiState.update {
+                    it.copy(
+                        totalExpense = value.totalExpense.toString(),
+                        totalBalance = value.baseBalance.toString()
+                    )
+                }
+            }
+        }
     }
 
     fun onAction(actions: MainAction) {

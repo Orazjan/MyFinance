@@ -14,4 +14,6 @@ import com.example.myfinance.data.local.entity.TransactionEntity
 abstract class AppDatabase : RoomDatabase() {
     abstract fun transactionDao(): TransactionDao
     abstract fun templateDao(): TemplateDao
+
+
 }

@@ -2,8 +2,10 @@ package com.example.myfinance.di
 
 import com.example.myfinance.data.repository.templates.TemplateRepositoryImpl
 import com.example.myfinance.data.repository.transactions.TransactionRepositoryImpl
+import com.example.myfinance.data.repository.userPerfences.UserPreferencesRepositoryImpl
 import com.example.myfinance.domain.repository.TemplateRepository
 import com.example.myfinance.domain.repository.TransactionRepository
+import com.example.myfinance.domain.repository.UserPreferencesRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -19,6 +21,12 @@ abstract class DatabaseModule {
     abstract fun bindTransactionRepository(
         impl: TransactionRepositoryImpl
     ): TransactionRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUserPreferencesRepository(
+        impl: UserPreferencesRepositoryImpl
+    ): UserPreferencesRepository
 
     @Binds
     @Singleton

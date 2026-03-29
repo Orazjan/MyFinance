@@ -11,4 +11,6 @@ interface TransactionRepository {
     suspend fun deleteTransaction(transaction: TransactionEntity)
     suspend fun deleteTransactionById(id: Long)
     suspend fun deleteAllTransactions()
+    fun getTotalIncome(): Flow<Double>
+    fun getTotalExpense(): Flow<Double>
 }

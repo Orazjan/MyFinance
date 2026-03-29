@@ -37,4 +37,13 @@ class TransactionRepositoryImpl @Inject constructor(
         return dao.deleteAllTransactions()
     }
 
+    override fun getTotalIncome(): Flow<Double> {
+        return dao.getTotalIncome()
+    }
+
+    override fun getTotalExpense(): Flow<Double> {
+        return dao.getTotalExpense()
+    }
+
+
 }

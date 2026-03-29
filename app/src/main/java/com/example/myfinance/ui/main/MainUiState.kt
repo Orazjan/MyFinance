@@ -5,8 +5,8 @@ import com.example.myfinance.domain.model.Months
 import com.example.myfinance.domain.model.TypeOfOperation
 
 data class MainUiState(
-    val totalBalance: String = "0",
-    val totalExpense: String = "0",
+    val totalBalance: String = "0.0",
+    val totalExpense: String = "0.0",
     val transactions: List<TransactionEntity> = emptyList(),
     val selectedType: TypeOfOperation = TypeOfOperation.ALL,
     val selectedMonth: Months = Months.ALL_PERIOD,
