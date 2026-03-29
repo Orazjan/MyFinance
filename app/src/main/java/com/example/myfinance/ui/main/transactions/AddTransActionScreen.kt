@@ -25,7 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.myfinance.domain.model.Templates
+import com.example.myfinance.domain.model.Template
 import com.example.myfinance.domain.model.TypeOfOperation
 import com.example.myfinance.ui.components.PrimarySpinner
 import com.example.myfinance.ui.components.TopNavBar
@@ -131,9 +131,9 @@ fun TransactionForm(
 
 @Composable
 fun TemplateSelector(
-    templates: List<Templates>,
+    templates: List<Template>,
     selectedIndex: Int,
-    onSelected: (Templates) -> Unit
+    onSelected: (Template) -> Unit
 ) {
 
     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

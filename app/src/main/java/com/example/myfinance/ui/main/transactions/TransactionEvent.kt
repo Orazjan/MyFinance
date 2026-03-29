@@ -1,6 +1,6 @@
 package com.example.myfinance.ui.main.transactions
 
-import com.example.myfinance.domain.model.Templates
+import com.example.myfinance.domain.model.Template
 import com.example.myfinance.domain.model.TypeOfOperation
 
 sealed interface TransactionEvent {
@@ -10,7 +10,7 @@ sealed interface TransactionEvent {
     data class OnDescriptionChanged(val newDescription: String) : TransactionEvent
     data class OnCategorySelected(val index: Int) : TransactionEvent
     data object OnSaveClicked : TransactionEvent
-    data class OnTemplateSelected(val template: Templates): TransactionEvent
+    data class OnTemplateSelected(val template: Template): TransactionEvent
 
     object DowloadCategories : TransactionEvent
 }

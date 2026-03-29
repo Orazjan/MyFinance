@@ -2,13 +2,14 @@ package com.example.myfinance.ui.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myfinance.domain.useCase.GetFinanceSummaryUseCase
-import com.example.myfinance.domain.useCase.UpdateCurrentBalanceUseCase
 import com.example.myfinance.domain.model.Months
 import com.example.myfinance.domain.model.TypeOfOperation
 import com.example.myfinance.domain.repository.AuthRepository
 import com.example.myfinance.domain.repository.TransactionRepository
+import com.example.myfinance.domain.useCase.GetFinanceSummaryUseCase
+import com.example.myfinance.domain.useCase.UpdateCurrentBalanceUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,10 +33,27 @@ class MainViewModel @Inject constructor(
     private val _events = MutableSharedFlow<MainEvent>()
     val events = _events.asSharedFlow()
 
+    private var transactionsJob: Job? = null
+
     init {
         checkAuthState()
         observeTransactions()
         observeFinanceSummary()
+    }
+
+    fun onAction(actions: MainAction) {
+        when (actions) {
+            is MainAction.OnAddTransactionClick -> navigateToAddTransactions()
+            is MainAction.OnUpdateBalanceClick -> {}
+            is MainAction.OnBackClick -> navigateToBack()
+            is MainAction.OnDeleteClick -> TODO()
+            is MainAction.OnDeleteTransactionClick -> TODO()
+            is MainAction.OnShowDetailClick -> TODO()
+            is MainAction.OnTransactionClick -> TODO()
+            is MainAction.OnMonthSelected -> onMonthSelected(actions.month)
+            is MainAction.OnTypeSelected -> onTypeSelected(actions.type)
+
+        }
     }
 
     private fun observeFinanceSummary() {
@@ -48,20 +66,6 @@ class MainViewModel @Inject constructor(
                     )
                 }
             }
-        }
-    }
-
-    fun onAction(actions: MainAction) {
-        when (actions) {
-            is MainAction.OnAddTransactionClick -> navigateToAddTransactions()
-            is MainAction.OnBackClick -> navigateToBack()
-            is MainAction.OnDeleteClick -> TODO()
-            is MainAction.OnDeleteTransactionClick -> TODO()
-            is MainAction.OnShowDetailClick -> TODO()
-            is MainAction.OnTransactionClick -> TODO()
-            is MainAction.OnMonthSelected -> onMonthSelected(actions.month)
-            is MainAction.OnTypeSelected -> onTypeSelected(actions.type)
-
         }
     }
 
@@ -102,14 +106,14 @@ class MainViewModel @Inject constructor(
     }
 
     private fun observeTransactions() {
-        viewModelScope.launch {
+        transactionsJob?.cancel()
+        transactionsJob = viewModelScope.launch {
             repository.getAllTransactions().collect { transactions ->
                 _uiState.update {
                     it.copy(transactions = transactions)
                 }
             }
         }
-
     }
 
     private fun emitEvent(event: MainEvent) {

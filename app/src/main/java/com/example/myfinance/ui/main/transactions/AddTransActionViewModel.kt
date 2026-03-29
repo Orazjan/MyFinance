@@ -2,7 +2,8 @@ package com.example.myfinance.ui.main.transactions
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myfinance.data.local.entity.TransactionEntity
+import com.example.myfinance.data.mapper.toEntity
+import com.example.myfinance.domain.model.Transaction
 import com.example.myfinance.domain.model.TypeOfOperation
 import com.example.myfinance.domain.repository.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -96,17 +97,16 @@ class AddTransActionViewModel @Inject constructor(
         val amount = state.amountInput.toDoubleOrNull()
             ?: return
 
-        val transaction = TransactionEntity(
+        val transaction = Transaction(
             title = state.nameInput,
-            description = state.description,
-            type = state.typeOfOperation.name,
+            description = state.description, type = state.typeOfOperation,
             amount = amount,
             date = System.currentTimeMillis()
         )
         addTransaction(transaction)
     }
 
-    fun addTransaction(transaction: TransactionEntity) {
+    fun addTransaction(transaction: Transaction) {
         viewModelScope.launch {
             transactionRepository.insertTransaction(transaction)
         }

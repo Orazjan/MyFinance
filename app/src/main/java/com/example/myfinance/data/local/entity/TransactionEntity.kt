@@ -2,6 +2,7 @@ package com.example.myfinance.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.example.myfinance.domain.model.TypeOfOperation
 
 @Entity(tableName = "transactions")
 data class TransactionEntity(

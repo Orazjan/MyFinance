@@ -1,6 +1,6 @@
 package com.example.myfinance.domain.model
 
-data class Templates(
+data class Template(
     val id: Int,
     val name: String,
     val isIncome: Boolean,

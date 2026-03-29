@@ -7,6 +7,7 @@ sealed interface MainAction {
     data object OnAddTransactionClick : MainAction
     data object OnBackClick : MainAction
     data object OnDeleteClick : MainAction
+    data object OnUpdateBalanceClick : MainAction
     data class OnTransactionClick(val transactionId: Long) : MainAction
     data class OnDeleteTransactionClick(val transactionId: Long) : MainAction
     data object OnShowDetailClick : MainAction

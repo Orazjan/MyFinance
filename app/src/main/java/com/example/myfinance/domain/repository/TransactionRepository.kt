@@ -1,14 +1,14 @@
 package com.example.myfinance.domain.repository
 
-import com.example.myfinance.data.local.entity.TransactionEntity
+import com.example.myfinance.domain.model.Transaction
 import kotlinx.coroutines.flow.Flow
 
 interface TransactionRepository {
-    fun getAllTransactions(): Flow<List<TransactionEntity>>
-    suspend fun getTransactionById(id: Long): TransactionEntity?
-    suspend fun insertTransaction(transaction: TransactionEntity)
-    suspend fun updateTransaction(transaction: TransactionEntity)
-    suspend fun deleteTransaction(transaction: TransactionEntity)
+    fun getAllTransactions(): Flow<List<Transaction>>
+    suspend fun getTransactionById(id: Long): Transaction?
+    suspend fun insertTransaction(transaction: Transaction)
+    suspend fun updateTransaction(transaction: Transaction)
+    suspend fun deleteTransaction(transaction: Transaction)
     suspend fun deleteTransactionById(id: Long)
     suspend fun deleteAllTransactions()
     fun getTotalIncome(): Flow<Double>

@@ -1,6 +1,5 @@
 package com.example.myfinance.ui.main
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -227,14 +226,13 @@ fun MainScreenContent(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(state.transactions) { transaction ->
-                    Log.d("CHECK_TYPE", "ID: ${transaction.id}, Type in DB: '${transaction.type}'")
                     PrimaryCard(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(8.dp),
+                                .padding(14.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -245,7 +243,7 @@ fun MainScreenContent(
                                     .clip(
                                         CircleShape
                                     )
-                                    .size(30.dp)
+                                    .size(50.dp)
                                     .padding(end = 10.dp)
                             )
                             Spacer(Modifier.width(12.dp))
@@ -256,7 +254,7 @@ fun MainScreenContent(
                                     style = MaterialTheme.typography.titleMedium
                                 )
                                 val typeLabel =
-                                    TypeOfOperation.fromString(transaction.type)?.nameOfType
+                                    TypeOfOperation.fromString(transaction.type.nameOfType)?.nameOfType
                                         ?: "Неизвестно"
                                 PrimaryText(
                                     text = typeLabel,
@@ -269,12 +267,7 @@ fun MainScreenContent(
                                 PrimaryText(
                                     text = "${transaction.amount} $",
                                     style = MaterialTheme.typography.titleLarge,
-                                    color = if (transaction.type == "INCOME") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-                                )
-                                PrimaryText(
-                                    text = "ID: ${transaction.id}",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.outline
+                                    color = if (transaction.type.nameOfType == "INCOME") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                                 )
                             }
                         }
