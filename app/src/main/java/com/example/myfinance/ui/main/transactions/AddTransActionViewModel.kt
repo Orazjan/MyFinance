@@ -1,14 +1,17 @@
 package com.example.myfinance.ui.main.transactions
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myfinance.domain.model.Transaction
 import com.example.myfinance.domain.model.TypeOfOperation
 import com.example.myfinance.domain.repository.TransactionRepository
-import com.example.myfinance.domain.useCase.UpdateCurrentBalanceUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -17,21 +20,35 @@ import javax.inject.Inject
 @HiltViewModel
 class AddTransActionViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
-    private val updateCurrentBalanceUseCase: UpdateCurrentBalanceUseCase
+    private val validate: TransactionValidate
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AddTransActionUiState())
     val uiState: StateFlow<AddTransActionUiState> = _uiState.asStateFlow()
 
+    private val _action = MutableSharedFlow<TransactionAction>()
+    val action = _action.asSharedFlow()
+
     fun onAction(event: TransactionEvent) {
         when (event) {
             is TransactionEvent.OnNameChanged -> {
-                _uiState.update {
-                    it.copy(
-                        nameInput = event.newName
-                    )
+                when (val result = validate.validateName(event.newName)) {
+                    is ValidationResult.Error -> {
+                        _uiState.update {
+                            it.copy(
+                                nameInput = event.newName, nameError = result.message
+                            )
+                        }
+                    }
+
+                    is ValidationResult.Success -> {
+                        _uiState.update {
+                            it.copy(
+                                nameInput = event.newName, nameError = null
+                            )
+                        }
+                    }
                 }
             }
-
             is TransactionEvent.OnTemplateSelected -> {
                 _uiState.update {
                     it.copy(
@@ -49,19 +66,45 @@ class AddTransActionViewModel @Inject constructor(
             }
 
             is TransactionEvent.OnAmountChanged -> {
-                _uiState.update {
-                    it.copy(
-                        amountInput = event.newAmount
-                    )
+                when (val result = validate.validateAmount(event.newAmount)) {
+                    is ValidationResult.Success -> {
+                        _uiState.update {
+                            it.copy(
+                                amountInput = event.newAmount, amountError = null
+                            )
+                        }
+                    }
+
+                    is ValidationResult.Error -> {
+                        _uiState.update {
+                            it.copy(
+                                amountInput = event.newAmount, amountError = result.message
+                            )
+                        }
+                    }
                 }
+
             }
 
             is TransactionEvent.OnTypeChanged -> {
-                _uiState.update {
-                    it.copy(
-                        typeOfOperation = event.newType
-                    )
+                when (val result = validate.validateType(event.newType)) {
+                    is ValidationResult.Error -> {
+                        _uiState.update {
+                            it.copy(
+                                typeOfOperation = event.newType, typeError = result.message
+                            )
+                        }
+                    }
+
+                    is ValidationResult.Success -> {
+                        _uiState.update {
+                            it.copy(
+                                typeOfOperation = event.newType, typeError = null
+                            )
+                        }
+                    }
                 }
+
             }
 
             is TransactionEvent.OnCategorySelected -> {
@@ -93,6 +136,7 @@ class AddTransActionViewModel @Inject constructor(
 
     private fun onSaveClick() {
         val state = _uiState.value
+        _uiState.update { it.copy(isLoading = true) }
 
         val amount = state.amountInput.toDoubleOrNull()
             ?: return
@@ -103,13 +147,35 @@ class AddTransActionViewModel @Inject constructor(
             amount = amount,
             date = System.currentTimeMillis()
         )
-        addTransaction(transaction)
+        when (val result = validate.validateTransaction(transaction)) {
+            is ValidationResult.Error -> {
+                _uiState.update {
+                    it.copy(
+                        generalError = result.message, isLoading = false
+                    )
+                }
+            }
+
+            is ValidationResult.Success -> {
+                addTransaction(transaction)
+            }
+        }
     }
 
     fun addTransaction(transaction: Transaction) {
         viewModelScope.launch {
-            transactionRepository.insertTransaction(transaction)
+            try {
+                transactionRepository.insertTransaction(transaction)
+                _action.emit(TransactionAction.ShowSnackbar("Успешно добавлено"))
+                delay(500)
+                _action.emit(TransactionAction.NavigateBack)
+            } catch (e: Exception) {
+                Log.d("TransactionError", e.message.toString())
+                _action.emit(TransactionAction.ShowSnackbar("Ошибка в добавлении"))
+            }
+
         }
+
     }
 
     private fun onDownloadCategories() {

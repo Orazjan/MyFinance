@@ -13,6 +13,8 @@ data class AddTransActionUiState(
 
     val nameError: String? = null,
     val amountError: String? = null,
+    val typeError: String? = null,
+    val generalError: String? = null,
 
     val typeOfOperation: TypeOfOperation = TypeOfOperation.INCOME,
     val selectedIndex: Int = 0,

@@ -11,6 +11,5 @@ sealed interface TransactionEvent {
     data class OnCategorySelected(val index: Int) : TransactionEvent
     data object OnSaveClicked : TransactionEvent
     data class OnTemplateSelected(val template: Template): TransactionEvent
-
     object DowloadCategories : TransactionEvent
 }

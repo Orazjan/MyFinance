@@ -85,7 +85,7 @@ fun AuthScreen(
 
         AuthScreenContent(
             modifier = Modifier.padding(innerPadding),
-        state = uiState,
+            state = uiState,
             onEmailChange = viewModel::onEmailChanged,
             onPasswordChange = viewModel::onPasswordChanged,
             onLoginClick = viewModel::login,
@@ -95,6 +95,7 @@ fun AuthScreen(
         )
     }
 }
+
 @Composable
 private fun AuthScreenContent(
     onEmailChange: (String) -> Unit,
@@ -110,169 +111,169 @@ private fun AuthScreenContent(
 
     Column(
         modifier = modifier
+    ) {
+        Row(
+            modifier = Modifier.padding(10.dp),
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.Start
         ) {
-            Row(
-                modifier = Modifier.padding(10.dp),
-                verticalAlignment = Alignment.Top,
-                horizontalArrangement = Arrangement.Start
+            Icon(
+                Icons.TwoTone.ChevronLeft, contentDescription = stringResource(R.string.back),
+                modifier = Modifier.clickable(onClick = { onBackClick() })
+            )
+            PrimaryText(
+                stringResource(R.string.back),
+                modifier = Modifier.clickable(true, onClick = { onBackClick() })
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .padding(horizontal = 30.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            PrimaryText(
+                "Сохраните свои данные", style = MaterialTheme.typography.headlineMedium
+            )
+
+            Spacer(Modifier.height(40.dp))
+
+            PrimaryCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.large,
+                elevation = 12.dp,
+                border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary.copy(0.5f))
             ) {
-                Icon(
-                    Icons.TwoTone.ChevronLeft, contentDescription = stringResource(R.string.back),
-                    modifier = Modifier.clickable(onClick = { onBackClick() })
-                )
-                PrimaryText(
-                    stringResource(R.string.back),
-                    modifier = Modifier.clickable(true, onClick = { onBackClick() })
-                )
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(horizontal = 30.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                PrimaryText(
-                    "Сохраните свои данные", style = MaterialTheme.typography.headlineMedium
-                )
-
-                Spacer(Modifier.height(40.dp))
-
-                PrimaryCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.large,
-                    elevation = 12.dp,
-                    border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary.copy(0.5f))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    PrimaryOutlinedTextField(
+                        value = state.email,
+                        onValueChange = onEmailChange,
+                        isError = state.emailError != null,
+                        errorMessage = state.emailError ?: "",
+                        label = {
+                            PrimaryText(
+                                "Email", color = MaterialTheme.colorScheme.primary.copy(0.5f)
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(Icons.TwoTone.Login, contentDescription = "Email Icon")
+                        },
+                        trailingIcon = {
+                            if (state.email.isNotEmpty()) {
+                                Icon(
+                                    Icons.TwoTone.Clear,
+                                    contentDescription = "Clear",
+                                    modifier = Modifier.clickable(onClick = { onEmailChange("") })
+                                )
+                            }
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Email,
+                            autoCorrect = false,
+                            capitalization = KeyboardCapitalization.None,
+                            imeAction = ImeAction.Next
+                        ),
+                        shape = OutlinedTextFieldDefaults.shape
+                    )
+
+                    Spacer(Modifier.height(10.dp))
+
+                    PrimaryOutlinedTextField(
+                        value = state.password,
+                        onValueChange = onPasswordChange,
+                        isError = state.passwordError != null,
+                        errorMessage = state.passwordError ?: "",
+                        label = {
+                            PrimaryText(
+                                text = "Пароль",
+                                color = MaterialTheme.colorScheme.primary.copy(0.5f)
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(Icons.TwoTone.Lock, contentDescription = "Password Icon")
+                        },
+                        trailingIcon = {
+                            val icon =
+                                if (passwordVisible) Icons.TwoTone.Visibility else Icons.TwoTone.VisibilityOff
+                            val description =
+                                if (passwordVisible) "Скрыть пароль" else "Показать пароль"
+
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(imageVector = icon, contentDescription = description)
+                            }
+                        },
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(
+                            autoCorrect = false,
+                            keyboardType = KeyboardType.Password,
+                            capitalization = KeyboardCapitalization.None,
+                            imeAction = ImeAction.Done
+                        ),
+                        shape = OutlinedTextFieldDefaults.shape,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(Modifier.height(5.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
                     ) {
-                        PrimaryOutlinedTextField(
-                            value = state.email,
-                            onValueChange = onEmailChange,
-                            isError = state.emailError != null,
-                            errorMessage = state.emailError ?: "",
-                            label = {
-                                PrimaryText(
-                                    "Email", color = MaterialTheme.colorScheme.primary.copy(0.5f)
-                                )
-                            },
-                            leadingIcon = {
-                                Icon(Icons.TwoTone.Login, contentDescription = "Email Icon")
-                            },
-                            trailingIcon = {
-                                if (state.email.isNotEmpty()) {
-                                    Icon(
-                                        Icons.TwoTone.Clear,
-                                        contentDescription = "Clear",
-                                        modifier = Modifier.clickable(onClick = { onEmailChange("") })
-                                    )
-                                }
-                            },
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Email,
-                                autoCorrect = false,
-                                capitalization = KeyboardCapitalization.None,
-                                imeAction = ImeAction.Next
-                            ),
-                            shape = OutlinedTextFieldDefaults.shape
-                        )
-
-                        Spacer(Modifier.height(10.dp))
-
-                        PrimaryOutlinedTextField(
-                            value = state.password,
-                            onValueChange = onPasswordChange,
-                            isError = state.passwordError != null,
-                            errorMessage = state.passwordError ?: "",
-                            label = {
-                                PrimaryText(
-                                    text = "Пароль",
-                                    color = MaterialTheme.colorScheme.primary.copy(0.5f)
-                                )
-                            },
-                            leadingIcon = {
-                                Icon(Icons.TwoTone.Lock, contentDescription = "Password Icon")
-                            },
-                            trailingIcon = {
-                                val icon =
-                                    if (passwordVisible) Icons.TwoTone.Visibility else Icons.TwoTone.VisibilityOff
-                                val description =
-                                    if (passwordVisible) "Скрыть пароль" else "Показать пароль"
-
-                                IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                    Icon(imageVector = icon, contentDescription = description)
-                                }
-                            },
-                            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                            keyboardOptions = KeyboardOptions(
-                                autoCorrect = false,
-                                keyboardType = KeyboardType.Password,
-                                capitalization = KeyboardCapitalization.None,
-                                imeAction = ImeAction.Done
-                            ),
-                            shape = OutlinedTextFieldDefaults.shape,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-
-                        Spacer(Modifier.height(5.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            PrimaryText(
-                                "Забыли пароль?",
-                                modifier = Modifier.clickable(onClick = onNavigateResetPassword)
-                            )
-                        }
-
-                        Spacer(Modifier.height(15.dp))
-
-                        if (state.generalError != null) {
-                            PrimaryText(
-                                text = state.generalError,
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.titleSmall,
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            )
-                        }
-
-                        Spacer(Modifier.height(10.dp))
-
-                        PrimaryButton(
-                            text = if (state.isLoading) "Загрузка..." else "Войти",
-                            enabled = !state.isLoading && state.email.isNotBlank() && state.password.isNotBlank() && state.emailError == null && state.passwordError == null,
-                            onClick = onLoginClick,
-                            modifier = Modifier.fillMaxWidth()
+                        PrimaryText(
+                            "Забыли пароль?",
+                            modifier = Modifier.clickable(onClick = onNavigateResetPassword)
                         )
                     }
+
+                    Spacer(Modifier.height(15.dp))
+
+                    if (state.generalError != null) {
+                        PrimaryText(
+                            text = state.generalError,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                    }
+
+                    Spacer(Modifier.height(10.dp))
+
+                    PrimaryButton(
+                        text = if (state.isLoading) "Загрузка..." else "Войти",
+                        enabled = !state.isLoading && state.email.isNotBlank() && state.password.isNotBlank() && state.emailError == null && state.passwordError == null,
+                        onClick = onLoginClick,
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
+        }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 30.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                PrimaryText(
-                    "Нет аккаунта? ",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.clickable(onClick = { onNavigateToRegistration() })
-                )
-                PrimaryText(
-                    "Создать",
-                    color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.clickable(onClick = { onNavigateToRegistration() })
-                )
-            }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 30.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            PrimaryText(
+                "Нет аккаунта? ",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.clickable(onClick = { onNavigateToRegistration() })
+            )
+            PrimaryText(
+                "Создать",
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.clickable(onClick = { onNavigateToRegistration() })
+            )
         }
     }
+}

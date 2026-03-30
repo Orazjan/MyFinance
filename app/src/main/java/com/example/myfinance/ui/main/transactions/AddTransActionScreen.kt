@@ -9,25 +9,30 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.myfinance.domain.model.Template
 import com.example.myfinance.domain.model.TypeOfOperation
+import com.example.myfinance.ui.components.PrimaryOutlinedTextField
 import com.example.myfinance.ui.components.PrimarySpinner
+import com.example.myfinance.ui.components.PrimaryText
 import com.example.myfinance.ui.components.TopNavBar
 
 @Composable
@@ -35,11 +40,22 @@ fun AddTransActionScreen(
     onBackClick: () -> Unit, viewModel: AddTransActionViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
-    val pagerState = rememberPagerState(pageCount = { state.templates.size })
-    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
+    LaunchedEffect(Unit) {
+        viewModel.action.collect { action ->
+            when (action) {
+                is TransactionAction.NavigateBack -> onBackClick()
+                is TransactionAction.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(message = action.message)
+                }
+            }
+        }
+    }
 
-    Scaffold(topBar = {
+    Scaffold(snackbarHost = {
+        SnackbarHost(snackbarHostState)
+    }, topBar = {
         TopNavBar(
             title = "Новая Транзакция",
             onBackClick = { onBackClick() },
@@ -78,30 +94,44 @@ fun TransactionForm(
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
-        OutlinedTextField(
+        PrimaryOutlinedTextField(
             value = state.nameInput,
             onValueChange = {
                 onAction(TransactionEvent.OnNameChanged(it))
-            },
-            label = { Text("Название") },
+            }, isError = state.nameError != null, errorMessage = state.nameError ?: "",
+            label = { Text("Название") }, keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next,
+                capitalization = KeyboardCapitalization.Sentences
+            ),
             modifier = Modifier.fillMaxWidth()
         )
 
-        OutlinedTextField(
+        PrimaryOutlinedTextField(
             value = state.amountInput,
             onValueChange = {
                 onAction(TransactionEvent.OnAmountChanged(it))
             },
+            isError = state.amountError != null, errorMessage = state.amountError ?: "",
             label = { Text("Сумма") },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Next,
+                capitalization = KeyboardCapitalization.Sentences
+            ),
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
 
-        OutlinedTextField(
+        PrimaryOutlinedTextField(
             value = state.description,
             onValueChange = {
                 onAction(TransactionEvent.OnDescriptionChanged(it))
             },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next,
+                capitalization = KeyboardCapitalization.Sentences
+            ),
             label = { Text("Комментарий") },
             modifier = Modifier.fillMaxWidth()
         )
@@ -113,18 +143,30 @@ fun TransactionForm(
                 TypeOfOperation.fromDisplayName(selectedName)?.let { type ->
                     onAction(TransactionEvent.OnTypeChanged(type))
                 }
-            },
+            }, isError = state.typeError != null, errorMessage = state.typeError ?: "",
             label = "Общее",
             modifier = Modifier.weight(1f)
         )
 
+        Spacer(Modifier.height(15.dp))
+
+        if (state.generalError != null) {
+            PrimaryText(
+                text = state.generalError,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
         Button(
+            enabled = !state.isLoading && state.typeError == null && state.amountError == null && state.nameError == null,
             onClick = {
                 onAction(TransactionEvent.OnSaveClicked)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Сохранить")
+            Text("Добавить")
         }
     }
 }
