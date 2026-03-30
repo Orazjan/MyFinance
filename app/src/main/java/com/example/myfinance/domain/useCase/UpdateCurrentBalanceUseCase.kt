@@ -1,11 +1,9 @@
 package com.example.myfinance.domain.useCase
 
-import com.example.myfinance.domain.repository.TransactionRepository
 import com.example.myfinance.domain.repository.UserPreferencesRepository
 import javax.inject.Inject
 
 class UpdateCurrentBalanceUseCase @Inject constructor(
-    private val transactionRepository: TransactionRepository,
     private val userPreferencesRepository: UserPreferencesRepository
 ) {
     suspend operator fun invoke(

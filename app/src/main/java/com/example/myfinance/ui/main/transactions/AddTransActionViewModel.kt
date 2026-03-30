@@ -2,10 +2,10 @@ package com.example.myfinance.ui.main.transactions
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myfinance.data.mapper.toEntity
 import com.example.myfinance.domain.model.Transaction
 import com.example.myfinance.domain.model.TypeOfOperation
 import com.example.myfinance.domain.repository.TransactionRepository
+import com.example.myfinance.domain.useCase.UpdateCurrentBalanceUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddTransActionViewModel @Inject constructor(
-    private val transactionRepository: TransactionRepository
+    private val transactionRepository: TransactionRepository,
+    private val updateCurrentBalanceUseCase: UpdateCurrentBalanceUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AddTransActionUiState())
     val uiState: StateFlow<AddTransActionUiState> = _uiState.asStateFlow()
@@ -40,12 +41,11 @@ class AddTransActionViewModel @Inject constructor(
                         nameInput = event.template.name,
                         amountInput = event.template.amount.toString(),
                         typeOfOperation = if (event.template.isIncome)
-                            TypeOfOperation.ALL
+                            TypeOfOperation.INCOME
                         else
                             TypeOfOperation.EXPENSES
                     )
                 }
-
             }
 
             is TransactionEvent.OnAmountChanged -> {

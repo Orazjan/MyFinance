@@ -254,7 +254,7 @@ fun MainScreenContent(
                                     style = MaterialTheme.typography.titleMedium
                                 )
                                 val typeLabel =
-                                    TypeOfOperation.fromString(transaction.type.nameOfType)?.nameOfType
+                                    TypeOfOperation.fromDisplayName(transaction.type.nameOfType)?.nameOfType
                                         ?: "Неизвестно"
                                 PrimaryText(
                                     text = typeLabel,

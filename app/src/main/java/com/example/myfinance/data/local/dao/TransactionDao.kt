@@ -45,7 +45,7 @@ interface TransactionDao {
         """
         SELECT COALESCE(SUM(amount), 0)
         FROM transactions
-        WHERE type = 'EXPENSE'
+        WHERE type = 'EXPENSES'
     """
     )
     fun getTotalExpense(): Flow<Double>

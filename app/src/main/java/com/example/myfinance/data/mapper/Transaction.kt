@@ -21,7 +21,7 @@ fun TransactionEntity.toDomain(): Transaction {
         title = title,
         description = description,
         amount = amount,
-        type = TypeOfOperation.fromString(type) ?: TypeOfOperation.ALL,
+        type = TypeOfOperation.valueOf(type),
         date = date
     )
 

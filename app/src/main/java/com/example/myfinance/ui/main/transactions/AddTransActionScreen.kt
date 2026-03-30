@@ -110,7 +110,7 @@ fun TransactionForm(
             options = TypeOfOperation.entries.map { it.nameOfType },
             selectedOption = state.typeOfOperation.nameOfType,
             onOptionSelected = { selectedName ->
-                TypeOfOperation.fromString(selectedName)?.let { type ->
+                TypeOfOperation.fromDisplayName(selectedName)?.let { type ->
                     onAction(TransactionEvent.OnTypeChanged(type))
                 }
             },

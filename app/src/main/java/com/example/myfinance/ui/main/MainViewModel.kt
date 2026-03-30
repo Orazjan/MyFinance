@@ -62,7 +62,7 @@ class MainViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         totalExpense = value.totalExpense.toString(),
-                        totalBalance = value.baseBalance.toString()
+                        totalBalance = value.currentBalance.toString()
                     )
                 }
             }
