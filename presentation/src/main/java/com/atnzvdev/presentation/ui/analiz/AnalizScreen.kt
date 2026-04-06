@@ -1,0 +1,77 @@
+package com.atnzvdev.presentation.ui.analiz
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.atnzvdev.domain.model.Months
+import com.atnzvdev.domain.model.TypeOfOperation
+import com.atnzvdev.presentation.ui.components.PrimarySpinner
+import com.atnzvdev.presentation.ui.components.TopNavBar
+
+@Composable
+fun AnalizScreen(
+    onGoToMain: () -> Unit
+) {
+    Scaffold(
+        topBar = {
+            TopNavBar(
+                title = "Аналитика",
+                onBackClick = { onGoToMain() },
+                modifier = Modifier.background(MaterialTheme.colorScheme.primary)
+            )
+        }) { innerPadding ->
+        Column(modifier = Modifier.padding(innerPadding)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                val months = Months.entries.map { it.displayName }
+                var selectedMonth: Months by remember { mutableStateOf(Months.ALL_PERIOD) }
+                val types = TypeOfOperation.entries.map { it.nameOfType }
+                var selectedType: TypeOfOperation by remember { mutableStateOf(TypeOfOperation.ALL) }
+
+
+                PrimarySpinner(
+                    options = types,
+                    selectedOption = selectedType.nameOfType,
+                    onOptionSelected = { navSelection ->
+                        selectedType =
+                            TypeOfOperation.entries.first { it.nameOfType == navSelection }
+                    },
+                    label = "Общее",
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .weight(1f)
+                )
+
+                PrimarySpinner(
+                    options = months,
+                    selectedOption = selectedMonth.displayName,
+                    onOptionSelected = { navSelection ->
+                        selectedMonth = Months.entries.first { it.displayName == navSelection }
+                    },
+                    label = "Месяцы",
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .weight(1f)
+                )
+            }
+            Text("Скоро")
+        }
+    }
+}

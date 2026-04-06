@@ -1,0 +1,15 @@
+package com.atnzvdev.presentation.ui.main.transactions
+
+import com.atnzvdev.domain.model.Template
+import com.atnzvdev.domain.model.TypeOfOperation
+
+sealed interface TransactionEvent {
+    data class OnNameChanged(val newName: String) : TransactionEvent
+    data class OnAmountChanged(val newAmount: String) : TransactionEvent
+    data class OnTypeChanged(val newType: TypeOfOperation) : TransactionEvent
+    data class OnDescriptionChanged(val newDescription: String) : TransactionEvent
+    data class OnCategorySelected(val index: Int) : TransactionEvent
+    data object OnSaveClicked : TransactionEvent
+    data class OnTemplateSelected(val template: Template) : TransactionEvent
+    object DowloadCategories : TransactionEvent
+}
